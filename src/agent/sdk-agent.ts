@@ -32,6 +32,14 @@ export interface SdkAgentOptions {
 }
 
 // Design tools removed - SDK has WebSearch built-in which is more direct
+const SDK_MODEL_MAP: Record<string, string> = {
+  'claude-sonnet-4-5': 'claude-sonnet-4-5-20250929',
+  'claude-opus-4-5': 'claude-opus-4-20250514',
+};
+
+function normalizeSdkModel(model: string): string {
+  return SDK_MODEL_MAP[model] ?? model;
+}
 
 // ============================================================================
 // SDK Agent Implementation
@@ -90,7 +98,7 @@ export class SdkAgent {
 
     // Configure SDK options - use built-in tools directly
     const options: Options = {
-      model: this.model,
+      model: normalizeSdkModel(this.model),
       abortController,
       systemPrompt: this.systemPrompt,
       permissionMode: 'acceptEdits',
