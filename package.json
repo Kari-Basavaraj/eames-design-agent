@@ -2,10 +2,35 @@
   "name": "eames-design-agent",
   "version": "1.0.0",
   "description": "Eames - AI agent for Product Design research and PRD generation.",
+  "author": "Basavaraj KM",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Kari-Basavaraj/eames-design-agent.git"
+  },
+  "homepage": "https://github.com/Kari-Basavaraj/eames-design-agent#readme",
+  "bugs": {
+    "url": "https://github.com/Kari-Basavaraj/eames-design-agent/issues"
+  },
+  "keywords": [
+    "ai",
+    "agent",
+    "product-design",
+    "ux-research",
+    "prd",
+    "claude",
+    "langchain",
+    "cli",
+    "design-system"
+  ],
   "type": "module",
   "main": "src/index.tsx",
   "bin": {
     "eames": "./src/index.tsx"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "bun": ">=1.0.0"
   },
   "scripts": {
     "start": "bun run src/index.tsx",

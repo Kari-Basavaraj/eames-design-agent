@@ -1,7 +1,11 @@
 # Eames 🎨
 
-**Last Updated:** 2026-01-11 22:40:00
+**Last Updated:** 2026-01-12 18:45:00
 **Version:** 1.0.0
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Bun](https://img.shields.io/badge/Bun-%23000000.svg?style=flat&logo=bun&logoColor=white)](https://bun.sh)
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
 Eames is an autonomous Product Design agent that researches, synthesizes, and creates. It conducts deep research on user needs, design patterns, and competitors, then outputs actionable deliverables like PRDs and React components. Think Claude Code, but built specifically for Product Design.
 
@@ -45,9 +49,11 @@ bun --version
 
 ## Installation
 
+### Option 1: Clone and Run (Recommended)
+
 1. Clone the repository:
 ```bash
-git clone <repo-url> eames-design-agent
+git clone https://github.com/Kari-Basavaraj/eames-design-agent.git
 cd eames-design-agent
 ```
 
@@ -64,6 +70,30 @@ cp env.example .env
 # Edit .env and add your API keys
 # ANTHROPIC_API_KEY=your-anthropic-api-key (required)
 # TAVILY_API_KEY=your-tavily-api-key (recommended)
+```
+
+### Option 2: Global Installation (Development)
+
+For local development with global CLI access:
+
+```bash
+# Clone and install
+git clone https://github.com/Kari-Basavaraj/eames-design-agent.git
+cd eames-design-agent
+bun install
+
+# Link globally (makes 'eames' command available)
+bun link
+
+# Now you can run from anywhere
+eames
+```
+
+### Option 3: npx (Coming Soon)
+
+```bash
+# Once published to npm
+npx eames-design-agent
 ```
 
 ## Usage
