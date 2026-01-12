@@ -1,13 +1,12 @@
-// Updated: 2026-01-12 17:00:00
+// Updated: 2026-01-12 17:30:00
 // Eames Design Agent - Claude Agent SDK Wrapper
 // Bridges Claude Agent SDK with existing AgentCallbacks interface
 
-import { query, createSdkMcpServer, tool } from '@anthropic-ai/claude-agent-sdk';
+import { query } from '@anthropic-ai/claude-agent-sdk';
 import type {
   Options,
   Query,
 } from '@anthropic-ai/claude-agent-sdk';
-import { z } from 'zod';
 import type { AgentCallbacks } from './orchestrator.js';
 import { DEFAULT_SYSTEM_PROMPT } from './prompts.js';
 import {
@@ -32,113 +31,7 @@ export interface SdkAgentOptions {
   systemPrompt?: string;
 }
 
-// ============================================================================
-// Design Tools MCP Server
-// ============================================================================
-
-/**
- * Creates an MCP server with design research tools.
- * These tools will be available to the SDK agent.
- */
-function createDesignToolsServer() {
-  return createSdkMcpServer({
-    name: 'eames-design-tools',
-    version: '1.0.0',
-    tools: [
-      tool(
-        'search_competitors',
-        'Search for competitor products, their features, UI patterns, and user flows. Use this to understand market landscape and best practices.',
-        {
-          product_type: z.string().describe('Type of product to research (e.g., "mobile wallet", "fitness app")'),
-          competitors: z.array(z.string()).optional().describe('Specific competitor names to analyze'),
-          focus_area: z.string().optional().describe('Specific aspect to focus on (e.g., "onboarding", "payment flow")'),
-        },
-        async ({ product_type, competitors, focus_area }) => {
-          const searchQuery = competitors?.length
-            ? `${competitors.join(' OR ')} ${product_type} ${focus_area || 'features UI UX'}`
-            : `best ${product_type} apps ${focus_area || 'features UI UX'} 2026`;
-
-          return {
-            content: [{
-              type: 'text' as const,
-              text: JSON.stringify({
-                success: true,
-                query: searchQuery,
-                note: 'Use WebSearch tool to execute this search query',
-              }),
-            }],
-          };
-        }
-      ),
-      tool(
-        'search_ux_patterns',
-        'Search for UX design patterns, best practices, and implementation examples for specific user interface components or flows.',
-        {
-          topic: z.string().describe('UX pattern topic (e.g., "split bill UI", "payment confirmation")'),
-          platform: z.string().optional().describe('Target platform (e.g., "mobile", "web", "iOS")'),
-        },
-        async ({ topic, platform }) => {
-          const searchQuery = `${topic} UX design pattern ${platform || 'mobile'} best practices 2026`;
-
-          return {
-            content: [{
-              type: 'text' as const,
-              text: JSON.stringify({
-                success: true,
-                query: searchQuery,
-                note: 'Use WebSearch tool to execute this search query',
-              }),
-            }],
-          };
-        }
-      ),
-      tool(
-        'search_design_trends',
-        'Search for current design trends, emerging patterns, and industry standards in product design.',
-        {
-          domain: z.string().describe('Design domain (e.g., "fintech", "social", "productivity")'),
-          aspect: z.string().optional().describe('Specific design aspect (e.g., "color schemes", "micro-interactions")'),
-        },
-        async ({ domain, aspect }) => {
-          const searchQuery = `${domain} app design trends ${aspect || ''} 2026`;
-
-          return {
-            content: [{
-              type: 'text' as const,
-              text: JSON.stringify({
-                success: true,
-                query: searchQuery,
-                note: 'Use WebSearch tool to execute this search query',
-              }),
-            }],
-          };
-        }
-      ),
-      tool(
-        'search_accessibility',
-        'Search for accessibility guidelines, WCAG compliance requirements, and inclusive design practices.',
-        {
-          component: z.string().describe('UI component or feature to check (e.g., "form inputs", "color contrast")'),
-          standard: z.string().optional().describe('Accessibility standard (e.g., "WCAG 2.2", "ARIA")'),
-        },
-        async ({ component, standard }) => {
-          const searchQuery = `${component} accessibility ${standard || 'WCAG 2.2'} guidelines requirements`;
-
-          return {
-            content: [{
-              type: 'text' as const,
-              text: JSON.stringify({
-                success: true,
-                query: searchQuery,
-                note: 'Use WebSearch tool to execute this search query',
-              }),
-            }],
-          };
-        }
-      ),
-    ],
-  });
-}
+// Design tools removed - SDK has WebSearch built-in which is more direct
 
 // ============================================================================
 // SDK Agent Implementation
@@ -189,26 +82,19 @@ export class SdkAgent {
    * Main entry point - runs a query using the Claude Agent SDK.
    */
   async run(prompt: string): Promise<string> {
-
     // Create abort controller linked to external signal
     const abortController = new AbortController();
     if (this.signal) {
       this.signal.addEventListener('abort', () => abortController.abort());
     }
 
-    // Create design tools MCP server
-    const designToolsServer = createDesignToolsServer();
-
-    // Configure SDK options
+    // Configure SDK options - use built-in tools directly
     const options: Options = {
       model: this.model,
       abortController,
       systemPrompt: this.systemPrompt,
       permissionMode: 'acceptEdits',
-      tools: ['Read', 'Edit', 'Glob', 'Grep', 'WebSearch', 'WebFetch', 'Bash'],
-      mcpServers: {
-        'eames-design-tools': designToolsServer,
-      },
+      tools: ['Read', 'Edit', 'Write', 'Glob', 'Grep', 'WebSearch', 'WebFetch', 'Bash'],
       hooks: {
         PreToolUse: [{
           hooks: [async (input) => {
