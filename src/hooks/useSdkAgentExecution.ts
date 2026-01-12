@@ -6,7 +6,7 @@ import { useState, useCallback, useRef } from 'react';
 import { SdkAgent } from '../agent/sdk-agent.js';
 import type { AgentCallbacks } from '../agent/orchestrator.js';
 import { generateId } from '../cli/types.js';
-import type { Phase } from '../agent/state.js';
+import type { Phase, Task, TaskStatus, ToolCallStatus } from '../agent/state.js';
 import type { AgentProgressState } from '../components/AgentProgressView.js';
 
 // ============================================================================
@@ -50,6 +50,19 @@ export function useSdkAgentExecution({
   const isProcessingRef = useRef(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const agentRef = useRef<SdkAgent | null>(null);
+
+  const computeTaskStatus = useCallback((toolCalls: ToolCallStatus[]): TaskStatus => {
+    if (toolCalls.some(toolCall => toolCall.status === 'failed')) {
+      return 'failed';
+    }
+    if (toolCalls.length === 0) {
+      return 'pending';
+    }
+    if (toolCalls.every(toolCall => toolCall.status === 'completed')) {
+      return 'completed';
+    }
+    return 'in_progress';
+  }, []);
 
   /**
    * Updates the current phase.
@@ -142,7 +155,47 @@ export function useSdkAgentExecution({
     onAnswerStart: () => setAnswering(true),
     onAnswerStream: (stream) => setAnswerStream(stream),
     onProgressMessage: setProgressMessage,
-  }), [setPhase, markPhaseComplete, setAnswering, setProgressMessage]);
+    onTaskToolCallsSet: (taskId, toolCalls) => {
+      setCurrentTurn(prev => {
+        if (!prev) return prev;
+
+        const existingTaskIndex = prev.state.tasks.findIndex(task => task.id === taskId);
+        const status = computeTaskStatus(toolCalls);
+
+        if (existingTaskIndex >= 0) {
+          const tasks = [...prev.state.tasks];
+          const existingTask = tasks[existingTaskIndex];
+          tasks[existingTaskIndex] = {
+            ...existingTask,
+            status,
+            toolCalls,
+          };
+          return {
+            ...prev,
+            state: {
+              ...prev.state,
+              tasks,
+            },
+          };
+        }
+
+        const newTask: Task = {
+          id: taskId,
+          description: 'Running Claude SDK tools',
+          status,
+          toolCalls,
+        };
+
+        return {
+          ...prev,
+          state: {
+            ...prev.state,
+            tasks: [...prev.state.tasks, newTask],
+          },
+        };
+      });
+    },
+  }), [setPhase, markPhaseComplete, setAnswering, setProgressMessage, computeTaskStatus]);
 
   /**
    * Handles the completed answer.
