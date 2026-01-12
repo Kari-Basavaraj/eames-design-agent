@@ -168,7 +168,6 @@ Accenture Song
 ---
 
 ### Resources
-- [Eames Design Agent](https://github.com/Kari-Basavaraj/eames-design-agent) — The autonomous product design agent
 - [CallMe Plugin](https://github.com/ZeframLou/call-me) — AI-to-phone communication
 
 ### Research Sources
