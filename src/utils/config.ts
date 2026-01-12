@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { dirname } from 'path';
 
-const SETTINGS_FILE = '.dexter/settings.json';
+const SETTINGS_FILE = '.eames/settings.json';
 
 // Map legacy model IDs to provider IDs for migration
 const MODEL_TO_PROVIDER_MAP: Record<string, string> = {
@@ -14,6 +14,7 @@ interface Config {
   provider?: string;
   modelId?: string;  // Selected model ID (e.g., "gpt-5.2", "ollama:llama3.1")
   model?: string;    // Legacy key, kept for migration
+  useSdkMode?: boolean;  // Enable Claude Agent SDK mode
   [key: string]: unknown;
 }
 

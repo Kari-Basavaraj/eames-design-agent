@@ -1,69 +1,31 @@
+// Updated: 2026-01-11 22:30:00
+// Eames Design Agent - Tools Index
+// Replaces finance tools with design-focused research tools
+
 import { StructuredToolInterface } from '@langchain/core/tools';
-import {
-  getIncomeStatements,
-  getBalanceSheets,
-  getCashFlowStatements,
-  getAllFinancialStatements,
-  getFilings,
-  get10KFilingItems,
-  get10QFilingItems,
-  get8KFilingItems,
-  getPriceSnapshot,
-  getPrices,
-  getFinancialMetricsSnapshot,
-  getFinancialMetrics,
-  getNews,
-  getAnalystEstimates,
-  getSegmentedRevenues,
-  getCryptoPriceSnapshot,
-  getCryptoPrices,
-  getCryptoTickers,
-  getInsiderTrades,
-} from './finance/index.js';
 import { tavilySearch } from './search/index.js';
+import {
+  searchCompetitors,
+  searchUXPatterns,
+  searchDesignTrends,
+  searchAccessibility
+} from './design/index.js';
 
 export const TOOLS: StructuredToolInterface[] = [
-  getIncomeStatements,
-  getBalanceSheets,
-  getCashFlowStatements,
-  getAllFinancialStatements,
-  get10KFilingItems,
-  get10QFilingItems,
-  get8KFilingItems,
-  getFilings,
-  getPriceSnapshot,
-  getPrices,
-  getCryptoPriceSnapshot,
-  getCryptoPrices,
-  getCryptoTickers,
-  getFinancialMetricsSnapshot,
-  getFinancialMetrics,
-  getNews,
-  getAnalystEstimates,
-  getSegmentedRevenues,
-  getInsiderTrades,
+  // Core web search (required)
   ...(process.env.TAVILY_API_KEY ? [tavilySearch] : []),
+
+  // Design-specific research tools
+  searchCompetitors,
+  searchUXPatterns,
+  searchDesignTrends,
+  searchAccessibility,
 ];
 
 export {
-  getIncomeStatements,
-  getBalanceSheets,
-  getCashFlowStatements,
-  getAllFinancialStatements,
-  getFilings,
-  get10KFilingItems,
-  get10QFilingItems,
-  get8KFilingItems,
-  getPriceSnapshot,
-  getPrices,
-  getCryptoPriceSnapshot,
-  getCryptoPrices,
-  getCryptoTickers,
-  getFinancialMetricsSnapshot,
-  getFinancialMetrics,
-  getNews,
-  getAnalystEstimates,
-  getSegmentedRevenues,
-  getInsiderTrades,
   tavilySearch,
+  searchCompetitors,
+  searchUXPatterns,
+  searchDesignTrends,
+  searchAccessibility,
 };
