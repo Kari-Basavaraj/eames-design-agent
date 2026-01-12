@@ -33,7 +33,7 @@ export class ToolContextManager {
   private model: string;
   public pointers: ContextPointer[] = [];
 
-  constructor(contextDir: string = '.dexter/context', model: string = DEFAULT_MODEL) {
+  constructor(contextDir: string = '.eames/context', model: string = DEFAULT_MODEL) {
     this.contextDir = contextDir;
     this.model = model;
     if (!existsSync(contextDir)) {
