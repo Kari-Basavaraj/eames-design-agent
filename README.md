@@ -1,40 +1,36 @@
-# Dexter 🤖
+# Eames 🎨
 
-Dexter is an autonomous financial research agent that thinks, plans, and learns as it works. It performs analysis using task planning, self-reflection, and real-time market data. Think Claude Code, but built specifically for financial research.
+**Last Updated:** 2026-01-11 22:40:00
+**Version:** 1.0.0
 
+Eames is an autonomous Product Design agent that researches, synthesizes, and creates. It conducts deep research on user needs, design patterns, and competitors, then outputs actionable deliverables like PRDs and React components. Think Claude Code, but built specifically for Product Design.
 
-<img width="979" height="651" alt="Screenshot 2025-10-14 at 6 12 35 PM" src="https://github.com/user-attachments/assets/5a2859d4-53cf-4638-998a-15cef3c98038" />
+> Named after Charles & Ray Eames, pioneers of design who believed "Design is a plan for arranging elements in such a way as best to accomplish a particular purpose."
 
 ## Overview
 
-Dexter takes complex financial questions and turns them into clear, step-by-step research plans. It runs those tasks using live market data, checks its own work, and refines the results until it has a confident, data-backed answer.  
+Eames takes complex design challenges and turns them into clear, step-by-step research plans. It searches for competitor patterns, synthesizes findings into personas and requirements, and generates production-ready deliverables.
 
 **Key Capabilities:**
-- **Intelligent Task Planning**: Automatically decomposes complex queries into structured research steps
-- **Autonomous Execution**: Selects and executes the right tools to gather financial data
-- **Self-Validation**: Checks its own work and iterates until tasks are complete
-- **Real-Time Financial Data**: Access to income statements, balance sheets, and cash flow statements
-- **Safety Features**: Built-in loop detection and step limits to prevent runaway execution
+- **Intelligent Task Planning**: Decomposes design requests into research, synthesis, and execution phases
+- **Autonomous Research**: Searches for competitor features, UX patterns, and design trends
+- **Synthesis Engine**: Creates personas, user journeys, and requirements from research
+- **Output Generation**: Produces PRDs, user stories, and React/Tailwind components
+- **Self-Validation**: Reflects on research completeness before generating outputs
 
-[![Twitter Follow](https://img.shields.io/twitter/follow/virattt?style=social)](https://twitter.com/virattt)
+## Prerequisites
 
-<img width="996" height="639" alt="Screenshot 2025-11-22 at 1 45 07 PM" src="https://github.com/user-attachments/assets/8915fd70-82c9-4775-bdf9-78d5baf28a8a" />
+- [Bun](https://bun.sh) runtime (v1.0 or higher)
+- Anthropic API key (get [here](https://console.anthropic.com)) - **Required**
+- Tavily API key (get [here](https://tavily.com)) - Recommended for web search
 
+### Installing Bun
 
-### Prerequisites
-
-- [Bun](https://bun.com) runtime (v1.0 or higher)
-- OpenAI API key (get [here](https://platform.openai.com/api-keys))
-- Financial Datasets API key (get [here](https://financialdatasets.ai))
-- Tavily API key (get [here](https://tavily.com)) - optional, for web search
-
-#### Installing Bun
-
-If you don't have Bun installed, you can install it using curl:
+If you don't have Bun installed:
 
 **macOS/Linux:**
 ```bash
-curl -fsSL https://bun.com/install | bash
+curl -fsSL https://bun.sh/install | bash
 ```
 
 **Windows:**
@@ -42,45 +38,37 @@ curl -fsSL https://bun.com/install | bash
 powershell -c "irm bun.sh/install.ps1|iex"
 ```
 
-After installation, restart your terminal and verify Bun is installed:
+After installation, restart your terminal and verify:
 ```bash
 bun --version
 ```
 
-### Installing Dexter
+## Installation
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/virattt/dexter.git
-cd dexter
+git clone <repo-url> eames-design-agent
+cd eames-design-agent
 ```
 
-2. Install dependencies with Bun:
+2. Install dependencies:
 ```bash
 bun install
 ```
 
-3. Set up your environment variables:
+3. Set up environment variables:
 ```bash
-# Copy the example environment file (from parent directory)
+# Copy the example environment file
 cp env.example .env
 
-# Edit .env and add your API keys (if using cloud providers)
-# OPENAI_API_KEY=your-openai-api-key
-# ANTHROPIC_API_KEY=your-anthropic-api-key
-# GOOGLE_API_KEY=your-google-api-key
-
-# (Optional) If using Ollama locally
-# OLLAMA_BASE_URL=http://127.0.0.1:11434
-
-# Other required keys
-# FINANCIAL_DATASETS_API_KEY=your-financial-datasets-api-key
-# TAVILY_API_KEY=your-tavily-api-key
+# Edit .env and add your API keys
+# ANTHROPIC_API_KEY=your-anthropic-api-key (required)
+# TAVILY_API_KEY=your-tavily-api-key (recommended)
 ```
 
-### Usage
+## Usage
 
-Run Dexter in interactive mode:
+Run Eames in interactive mode:
 ```bash
 bun start
 ```
@@ -90,57 +78,70 @@ Or with watch mode for development:
 bun dev
 ```
 
-### Example Queries
+## Example Queries
 
-Try asking Dexter questions like:
-- "What was Apple's revenue growth over the last 4 quarters?"
-- "Compare Microsoft and Google's operating margins for 2023"
-- "Analyze Tesla's cash flow trends over the past year"
-- "What is Amazon's debt-to-equity ratio based on recent financials?"
+Try asking Eames:
+- "Design a 'Split Bill' feature for a mobile wallet app targeting college students"
+- "Research onboarding flows for fintech apps and create a PRD"
+- "Compare checkout experiences between Stripe, Square, and PayPal"
+- "What are the best practices for mobile form validation?"
+- "Create a React component for a savings goal card"
 
-Dexter will automatically:
-1. Break down your question into research tasks
-2. Fetch the necessary financial data
-3. Perform calculations and analysis
-4. Provide a comprehensive, data-rich answer
+Eames will automatically:
+1. Break down your request into research tasks
+2. Search for competitor patterns and best practices
+3. Synthesize findings into personas and requirements
+4. Generate a comprehensive deliverable (PRD, code, or analysis)
 
 ## Architecture
 
-Dexter uses a multi-agent architecture with specialized components:
+Eames uses a 5-phase agentic loop:
 
-- **Planning Agent**: Analyzes queries and creates structured task lists
-- **Action Agent**: Selects appropriate tools and executes research steps
-- **Validation Agent**: Verifies task completion and data sufficiency
-- **Answer Agent**: Synthesizes findings into comprehensive responses
+1. **Understand**: Extract intent and entities from your design request
+2. **Plan**: Create task list (research → synthesis → execution)
+3. **Execute**: Run tools to gather design research
+4. **Reflect**: Evaluate research completeness
+5. **Answer**: Generate final deliverable
+
+### Agent Roles
+
+| Role | Responsibility |
+|------|----------------|
+| Design Ops Lead | Plans and sequences research tasks |
+| UX Researcher | Searches for patterns and competitor analysis |
+| Synthesis Engine | Creates personas and requirements |
+| UI/Product Engineer | Outputs PRDs and React components |
+
+## Tools Available
+
+| Tool | Description |
+|------|-------------|
+| `search_competitors` | Find competitor features, user flows, UX analysis |
+| `search_ux_patterns` | Research Nielsen Norman patterns, best practices |
+| `search_design_trends` | Current Dribbble/Behance trends |
+| `search_accessibility` | WCAG guidelines, a11y best practices |
+| `search_web` | General web search via Tavily |
 
 ## Tech Stack
 
 - **Runtime**: [Bun](https://bun.sh)
 - **UI Framework**: [React](https://react.dev) + [Ink](https://github.com/vadimdemedes/ink) (terminal UI)
-- **LLM Integration**: [LangChain.js](https://js.langchain.com) with multi-provider support (OpenAI, Anthropic, Google)
+- **LLM Integration**: [LangChain.js](https://js.langchain.com) with multi-provider support
 - **Schema Validation**: [Zod](https://zod.dev)
 - **Language**: TypeScript
-
 
 ### Changing Models
 
 Type `/model` in the CLI to switch between:
+- Claude Sonnet 4.5 (Anthropic) - **Recommended**
 - GPT 4.1 (OpenAI)
-- Claude Sonnet 4.5 (Anthropic)
 - Gemini 3 (Google)
+- Ollama (Local LLMs)
 
-## How to Contribute
+## Credits
 
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
-
-**Important**: Please keep your pull requests small and focused.  This will make it easier to review and merge.
-
+Built on top of [Dexter](https://github.com/virattt/dexter) by Virat Singh.
 
 ## License
 
 This project is licensed under the MIT License.
-

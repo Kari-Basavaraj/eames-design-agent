@@ -24,6 +24,7 @@ import type { AgentProgressState } from './components/AgentProgressView.js';
 
 import { useQueryQueue } from './hooks/useQueryQueue.js';
 import { useAgentExecution } from './hooks/useAgentExecution.js';
+import { useSdkAgentExecution } from './hooks/useSdkAgentExecution.js';
 
 import { getSetting, setSetting } from './utils/config.js';
 import { 
@@ -87,10 +88,15 @@ const CompletedTurnView = React.memo(function CompletedTurnView({ turn }: { turn
 // Main CLI Component
 // ============================================================================
 
-export function CLI() {
+interface CLIProps {
+  initialQuery?: string;
+}
+
+export function CLI({ initialQuery }: CLIProps) {
   const { exit } = useApp();
 
   const [state, setState] = useState<AppState>('idle');
+  const [useSdkMode, setUseSdkMode] = useState(() => getSetting('useSdkMode', false) as boolean);
   const [provider, setProvider] = useState(() => getSetting('provider', DEFAULT_PROVIDER));
   const [model, setModel] = useState(() => {
     const savedModel = getSetting('modelId', null) as string | null;
@@ -99,7 +105,7 @@ export function CLI() {
       return savedModel;
     }
     // Default to first model for the provider
-    return getDefaultModelForProvider(savedProvider) || 'gpt-5.2';
+    return getDefaultModelForProvider(savedProvider) || 'claude-sonnet-4-5-20250929';
   });
   const [pendingProvider, setPendingProvider] = useState<string | null>(null);
   const [pendingModels, setPendingModels] = useState<string[]>([]);
@@ -114,6 +120,18 @@ export function CLI() {
 
   const { queue: queryQueue, enqueue, shift: shiftQueue, clear: clearQueue } = useQueryQueue();
 
+  // Standard agent execution (5-phase)
+  const standardAgent = useAgentExecution({
+    model,
+    messageHistory: messageHistoryRef.current,
+  });
+
+  // SDK agent execution (Claude Code style)
+  const sdkAgent = useSdkAgentExecution({
+    model,
+  });
+
+  // Use the appropriate agent based on SDK mode
   const {
     currentTurn,
     answerStream,
@@ -121,10 +139,7 @@ export function CLI() {
     processQuery,
     handleAnswerComplete: baseHandleAnswerComplete,
     cancelExecution,
-  } = useAgentExecution({
-    model,
-    messageHistory: messageHistoryRef.current,
-  });
+  } = useSdkMode ? sdkAgent : standardAgent;
 
   // Capture tasks when answer stream starts
   useEffect(() => {
@@ -132,6 +147,9 @@ export function CLI() {
       currentTasksRef.current = [...currentTurn.state.tasks];
     }
   }, [answerStream, currentTurn]);
+
+  // Track if initial query was processed
+  const initialQueryProcessed = useRef(false);
 
   /**
    * Handles the completed answer and moves current turn to history
@@ -177,6 +195,14 @@ export function CLI() {
     }
   }, [state, queryQueue, shiftQueue, executeQuery]);
 
+  // Auto-submit initial query from command line
+  useEffect(() => {
+    if (initialQuery && !initialQueryProcessed.current && state === 'idle') {
+      initialQueryProcessed.current = true;
+      executeQuery(initialQuery);
+    }
+  }, [initialQuery, state, executeQuery]);
+
   const handleSubmit = useCallback(
     (query: string) => {
       // Clear interrupted state when user submits a new query
@@ -191,6 +217,15 @@ export function CLI() {
 
       if (query === '/model') {
         setState('provider_select');
+        return;
+      }
+
+      // Toggle SDK mode
+      if (query === '/sdk') {
+        const newSdkMode = !useSdkMode;
+        setUseSdkMode(newSdkMode);
+        setSetting('useSdkMode', newSdkMode);
+        setStatusMessage(`SDK mode: ${newSdkMode ? 'ON (Claude Code style)' : 'OFF (5-phase agent)'}`);
         return;
       }
 
@@ -428,7 +463,7 @@ export function CLI() {
       <Static items={staticItems}>
         {(item) =>
           item.type === 'intro' ? (
-            <Intro key="intro" provider={provider} model={model} />
+            <Intro key="intro" provider={provider} model={model} useSdkMode={useSdkMode} />
           ) : (
             <CompletedTurnView key={item.turn.id} turn={item.turn} />
           )
@@ -446,7 +481,7 @@ export function CLI() {
           
           {/* Interrupted message */}
           <Box marginLeft={2}>
-            <Text color={colors.muted}>⎿  Interrupted · What should Dexter do instead?</Text>
+            <Text color={colors.muted}>⎿  Interrupted · What should Eames do instead?</Text>
           </Box>
         </Box>
       )}

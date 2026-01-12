@@ -100,7 +100,7 @@ export class Agent {
     this.callbacks = options.callbacks ?? {};
     this.maxIterations = options.maxIterations ?? DEFAULT_MAX_ITERATIONS;
     this.signal = options.signal;
-    this.contextManager = new ToolContextManager('.dexter/context', this.model);
+    this.contextManager = new ToolContextManager('.eames/context', this.model);
 
     // Initialize phases
     this.understandPhase = new UnderstandPhase({ model: this.model });
