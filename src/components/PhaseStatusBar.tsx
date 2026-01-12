@@ -27,6 +27,7 @@ export const phaseLabels: Record<Phase, string> = {
 interface PhaseStatusBarProps {
   phase: Phase;
   isAnswering?: boolean;
+  progressMessage?: string;
 }
 
 /**
@@ -36,14 +37,17 @@ interface PhaseStatusBarProps {
 export const PhaseStatusBar = React.memo(function PhaseStatusBar({
   phase,
   isAnswering = false,
+  progressMessage,
 }: PhaseStatusBarProps) {
   // Don't show anything if complete
   if (phase === 'complete') {
     return null;
   }
 
-  // Use answering label if in answer phase or explicitly answering
-  const label = isAnswering ? phaseLabels.answer : phaseLabels[phase];
+  // Use progress message if available, otherwise phase label
+  const label = progressMessage
+    ? progressMessage
+    : (isAnswering ? phaseLabels.answer : phaseLabels[phase]);
 
   return (
     <Box>

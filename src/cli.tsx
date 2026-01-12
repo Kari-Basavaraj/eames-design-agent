@@ -516,9 +516,10 @@ export function CLI({ initialQuery }: CLIProps) {
       {/* Phase status bar - shows current phase above input when running */}
       {state === 'running' && currentTurn && (
         <Box marginTop={1}>
-          <PhaseStatusBar 
+          <PhaseStatusBar
             phase={currentTurn.state.currentPhase}
             isAnswering={currentTurn.state.isAnswering}
+            progressMessage={currentTurn.state.progressMessage}
           />
         </Box>
       )}

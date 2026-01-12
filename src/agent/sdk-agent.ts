@@ -189,7 +189,6 @@ export class SdkAgent {
    * Main entry point - runs a query using the Claude Agent SDK.
    */
   async run(prompt: string): Promise<string> {
-    this.taskCounter = 0;
 
     // Create abort controller linked to external signal
     const abortController = new AbortController();
