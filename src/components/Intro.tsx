@@ -44,7 +44,6 @@ export function Intro({ provider, model, useSdkMode = false }: IntroProps) {
 
       <Box marginY={1} flexDirection="column">
         <Text color={colors.muted}>Developed by <Text color={colors.primary}>Basavaraj Km</Text></Text>
-        <Text></Text>
         <Text>Your personal Autonomous Agentic AI Product Design Agent.</Text>
         <Text color={colors.muted}>Named after Charles & Ray Eames.</Text>
         <Text color={colors.muted}>Current model: <Text color={colors.primary}>{model}</Text></Text>

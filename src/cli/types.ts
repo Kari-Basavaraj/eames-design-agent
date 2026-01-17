@@ -7,7 +7,9 @@ export type AppState =
   | 'provider_select'  // Selecting LLM provider
   | 'model_select'     // Selecting model for the chosen provider
   | 'api_key_confirm' 
-  | 'api_key_input';
+  | 'api_key_input'
+  | 'plugin_manager'   // Interactive plugin management
+  | 'mcp_manager';     // Interactive MCP server management
 
 /**
  * Generate a unique ID for turns

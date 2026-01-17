@@ -25,7 +25,7 @@ export * from './command-palette.js';
 export * from './history-search.js';
 export * from './notifications.js';
 export * from './themes.js';
-export * from './fuzzy-finder.js';
+export { searchFiles } from './fuzzy-finder.js';
 export * from './bookmarks.js';
 export * from './clipboard.js';
 export * from './streaming-progress.js';

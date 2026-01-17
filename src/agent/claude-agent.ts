@@ -10,19 +10,19 @@ import { z } from 'zod';
 /**
  * Convert Zod schema to JSON Schema for native tools
  */
-function zodToJsonSchema(schema: z.ZodType<any>): Record<string, unknown> {
+function zodToJsonSchema(schema: any): Record<string, unknown> {
   // Handle ZodObject
-  if (schema instanceof z.ZodObject) {
-    const shape = schema.shape;
+  if (schema && schema._def && schema._def.typeName === 'ZodObject') {
+    const shape = schema.shape || {};
     const properties: Record<string, unknown> = {};
     const required: string[] = [];
 
     for (const [key, value] of Object.entries(shape)) {
-      const zodValue = value as z.ZodType<any>;
+      const zodValue = value as any;
       properties[key] = zodFieldToSchema(zodValue);
 
       // Check if required (not optional)
-      if (!(zodValue instanceof z.ZodOptional)) {
+      if (!(zodValue?._def?.typeName === 'ZodOptional')) {
         required.push(key);
       }
     }
@@ -37,35 +37,39 @@ function zodToJsonSchema(schema: z.ZodType<any>): Record<string, unknown> {
   return { type: 'object', properties: {} };
 }
 
-function zodFieldToSchema(field: z.ZodType<any>): Record<string, unknown> {
+function zodFieldToSchema(field: any): Record<string, unknown> {
+  if (!field || !field._def) return { type: 'string' };
+
+  const typeName = field._def.typeName;
+
   // Handle optional
-  if (field instanceof z.ZodOptional) {
+  if (typeName === 'ZodOptional') {
     return zodFieldToSchema(field._def.innerType);
   }
 
   // Handle string
-  if (field instanceof z.ZodString) {
+  if (typeName === 'ZodString') {
     const schema: Record<string, unknown> = { type: 'string' };
     if (field.description) schema.description = field.description;
     return schema;
   }
 
   // Handle number
-  if (field instanceof z.ZodNumber) {
+  if (typeName === 'ZodNumber') {
     const schema: Record<string, unknown> = { type: 'number' };
     if (field.description) schema.description = field.description;
     return schema;
   }
 
   // Handle boolean
-  if (field instanceof z.ZodBoolean) {
+  if (typeName === 'ZodBoolean') {
     const schema: Record<string, unknown> = { type: 'boolean' };
     if (field.description) schema.description = field.description;
     return schema;
   }
 
   // Handle array
-  if (field instanceof z.ZodArray) {
+  if (typeName === 'ZodArray') {
     return {
       type: 'array',
       items: zodFieldToSchema(field._def.type),
@@ -74,10 +78,11 @@ function zodFieldToSchema(field: z.ZodType<any>): Record<string, unknown> {
   }
 
   // Handle enum
-  if (field instanceof z.ZodEnum) {
+  if (typeName === 'ZodEnum') {
+    const enumValues = Object.values(field._def.values || {});
     return {
       type: 'string',
-      enum: field._def.values,
+      enum: enumValues,
       description: field.description,
     };
   }

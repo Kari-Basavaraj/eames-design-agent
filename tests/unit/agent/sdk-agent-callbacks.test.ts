@@ -111,7 +111,8 @@ describe('SdkMessageProcessor', () => {
       processor.processAssistantMessage(message);
 
       const lastMessage = state.progressMessages[state.progressMessages.length - 1];
-      expect(lastMessage.length).toBeLessThanOrEqual(80);
+      // Now truncates at 100 chars (97 + '...')
+      expect(lastMessage.length).toBeLessThanOrEqual(100);
       expect(lastMessage).toContain('...');
     });
 
@@ -370,7 +371,9 @@ describe('SdkMessageProcessor', () => {
   // Test: Result messages
   // ==========================================================================
   describe('processResultMessage', () => {
-    it('should call onAnswerStart on success result', () => {
+    it('should NOT call onAnswerStart (called by SdkAgent.run instead)', () => {
+      // Note: onAnswerStart is intentionally NOT called by processResultMessage
+      // to avoid duplicate calls. SdkAgent.run() handles this directly.
       const message: SDKResultMessage = {
         type: 'result',
         subtype: 'success',
@@ -379,7 +382,8 @@ describe('SdkMessageProcessor', () => {
 
       processor.processResultMessage(message);
 
-      expect(state.answerStartCalled).toBe(true);
+      // This should be false - onAnswerStart is called by SdkAgent.run(), not processor
+      expect(state.answerStartCalled).toBe(false);
     });
 
     it('should return result content', () => {

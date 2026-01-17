@@ -46,7 +46,7 @@ export const AnswerBox = React.memo(function AnswerBox({ stream, text, onStart, 
     <Box flexDirection="column" marginTop={1}>
       <Text>
         {content}
-        {isStreaming && '▌'}
+        {isStreaming && <Text color={colors.primary}>▌</Text>}
       </Text>
     </Box>
   );

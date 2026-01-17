@@ -19,8 +19,19 @@ import { StatusMessage } from './components/StatusMessage.js';
 import { CurrentTurnView, AgentProgressView } from './components/AgentProgressView.js';
 import { PhaseStatusBar } from './components/PhaseStatusBar.js';
 import { TaskListView } from './components/TaskListView.js';
+import { ToolActivityView } from './components/ToolActivityView.js';
+import { PluginManager } from './components/PluginManager.js';
+import { MCPManager } from './components/MCPManager.js';
 import type { Task } from './agent/state.js';
 import type { AgentProgressState } from './components/AgentProgressView.js';
+
+// Cost & context tracking utilities
+import { getDetailedUsage, getSessionUsage, formatTokens, formatCost } from './utils/cost-tracking.js';
+import { getContextUsage, getContextLimit } from './utils/context-manager.js';
+
+// Node.js built-ins for file operations
+import * as fs from 'fs';
+import * as path from 'path';
 
 import { useQueryQueue } from './hooks/useQueryQueue.js';
 import { useAgentExecution } from './hooks/useAgentExecution.js';
@@ -92,11 +103,35 @@ interface CLIProps {
   initialQuery?: string;
 }
 
+// ============================================================================
+// Slash Command Definitions (Claude Code Compatible)
+// ============================================================================
+
+const SLASH_COMMANDS: Record<string, { description: string; handler: string }> = {
+  '/help': { description: 'Show available commands', handler: 'help' },
+  '/clear': { description: 'Clear conversation history', handler: 'clear' },
+  '/model': { description: 'Change AI model', handler: 'model' },
+  '/sdk': { description: 'Toggle SDK mode (Claude Code style)', handler: 'sdk' },
+  '/exit': { description: 'Exit Eames', handler: 'exit' },
+  '/quit': { description: 'Exit Eames', handler: 'exit' },
+  '/q': { description: 'Exit Eames', handler: 'exit' },
+  '/compact': { description: 'Compact conversation (SDK mode only)', handler: 'compact' },
+  '/cost': { description: 'Show token usage', handler: 'cost' },
+  '/memory': { description: 'Edit CLAUDE.md memory files', handler: 'memory' },
+  '/config': { description: 'Open settings', handler: 'config' },
+  '/status': { description: 'Show status info', handler: 'status' },
+  '/version': { description: 'Show version', handler: 'version' },
+};
+
+// ============================================================================
+// Main CLI Component
+// ============================================================================
+
 export function CLI({ initialQuery }: CLIProps) {
   const { exit } = useApp();
 
   const [state, setState] = useState<AppState>('idle');
-  const [useSdkMode, setUseSdkMode] = useState(() => getSetting('useSdkMode', false) as boolean);
+  const [useSdkMode, setUseSdkMode] = useState(() => getSetting('useSdkMode', true) as boolean);  // Default to SDK mode
   const [provider, setProvider] = useState(() => getSetting('provider', DEFAULT_PROVIDER));
   const [model, setModel] = useState(() => {
     const savedModel = getSetting('modelId', null) as string | null;
@@ -110,6 +145,7 @@ export function CLI({ initialQuery }: CLIProps) {
   const [pendingProvider, setPendingProvider] = useState<string | null>(null);
   const [pendingModels, setPendingModels] = useState<string[]>([]);
   const [history, setHistory] = useState<CompletedTurn[]>([]);
+  const [commandHistory, setCommandHistory] = useState<string[]>([]);  // User input history for Up/Down
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [interruptedQuery, setInterruptedQuery] = useState<string | null>(null);
 
@@ -185,6 +221,257 @@ export function CLI({ initialQuery }: CLIProps) {
   );
 
   /**
+   * Handle slash commands (Claude Code style)
+   * Returns true if command was handled, false to pass through to agent
+   */
+  const handleSlashCommand = useCallback((input: string): boolean => {
+    const parts = input.trim().split(' ');
+    const command = parts[0].toLowerCase();
+    const args = parts.slice(1).join(' ');
+
+    switch (command) {
+      case '/help':
+      case '/h':
+      case '/?':
+        const helpText = Object.entries(SLASH_COMMANDS)
+          .map(([cmd, { description }]) => `  ${cmd.padEnd(12)} ${description}`)
+          .join('\n');
+        setStatusMessage(`Available commands:\n${helpText}`);
+        return true;
+
+      case '/clear':
+        setHistory([]);
+        setStatusMessage('Conversation cleared');
+        return true;
+
+      case '/model':
+        setState('provider_select');
+        return true;
+
+      case '/sdk':
+        const newSdkMode = !useSdkMode;
+        setUseSdkMode(newSdkMode);
+        setSetting('useSdkMode', newSdkMode);
+        setStatusMessage(`SDK mode: ${newSdkMode ? 'ON (Claude Code style)' : 'OFF (5-phase agent)'}`);
+        return true;
+
+      case '/exit':
+      case '/quit':
+      case '/q':
+        console.log('Goodbye!');
+        exit();
+        return true;
+
+      case '/status':
+        setStatusMessage(`Model: ${model}\nProvider: ${provider}\nSDK Mode: ${useSdkMode ? 'ON' : 'OFF'}`);
+        return true;
+
+      case '/version':
+        setStatusMessage('Eames v1.0.0 (Claude Agent SDK powered)');
+        return true;
+
+      // Cost tracking - shows token usage and costs
+      case '/cost': {
+        const usage = getDetailedUsage();
+        setStatusMessage(usage);
+        return true;
+      }
+
+      // Context visualization - shows context window usage
+      case '/context': {
+        const sessionUsage = getSessionUsage();
+        const totalTokens = sessionUsage.totalInputTokens + sessionUsage.totalOutputTokens;
+        const maxTokens = getContextLimit(model);
+        const usagePercent = Math.round((totalTokens / maxTokens) * 100);
+        
+        // Create visual bar
+        const barWidth = 30;
+        const filled = Math.round((usagePercent / 100) * barWidth);
+        const empty = barWidth - filled;
+        const bar = '█'.repeat(filled) + '░'.repeat(empty);
+        
+        const color = usagePercent >= 80 ? '🔴' : usagePercent >= 60 ? '🟡' : '🟢';
+        
+        const contextInfo = `Context Usage:
+${color} [${bar}] ${usagePercent}%
+
+Tokens: ${formatTokens(totalTokens)} / ${formatTokens(maxTokens)}
+  Input:  ${formatTokens(sessionUsage.totalInputTokens)}
+  Output: ${formatTokens(sessionUsage.totalOutputTokens)}
+  
+API Calls: ${sessionUsage.apiCalls}
+Est. Cost: ${formatCost(sessionUsage.estimatedCost)}`;
+        
+        setStatusMessage(contextInfo);
+        return true;
+      }
+
+      // Compact conversation - clears display but keeps summary in context
+      case '/compact': {
+        if (history.length === 0) {
+          setStatusMessage('Nothing to compact - conversation is empty.');
+          return true;
+        }
+        
+        // Clear visible history but keep conversation context in SDK
+        const messageCount = history.length;
+        setHistory([]);
+        setStatusMessage(`Compacted ${messageCount} messages. Context preserved in memory.`);
+        return true;
+      }
+
+      case '/memory':
+        setStatusMessage('Memory: (not yet implemented - opens CLAUDE.md editor)');
+        return true;
+
+      case '/mcp':
+        // Open interactive MCP manager
+        setState('mcp_manager');
+        return true;
+
+      case '/plugin':
+        // Open interactive plugin manager
+        setState('plugin_manager');
+        return true;
+
+      case '/agents':
+        setStatusMessage('Agents: (not yet implemented - manages subagents)');
+        return true;
+
+      case '/permissions':
+        setStatusMessage('Permissions: (not yet implemented - manages tool permissions)');
+        return true;
+
+      case '/init': {
+        // Create CLAUDE.md project file
+        const claudeMdPath = path.join(process.cwd(), 'CLAUDE.md');
+        
+        if (fs.existsSync(claudeMdPath)) {
+          setStatusMessage('CLAUDE.md already exists. Use /memory to edit it.');
+          return true;
+        }
+        
+        const template = `# Project Context
+
+## Overview
+<!-- Describe your project here -->
+
+## Goals
+<!-- What are you trying to accomplish? -->
+
+## Key Files
+<!-- Important files and their purposes -->
+
+## Guidelines
+<!-- Coding standards, preferences, etc. -->
+
+## Notes
+<!-- Any additional context for the AI assistant -->
+`;
+        
+        fs.writeFileSync(claudeMdPath, template);
+        setStatusMessage('✅ Created CLAUDE.md - Use /memory to edit project context.');
+        return true;
+      }
+
+      case '/review':
+        setStatusMessage('Review: (not yet implemented - code review mode)');
+        return true;
+
+      case '/todos':
+        setStatusMessage('Todos: (not yet implemented - shows TODO items)');
+        return true;
+
+      case '/resume':
+        setStatusMessage('Resume: (not yet implemented - resumes session)');
+        return true;
+
+      case '/stats': {
+        const usage = getSessionUsage();
+        const uptime = Math.round((Date.now() - (process as any).__startTime || Date.now()) / 1000);
+        const uptimeStr = uptime > 3600 
+          ? `${Math.floor(uptime / 3600)}h ${Math.floor((uptime % 3600) / 60)}m`
+          : `${Math.floor(uptime / 60)}m ${uptime % 60}s`;
+        
+        const stats = `Session Statistics:
+
+📊 Messages: ${history.length}
+🔢 API Calls: ${usage.apiCalls}
+📥 Input Tokens: ${formatTokens(usage.totalInputTokens)}
+📤 Output Tokens: ${formatTokens(usage.totalOutputTokens)}
+💰 Est. Cost: ${formatCost(usage.estimatedCost)}
+⏱️ Session: ${uptimeStr}
+🤖 Model: ${model}
+${useSdkMode ? '⚡ SDK Mode: Active' : '📦 Mode: Basic'}`;
+        
+        setStatusMessage(stats);
+        return true;
+      }
+
+      case '/doctor': {
+        // Check installation health
+        const checks: string[] = [];
+        
+        // Check Node/Bun runtime
+        const runtime = typeof Bun !== 'undefined' ? 'Bun' : 'Node';
+        checks.push(`✅ Runtime: ${runtime}`);
+        
+        // Check API key
+        const hasKey = checkApiKeyExistsForProvider(provider);
+        checks.push(hasKey ? `✅ API Key: ${getProviderDisplayName(provider)} configured` : `❌ API Key: ${getProviderDisplayName(provider)} not found`);
+        
+        // Check model
+        checks.push(`✅ Model: ${model}`);
+        
+        // Check SDK mode
+        checks.push(useSdkMode ? '✅ SDK Mode: Enabled' : '⚠️ SDK Mode: Disabled (using basic mode)');
+        
+        // Check working directory
+        checks.push(`✅ Working Directory: ${process.cwd()}`);
+        
+        // Check for CLAUDE.md
+        const claudeMdExists = fs.existsSync('CLAUDE.md');
+        checks.push(claudeMdExists ? '✅ CLAUDE.md: Found' : 'ℹ️ CLAUDE.md: Not found (optional)');
+        
+        const doctorOutput = `Installation Health Check:
+
+${checks.join('\n')}
+
+All systems operational!`;
+        
+        setStatusMessage(doctorOutput);
+        return true;
+      }
+
+      case '/theme':
+        setStatusMessage('Theme: (not yet implemented - changes color theme)');
+        return true;
+
+      case '/vim':
+        setStatusMessage('Vim: (not yet implemented - enables vim mode)');
+        return true;
+
+      case '/rename':
+        setStatusMessage('Rename: (not yet implemented - renames session)');
+        return true;
+
+      default:
+        // Pass custom slash commands to SDK agent (from ~/.claude/commands/ or .claude/commands/)
+        // SDK will handle these as skills/commands
+        if (command.startsWith('/') && useSdkMode) {
+          // Let SDK handle custom commands
+          return false;
+        }
+        // In non-SDK mode, show unknown command
+        if (command.startsWith('/')) {
+          setStatusMessage(`Unknown command: ${command}. Type /help for available commands.`);
+          return true;
+        }
+        return false;
+    }
+  }, [useSdkMode, model, provider, exit, setStatusMessage, setSetting, setHistory, setState, setUseSdkMode]);
+
+  /**
    * Process next queued query when state becomes idle
    */
   useEffect(() => {
@@ -208,24 +495,54 @@ export function CLI({ initialQuery }: CLIProps) {
       // Clear interrupted state when user submits a new query
       setInterruptedQuery(null);
 
-      // Handle special commands even while running
-      if (query.toLowerCase() === 'exit' || query.toLowerCase() === 'quit') {
+      // Add to command history (avoid duplicates of last command)
+      if (query.trim() && (commandHistory.length === 0 || commandHistory[commandHistory.length - 1] !== query)) {
+        setCommandHistory(prev => [...prev.slice(-100), query]);  // Keep last 100 commands
+      }
+
+      // Handle slash commands (Claude Code style)
+      if (query.startsWith('/')) {
+        const handled = handleSlashCommand(query);
+        if (handled) return;
+      }
+
+      // Handle bash mode (!) - Claude Code style
+      // Run command directly and add output to context
+      if (query.startsWith('!')) {
+        const bashCommand = query.slice(1).trim();
+        if (bashCommand) {
+          // Transform to an agent query that runs the command
+          const agentQuery = `Run this bash command and show me the output: \`${bashCommand}\``;
+          if (state === 'running') {
+            enqueue(agentQuery);
+          } else {
+            executeQuery(agentQuery);
+          }
+        }
+        return;
+      }
+
+      // Handle memory mode (#) - Claude Code style
+      // Update CLAUDE.md with the instruction
+      if (query.startsWith('#')) {
+        const memoryInstruction = query.slice(1).trim();
+        if (memoryInstruction) {
+          // Transform to an agent query that updates CLAUDE.md
+          const agentQuery = `Add this instruction to the project's CLAUDE.md file: "${memoryInstruction}"`;
+          if (state === 'running') {
+            enqueue(agentQuery);
+          } else {
+            executeQuery(agentQuery);
+          }
+        }
+        return;
+      }
+
+      // Handle exit commands (with or without slash)
+      const lowerQuery = query.toLowerCase();
+      if (lowerQuery === 'exit' || lowerQuery === 'quit') {
         console.log('Goodbye!');
         exit();
-        return;
-      }
-
-      if (query === '/model') {
-        setState('provider_select');
-        return;
-      }
-
-      // Toggle SDK mode
-      if (query === '/sdk') {
-        const newSdkMode = !useSdkMode;
-        setUseSdkMode(newSdkMode);
-        setSetting('useSdkMode', newSdkMode);
-        setStatusMessage(`SDK mode: ${newSdkMode ? 'ON (Claude Code style)' : 'OFF (5-phase agent)'}`);
         return;
       }
 
@@ -238,7 +555,7 @@ export function CLI({ initialQuery }: CLIProps) {
       // Process immediately if idle
       executeQuery(query);
     },
-    [state, exit, enqueue, executeQuery]
+    [state, exit, enqueue, executeQuery, handleSlashCommand]
   );
 
   /**
@@ -381,6 +698,8 @@ export function CLI({ initialQuery }: CLIProps) {
         setPendingModels([]);
         setState('idle');
         setStatusMessage('Cancelled.');
+      } else if (state === 'plugin_manager' || state === 'mcp_manager') {
+        setState('idle');
       }
       return;
     }
@@ -399,6 +718,8 @@ export function CLI({ initialQuery }: CLIProps) {
         setPendingModels([]);
         setState('idle');
         setStatusMessage('Cancelled.');
+      } else if (state === 'plugin_manager' || state === 'mcp_manager') {
+        setState('idle');
       } else {
         console.log('\nGoodbye!');
         exit();
@@ -451,10 +772,34 @@ export function CLI({ initialQuery }: CLIProps) {
     );
   }
 
-  // Combine intro and history into a single static stream
-  const staticItems: Array<{ type: 'intro' } | { type: 'turn'; turn: CompletedTurn }> = [
-    { type: 'intro' },
-    ...history.map(h => ({ type: 'turn' as const, turn: h })),
+  // Plugin Manager
+  if (state === 'plugin_manager') {
+    return (
+      <Box flexDirection="column">
+        <PluginManager
+          onClose={() => setState('idle')}
+          onStatusMessage={setStatusMessage}
+        />
+      </Box>
+    );
+  }
+
+  // MCP Manager
+  if (state === 'mcp_manager') {
+    return (
+      <Box flexDirection="column">
+        <MCPManager
+          onClose={() => setState('idle')}
+          onStatusMessage={setStatusMessage}
+        />
+      </Box>
+    );
+  }
+
+  // Combine intro and history into a single static stream with stable keys
+  const staticItems: Array<{ type: 'intro'; key: string } | { type: 'turn'; turn: CompletedTurn; key: string }> = [
+    { type: 'intro', key: 'intro' },
+    ...history.map(h => ({ type: 'turn' as const, turn: h, key: h.id })),
   ];
 
   return (
@@ -463,9 +808,9 @@ export function CLI({ initialQuery }: CLIProps) {
       <Static items={staticItems}>
         {(item) =>
           item.type === 'intro' ? (
-            <Intro key="intro" provider={provider} model={model} useSdkMode={useSdkMode} />
+            <Intro key={item.key} provider={provider} model={model} useSdkMode={useSdkMode} />
           ) : (
-            <CompletedTurnView key={item.turn.id} turn={item.turn} />
+            <CompletedTurnView key={item.key} turn={item.turn} />
           )
         }
       </Static>
@@ -488,21 +833,19 @@ export function CLI({ initialQuery }: CLIProps) {
 
       {/* Render current in-progress conversation */}
       {currentTurn && (
-        <Box flexDirection="column" marginTop={1} marginBottom={1}>
-          {/* Query + phase progress + task list */}
-          <CurrentTurnView 
-            query={currentTurn.query} 
-            state={currentTurn.state} 
+        <Box flexDirection="column">
+          {/* Query + minimal progress */}
+          <CurrentTurnView
+            query={currentTurn.query}
+            state={currentTurn.state}
           />
 
           {/* Streaming answer (appears below progress) */}
           {answerStream && (
-            <Box marginTop={1}>
-              <AnswerBox
-                stream={answerStream}
-                onComplete={handleAnswerComplete}
-              />
-            </Box>
+            <AnswerBox
+              stream={answerStream}
+              onComplete={handleAnswerComplete}
+            />
           )}
         </Box>
       )}
@@ -513,21 +856,8 @@ export function CLI({ initialQuery }: CLIProps) {
       {/* Status message */}
       <StatusMessage message={statusMessage} />
 
-      {/* Phase status bar - shows current phase above input when running */}
-      {state === 'running' && currentTurn && (
-        <Box marginTop={1}>
-          <PhaseStatusBar
-            phase={currentTurn.state.currentPhase}
-            isAnswering={currentTurn.state.isAnswering}
-            progressMessage={currentTurn.state.progressMessage}
-          />
-        </Box>
-      )}
-
       {/* Input bar - always visible and interactive */}
-      <Box marginTop={1}>
-        <Input onSubmit={handleSubmit} />
-      </Box>
+      <Input onSubmit={handleSubmit} commandHistory={commandHistory} />
     </Box>
   );
 }

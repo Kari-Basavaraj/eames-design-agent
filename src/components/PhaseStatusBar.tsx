@@ -33,6 +33,7 @@ interface PhaseStatusBarProps {
 /**
  * Single-line status bar showing the current phase with a spinner.
  * Positioned directly above the input component.
+ * Claude Code style - shows thinking/working status.
  */
 export const PhaseStatusBar = React.memo(function PhaseStatusBar({
   phase,
@@ -45,20 +46,19 @@ export const PhaseStatusBar = React.memo(function PhaseStatusBar({
   }
 
   // Use progress message if available, otherwise phase label
+  // Claude Code shows "Thinking..." prominently during work
   const label = progressMessage
     ? progressMessage
     : (isAnswering ? phaseLabels.answer : phaseLabels[phase]);
 
   return (
-    <Box>
-      <Text color={colors.primary}>
+    <Box marginTop={1} marginBottom={0}>
+      <Text color={colors.primary} dimColor>
         <InkSpinner type="dots" />
       </Text>
       <Text> </Text>
-      <Text color={colors.primary}>{label}</Text>
-      <Text color={colors.muted}> (</Text>
-      <Text color={colors.muted} bold>esc</Text>
-      <Text color={colors.muted}> to interrupt)</Text>
+      <Text color={colors.muted} dimColor>{label}</Text>
+      <Text color={colors.mutedDark} dimColor> (esc to interrupt)</Text>
     </Box>
   );
 });

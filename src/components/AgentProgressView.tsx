@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Text } from 'ink';
 import { colors } from '../theme.js';
 import { TaskListView } from './TaskListView.js';
@@ -23,7 +23,7 @@ export interface AgentProgressState {
 }
 
 // ============================================================================
-// Agent Progress View
+// Agent Progress View - Claude Code Style
 // ============================================================================
 
 interface AgentProgressViewProps {
@@ -31,33 +31,45 @@ interface AgentProgressViewProps {
 }
 
 /**
- * Displays the agent's progress:
- * - Task list with status and tool calls
- * 
- * Phase indicators are now shown separately in PhaseStatusBar.
+ * Displays the agent's progress with animated spinner
  */
 export const AgentProgressView = React.memo(function AgentProgressView({
   state
 }: AgentProgressViewProps) {
-  const { tasks } = state;
+  const { progressMessage, currentPhase } = state;
+  const [frame, setFrame] = useState(0);
+  const frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
 
-  // Only render if there are tasks to show
-  if (tasks.length === 0) {
-    return null;
-  }
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setFrame(f => (f + 1) % frames.length);
+    }, 80);
+    return () => clearInterval(interval);
+  }, []);
 
-  return (
-    <Box flexDirection="column" marginTop={1}>
-      {/* Task list */}
-      <Box marginLeft={2} flexDirection="column">
-        <TaskListView tasks={tasks} />
-      </Box>
+  // Show progress with phase indicator
+  const phaseLabels: Record<Phase, string> = {
+    understand: '🔍 Understanding',
+    plan: '📋 Planning',
+    execute: '⚙️  Executing',
+    reflect: '🤔 Reflecting',
+    answer: '✍️  Answering',
+    complete: '✅ Complete',
+  };
+
+  const message = progressMessage || phaseLabels[currentPhase];
+
+  return message ? (
+    <Box>
+      <Text color={colors.primary}>{frames[frame]}</Text>
+      <Text> </Text>
+      <Text color={colors.muted} dimColor>{message}</Text>
     </Box>
-  );
+  ) : null;
 });
 
 // ============================================================================
-// Current Turn View
+// Current Turn View - Claude Code Style
 // ============================================================================
 
 interface CurrentTurnViewProps {
@@ -66,8 +78,8 @@ interface CurrentTurnViewProps {
 }
 
 /**
- * Full current turn view including query and task list.
- * Phase status is shown separately above the input.
+ * Full current turn view - Claude Code style.
+ * Cleaner, more compact layout.
  */
 export const CurrentTurnView = React.memo(function CurrentTurnView({ 
   query, 
@@ -76,13 +88,17 @@ export const CurrentTurnView = React.memo(function CurrentTurnView({
   return (
     <Box flexDirection="column">
       {/* User query */}
-      <Box marginBottom={1}>
-        <Text color={colors.primary} bold>{'❯ '}</Text>
-        <Text color={colors.white} backgroundColor={colors.queryBg}>{` ${query} `}</Text>
+      <Box>
+        <Text color={colors.primary}>{'> '}</Text>
+        <Text>{query}</Text>
       </Box>
 
-      {/* Task list */}
-      <AgentProgressView state={state} />
+      {/* Animated progress */}
+      {state.progressMessage && (
+        <Box marginTop={1} marginLeft={2}>
+          <AgentProgressView state={state} />
+        </Box>
+      )}
     </Box>
   );
 });

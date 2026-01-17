@@ -1,71 +1,82 @@
-// Updated: 2026-01-12 16:45:00
+// Updated: 2026-01-12 23:55:00
 // SDK Message Processor - Testable message handling for Claude Agent SDK
 // Separates message processing from SDK integration for testability
+// Uses flexible typing to handle SDK message variations
 
 import type { AgentCallbacks } from './orchestrator.js';
 import type { ToolCallStatus } from './state.js';
 import { generateId } from '../cli/types.js';
 
 // ============================================================================
-// Types
+// Types - Flexible SDK message handling
 // ============================================================================
 
 /**
- * SDK Message types (matches @anthropic-ai/claude-agent-sdk)
+ * Base message with type discriminator
  */
-export interface SDKTextBlock {
-  type: 'text';
-  text: string;
+export interface SDKBaseMessage {
+  type: string;
 }
 
-export interface SDKToolUseBlock {
-  type: 'tool_use';
-  id: string;
-  name: string;
-  input: Record<string, unknown>;
-}
-
-export type SDKContentBlock = SDKTextBlock | SDKToolUseBlock;
-
-export interface SDKAssistantMessage {
+/**
+ * Assistant message with content blocks
+ */
+export interface SDKAssistantMessage extends SDKBaseMessage {
   type: 'assistant';
   message: {
-    content: SDKContentBlock[];
+    content: Array<{
+      type: string;
+      text?: string;
+      id?: string;
+      name?: string;
+      input?: unknown;
+    }>;
   };
 }
 
-export interface SDKToolResultMessage {
+/**
+ * Tool result message
+ */
+export interface SDKToolResultMessage extends SDKBaseMessage {
   type: 'tool_result';
   tool_use_id: string;
   content: string;
   is_error?: boolean;
 }
 
-export interface SDKResultMessage {
+/**
+ * Result message (success or error)
+ */
+export interface SDKResultMessage extends SDKBaseMessage {
   type: 'result';
   subtype: 'success' | 'error';
   result?: string;
   errors?: string[];
+  session_id?: string;
 }
 
-export interface SDKSystemMessage {
+/**
+ * System init message
+ */
+export interface SDKSystemMessage extends SDKBaseMessage {
   type: 'system';
-  subtype: 'init';
-  tools: string[];
+  subtype?: string;
+  tools?: string[];
 }
 
-export interface SDKToolProgressMessage {
+/**
+ * Tool progress message
+ */
+export interface SDKToolProgressMessage extends SDKBaseMessage {
   type: 'tool_progress';
   tool_name: string;
   elapsed_time_seconds: number;
 }
 
-export type SDKMessage =
-  | SDKAssistantMessage
-  | SDKToolResultMessage
-  | SDKResultMessage
-  | SDKSystemMessage
-  | SDKToolProgressMessage;
+/**
+ * Union of all message types we handle
+ */
+export type SDKMessage = SDKBaseMessage;
 
 // ============================================================================
 // Message Processor State
@@ -116,20 +127,22 @@ export class SdkMessageProcessor {
 
   /**
    * Processes any SDK message type.
+   * Uses type guards for flexible handling of SDK message variations.
    */
   processMessage(message: SDKMessage): string {
     switch (message.type) {
       case 'system':
-        return this.processSystemMessage(message);
+        return this.processSystemMessage(message as SDKSystemMessage);
       case 'assistant':
-        return this.processAssistantMessage(message);
+        return this.processAssistantMessage(message as SDKAssistantMessage);
       case 'tool_result':
-        return this.processToolResultMessage(message);
+        return this.processToolResultMessage(message as SDKToolResultMessage);
       case 'tool_progress':
-        return this.processToolProgressMessage(message);
+        return this.processToolProgressMessage(message as SDKToolProgressMessage);
       case 'result':
-        return this.processResultMessage(message);
+        return this.processResultMessage(message as SDKResultMessage);
       default:
+        // Handle unknown message types gracefully
         return '';
     }
   }
@@ -138,11 +151,7 @@ export class SdkMessageProcessor {
    * Processes system init messages.
    */
   processSystemMessage(message: SDKSystemMessage): string {
-    if (message.subtype === 'init') {
-      const progressMsg = `Connected: ${message.tools.length} tools available`;
-      this.callbacks.onProgressMessage?.(progressMsg);
-      return progressMsg;
-    }
+    // Silently ignore system messages - don't show "Connected: X tools"
     return '';
   }
 
@@ -150,23 +159,28 @@ export class SdkMessageProcessor {
    * Processes assistant messages (text and tool use).
    */
   processAssistantMessage(message: SDKAssistantMessage): string {
-    const content = message.message.content;
+    const content = message.message?.content;
+    if (!content) return '';
+    
     let textContent = '';
 
     for (const block of content) {
-      if (block.type === 'text') {
+      if (block.type === 'text' && block.text) {
         textContent += block.text;
 
-        // Truncate for progress display
-        const preview = this.truncateForProgress(block.text);
-        if (preview.length > 0) {
-          this.callbacks.onProgressMessage?.(preview);
+        // Show thinking text as progress (Claude Code shows this!)
+        const text = block.text.trim();
+        if (text.length > 0) {
+          // Show as "Thinking: <text>" to indicate AI's thought process
+          const preview = text.length > 100 ? text.slice(0, 97) + '...' : text;
+          this.callbacks.onProgressMessage?.(`${preview}`);
         }
-      } else if (block.type === 'tool_use') {
+      } else if (block.type === 'tool_use' && block.name && block.id) {
         // Create tool call status
         const toolCall: ToolCallStatus = {
+          name: block.name,
           tool: block.name,
-          args: block.input,
+          args: (block.input as Record<string, unknown>) ?? {},
           status: 'pending',
         };
 
@@ -225,15 +239,30 @@ export class SdkMessageProcessor {
 
   /**
    * Processes result messages (success or error).
+   * Note: onAnswerStart is called by SdkAgent.run() to avoid duplicate calls.
    */
   processResultMessage(message: SDKResultMessage): string {
     if (message.subtype === 'success') {
-      // Notify answer start
-      this.callbacks.onAnswerStart?.();
       return message.result || '';
     } else {
-      const errors = message.errors?.join(', ') || 'Unknown error';
-      throw new Error(`Query failed: ${errors}`);
+      // Check if errors are just warnings (MCP config issues, etc.)
+      const errors = message.errors || [];
+      const errorText = errors.join(', ') || 'Unknown error';
+      
+      // Filter out non-fatal MCP/LSP configuration errors
+      const fatalErrors = errors.filter(e => 
+        !e.includes('mcp-config-invalid') && 
+        !e.includes('LSP server') &&
+        !e.includes('typescript-language-server')
+      );
+      
+      if (fatalErrors.length === 0 && message.result) {
+        // Non-fatal errors with a result - return the result
+        this.callbacks.onProgressMessage?.(`Warning: ${errorText.slice(0, 100)}...`);
+        return message.result;
+      }
+      
+      throw new Error(`Query failed: ${errorText}`);
     }
   }
 

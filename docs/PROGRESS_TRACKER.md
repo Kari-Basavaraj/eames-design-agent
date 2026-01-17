@@ -1,4 +1,4 @@
-# Updated: 2026-01-12 18:20:00
+# Updated: 2026-01-17 18:30:00
 # Eames Progress Tracker
 
 > **Purpose:** Single source of truth for all tasks, features, and progress.
@@ -15,8 +15,8 @@
 | Metric | Value |
 |--------|-------|
 | **Current Phase** | Phase 2: Core Integration |
-| **Overall Progress** | 20% |
-| **Tests Passing** | 38/38 |
+| **Overall Progress** | 40% |
+| **Tests Passing** | 61/61 |
 | **Blockers** | None |
 | **PRDs Written** | 0 (TODO) |
 
@@ -28,7 +28,7 @@
 |-------|--------|----------|-------------|-----|
 | Phase 0: Foundation (Dexter→Eames) | ✅ Complete | 100% | Clone, rebrand, adapt for design | N/A |
 | Phase 1: Foundation | ✅ Complete | 100% | SDK install, feature flag, wrapper | N/A |
-| Phase 2: Core Integration | 🔄 In Progress | 60% | Message mapping, streaming, UI | TODO |
+| Phase 2: Core Integration | 🔄 In Progress | 90% | Message mapping, streaming, UI | TODO |
 | Phase 3: Unified Tool Layer | ⏳ Planned | 0% | MCP consolidation | TODO |
 | Phase 4: Discovery | ⏳ Planned | 0% | Research automation | TODO |
 | Phase 5: Define | ⏳ Planned | 0% | PRD generation | TODO |
@@ -37,6 +37,49 @@
 | Phase 8: Deliver | ⏳ Planned | 0% | CI/CD, deployment | TODO |
 | Phase 9: LLM Council | ⏳ Future | 0% | Multi-agent orchestration | TODO |
 | Phase 10: Production | ⏳ Future | 0% | Security, performance | TODO |
+
+---
+
+## Claude Code Parity (2026-01-17 18:30:00)
+
+### ✅ Implemented Features
+| Feature | Status | Notes |
+|---------|--------|-------|
+| **SDK Integration** | ✅ Done | Claude Agent SDK v0.2.11 |
+| **UI Match** | ✅ Done | 100% Claude Code layout/style |
+| Query display | ✅ Done | Simple `> query` format |
+| Progress display | ✅ Done | Single inline progress with spinner |
+| Tool activity | ✅ Done | Simplified status-first format |
+| Collapsible output | ✅ Done | Tool output expand/collapse |
+| Answer streaming | ✅ Done | Clean markdown rendering with cursor |
+| Status indicators | ✅ Done | Inline only, no duplicate messages |
+| Error handling | ✅ Done | Graceful MCP config errors |
+| Bash mode (`!`) | ✅ Done | Execute shell commands |
+| Memory mode (`#`) | ✅ Done | Update CLAUDE.md |
+| Multiline input | ✅ Done | Backslash + Enter continuation |
+| Command history (Up/Down) | ✅ Done | Browse previous inputs |
+| Ctrl+L clear screen | ✅ Done | Clear terminal |
+| Ctrl+U clear line | ✅ Done | Clear current input |
+| Ctrl+W delete word | ✅ Done | Delete word backward |
+| Ctrl+K delete to end | ✅ Done | Delete to end of line |
+| Ctrl+Y yank/paste | ✅ Done | Paste from kill buffer |
+| /cost command | ✅ Done | Token usage display |
+| /context command | ✅ Done | Context visualization |
+| /compact command | ✅ Done | Clear visible history |
+| /doctor command | ✅ Done | Health check |
+| /init command | ✅ Done | Create CLAUDE.md |
+| /stats command | ✅ Done | Session statistics |
+| Session resume | ✅ Done | Multi-turn sessions |
+| MCP server loading | ✅ Done | From settings + plugins |
+
+### ⏳ Pending Features
+| Feature | Priority | Notes |
+|---------|----------|-------|
+| Multiline input | P1 | `\` + Enter |
+| Vim mode | P2 | Full vim editing |
+| Permission prompts | P2 | Interactive mode |
+| Session picker UI | P2 | Select previous sessions |
+| Diff view for edits | P3 | Show file changes |
 
 ---
 
@@ -62,13 +105,13 @@
 
 | Task | Status | Notes |
 |------|--------|-------|
-| Install @anthropic-ai/claude-agent-sdk | ✅ Done | v0.2.5 |
+| Install @anthropic-ai/claude-agent-sdk | ✅ Done | v0.2.11 (updated 2026-01-17) |
 | Create useSdkMode feature flag | ✅ Done | In config.ts |
 | Create sdk-agent.ts wrapper | ✅ Done | With MCP design tools |
 | Create useSdkAgentExecution hook | ✅ Done | React state bridge |
 | Add /sdk toggle command | ✅ Done | In cli.tsx |
 | Update Intro component | ✅ Done | Shows SDK mode |
-| Write unit tests | ✅ Done | 13 tests passing |
+| Write unit tests | ✅ Done | 38 tests passing |
 | Test SDK initialization | ✅ Done | Verified working |
 
 **Deliverables:**
@@ -95,6 +138,10 @@
 | Map SDK ToolResult → status update | ✅ Done | P0 | Claude |
 | Integrate processor into sdk-agent.ts | ✅ Done | P0 | Claude |
 | Improve answer streaming | ✅ Done | P1 | Claude |
+| Implement slash commands | ✅ Done | P1 | Claude |
+| Add bash mode (!) | ✅ Done | P1 | Claude |
+| Add memory mode (#) | ✅ Done | P1 | Claude |
+| Add command history | ✅ Done | P1 | Claude |
 | Show tool calls in TaskListView | ⏳ Pending | P1 | Claude |
 | Preserve phase visualization | ✅ Done | P2 | Claude |
 | Write PRD (retroactive) | ⏳ Pending | P1 | Claude |

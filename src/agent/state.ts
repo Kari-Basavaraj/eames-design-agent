@@ -72,6 +72,7 @@ export interface ToolCall {
  * A tool call with execution status (for UI tracking).
  */
 export interface ToolCallStatus extends ToolCall {
+  name?: string; // For SDK compatibility
   status: 'pending' | 'running' | 'completed' | 'failed';
   output?: string;
   error?: string;

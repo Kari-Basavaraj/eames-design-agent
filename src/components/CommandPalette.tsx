@@ -4,7 +4,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Box, Text, useInput } from 'ink';
-import { searchCommands, Command, CATEGORIES } from '../utils/command-palette.js';
+import { searchCommands, Command, getCategoryInfo } from '../utils/command-palette.js';
 
 interface CommandPaletteProps {
   isOpen: boolean;
@@ -80,10 +80,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
 
   if (!isOpen) return null;
 
-  const getCategoryInfo = (category: string) => {
-    return CATEGORIES[category] || { name: category, color: 'white', icon: '○' };
-  };
-
   return (
     <Box
       flexDirection="column"
@@ -122,7 +118,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                   {isSelected ? '❯ ' : '  '}
                 </Text>
                 <Text color={catInfo.color as any}>{catInfo.icon} </Text>
-                <Text bold={isSelected}>{cmd.name}</Text>
+                <Text bold={isSelected}>{cmd.label}</Text>
                 {cmd.shortcut && (
                   <Text color="gray"> [{cmd.shortcut}]</Text>
                 )}

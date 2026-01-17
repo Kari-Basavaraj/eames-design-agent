@@ -61,13 +61,16 @@ function zodToJsonSchema(schema: z.ZodType<any>): Record<string, unknown> {
   return { type: 'object', properties: {} };
 }
 
-function zodFieldToSchema(field: z.ZodType<any>): Record<string, unknown> {
-  if (field instanceof z.ZodOptional) return zodFieldToSchema(field._def.innerType);
-  if (field instanceof z.ZodString) return { type: 'string', description: field.description };
-  if (field instanceof z.ZodNumber) return { type: 'number', description: field.description };
-  if (field instanceof z.ZodBoolean) return { type: 'boolean', description: field.description };
-  if (field instanceof z.ZodArray) return { type: 'array', items: zodFieldToSchema(field._def.type) };
-  if (field instanceof z.ZodEnum) return { type: 'string', enum: field._def.values };
+function zodFieldToSchema(field: any): Record<string, unknown> {
+  if (!field || !field._def) return { type: 'string' };
+  const typeName = field._def.typeName;
+
+  if (typeName === 'ZodOptional') return zodFieldToSchema(field._def.innerType);
+  if (typeName === 'ZodString') return { type: 'string', description: field.description };
+  if (typeName === 'ZodNumber') return { type: 'number', description: field.description };
+  if (typeName === 'ZodBoolean') return { type: 'boolean', description: field.description };
+  if (typeName === 'ZodArray') return { type: 'array', items: zodFieldToSchema(field._def.type) };
+  if (typeName === 'ZodEnum') return { type: 'string', enum: Object.values(field._def.values || {}) };
   return { type: 'string' };
 }
 
