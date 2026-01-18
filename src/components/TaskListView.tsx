@@ -155,7 +155,7 @@ const TaskRow = React.memo(function TaskRow({ task }: TaskRowProps) {
   const showToolCalls = hasToolCalls && isActive;
 
   return (
-    <Box flexDirection="column" marginBottom={1}>
+    <Box flexDirection="column" marginBottom={2}>
       {/* Main task row */}
       <Box>
         <StatusIcon status={task.status} />

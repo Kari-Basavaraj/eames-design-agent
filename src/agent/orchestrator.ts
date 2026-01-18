@@ -8,6 +8,7 @@ import { ReflectPhase } from './phases/reflect.js';
 import { AnswerPhase } from './phases/answer.js';
 import { ToolExecutor } from './tool-executor.js';
 import { TaskExecutor, TaskExecutorCallbacks } from './task-executor.js';
+import { getPhaseMessage } from '../utils/progress-messages.js';
 import type { 
   Phase, 
   Plan, 
@@ -149,7 +150,7 @@ export class Agent {
     // ========================================================================
     this.checkAborted();
     this.callbacks.onPhaseStart?.('understand');
-    this.callbacks.onProgressMessage?.('Analyzing your query...');
+    // Don't set progressMessage - let AgentProgressView rotate fun messages
 
     const understanding = await this.understandPhase.run({
       query,
@@ -174,11 +175,7 @@ export class Agent {
       // Phase 2: Plan
       // ======================================================================
       this.callbacks.onPhaseStart?.('plan');
-      this.callbacks.onProgressMessage?.(
-        iteration > 1
-          ? `Planning next steps (iteration ${iteration})...`
-          : 'Planning approach...'
-      );
+      // Don't set progressMessage - let AgentProgressView rotate fun messages
 
       const plan = await this.planPhase.run({
         query,
@@ -196,7 +193,7 @@ export class Agent {
       // Phase 3: Execute
       // ======================================================================
       this.callbacks.onPhaseStart?.('execute');
-      this.callbacks.onProgressMessage?.(`Executing ${plan.tasks.length} task${plan.tasks.length !== 1 ? 's' : ''}...`);
+      // Don't set progressMessage - let AgentProgressView rotate fun messages
 
       await this.taskExecutor.executeTasks(
         query,
