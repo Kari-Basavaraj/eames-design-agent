@@ -66,9 +66,21 @@ export const AgentProgressView = React.memo(function AgentProgressView({
 
   if (!message) return null;
 
+  // Phase emoji indicators
+  const phaseEmoji: Record<string, string> = {
+    understand: '🔍',
+    plan: '📋',
+    execute: '⚙️',
+    reflect: '🧐',
+    answer: '✨',
+  };
+
+  const emoji = currentPhase ? phaseEmoji[currentPhase] || '' : '';
+
   return (
     <Box marginTop={spacing.tight}>
       <Text color={colors.primary}>{frames[frame]} </Text>
+      {emoji && <Text>{emoji} </Text>}
       <Text color={colors.muted} dimColor>{message}</Text>
     </Box>
   );

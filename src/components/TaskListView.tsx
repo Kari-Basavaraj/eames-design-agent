@@ -151,6 +151,11 @@ const TaskRow = React.memo(function TaskRow({ task }: TaskRowProps) {
   const hasToolCalls = task.toolCalls && task.toolCalls.length > 0;
   const isActive = task.status === 'in_progress' || task.status === 'completed';
 
+  // Calculate duration for completed tasks
+  const duration = task.endTime && task.startTime 
+    ? Math.round((task.endTime - task.startTime) / 1000)
+    : null;
+
   // Show tool calls tree for active tasks with tool calls
   const showToolCalls = hasToolCalls && isActive;
 
@@ -161,6 +166,9 @@ const TaskRow = React.memo(function TaskRow({ task }: TaskRowProps) {
         <StatusIcon status={task.status} />
         <Text> </Text>
         <Text color={textColor} bold={task.status === 'in_progress'}>{task.description}</Text>
+        {duration !== null && task.status === 'completed' && (
+          <Text color={colors.muted} dimColor> ({duration}s)</Text>
+        )}
       </Box>
 
       {/* Tool calls tree */}

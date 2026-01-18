@@ -13,44 +13,27 @@ interface IntroProps {
 }
 
 export function Intro({ provider, model, useSdkMode = false }: IntroProps) {
-  const { introWidth } = dimensions;
-  const welcomeText = 'Welcome to Eames';
-  const versionText = ` v${packageJson.version}`;
-  const fullText = welcomeText + versionText;
-  const padding = Math.floor((introWidth - fullText.length - 2) / 2);
-
   return (
-    <Box flexDirection="column" marginTop={2}>
-      <Text color={colors.primary}>{'═'.repeat(introWidth)}</Text>
-      <Text color={colors.primary}>
-        ║{' '.repeat(padding)}
-        <Text bold>{welcomeText}</Text>
-        <Text color={colors.muted}>{versionText}</Text>
-        {' '.repeat(introWidth - fullText.length - padding - 2)}║
-      </Text>
-      <Text color={colors.primary}>{'═'.repeat(introWidth)}</Text>
-
-      <Box marginTop={1}>
+    <Box flexDirection="column" marginTop={1} marginBottom={2}>
+      {/* Bordered welcome box - Claude Code style */}
+      <Box 
+        borderStyle="round" 
+        borderColor="magenta"
+        paddingX={2}
+        paddingY={1}
+        flexDirection="column"
+      >
         <Text color={colors.primary} bold>
-          {`
-███████╗ █████╗ ███╗   ███╗███████╗███████╗
-██╔════╝██╔══██╗████╗ ████║██╔════╝██╔════╝
-█████╗  ███████║██╔████╔██║█████╗  ███████╗
-██╔══╝  ██╔══██║██║╚██╔╝██║██╔══╝  ╚════██║
-███████╗██║  ██║██║ ╚═╝ ██║███████╗███████║
-╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝╚══════╝`}
+          Welcome to Eames v{packageJson.version}
         </Text>
-      </Box>
-
-      <Box marginY={1} flexDirection="column">
-        <Text color={colors.muted}>Developed by <Text color={colors.primary}>Basavaraj Km</Text></Text>
-        <Text>Your personal Autonomous Agentic AI Product Design Agent.</Text>
-        <Text color={colors.muted}>Named after Charles & Ray Eames.</Text>
-        <Text color={colors.muted}>Current model: <Text color={colors.primary}>{model}</Text></Text>
-        <Text color={colors.muted}>
-          Mode: <Text color={useSdkMode ? colors.primary : colors.muted}>{useSdkMode ? 'SDK (Claude Code)' : 'Standard (5-phase)'}</Text>
-        </Text>
-        <Text color={colors.muted}>Type /model to change provider, /sdk to toggle SDK mode.</Text>
+        <Box marginTop={1} flexDirection="column">
+          <Text color={colors.muted}>● Autonomous Product Design Agent</Text>
+          <Text color={colors.muted}>● Model: <Text color={colors.primary}>{model}</Text></Text>
+          <Text color={colors.muted}>● Mode: <Text color={colors.accent}>LangChain (5-phase)</Text></Text>
+        </Box>
+        <Box marginTop={1}>
+          <Text dimColor>Type <Text color={colors.accent}>?</Text> for shortcuts</Text>
+        </Box>
       </Box>
     </Box>
   );

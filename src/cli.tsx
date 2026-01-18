@@ -918,17 +918,9 @@ All systems operational!`;
             </Box>
           )}
 
-          {/* Streaming answer - boxed */}
+          {/* Streaming answer - clean */}
           {answerStream && (
-            <Box 
-              marginLeft={2} 
-              marginTop={2} 
-              paddingX={2} 
-              paddingY={1}
-              borderStyle="round" 
-              borderColor="cyan"
-              flexDirection="column"
-            >
+            <Box marginLeft={2} marginTop={2}>
               <AnswerBox
                 stream={answerStream}
                 onComplete={handleAnswerComplete}
