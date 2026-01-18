@@ -9,6 +9,9 @@ import { generateId } from '../cli/types.js';
 import type { Phase, ToolCallStatus } from '../agent/state.js';
 import type { AgentProgressState } from '../components/AgentProgressView.js';
 import type { ToolActivity } from '../components/ToolActivityView.js';
+import type { PermissionMode, PermissionRequest } from '../types/permissions.js';
+import { diffLines } from 'diff';
+import { existsSync, readFileSync } from 'fs';
 // MCP DISABLED - causing slow responses
 // import { loadAllMcpServers } from '../utils/mcp-loader.js';
 
@@ -26,6 +29,8 @@ export interface SdkCurrentTurn {
 
 interface UseSdkAgentExecutionOptions {
   model: string;
+  permissionMode?: PermissionMode;
+  onPermissionRequest?: (request: PermissionRequest) => Promise<boolean>;
 }
 
 interface UseSdkAgentExecutionResult {
@@ -35,11 +40,54 @@ interface UseSdkAgentExecutionResult {
   processQuery: (query: string) => Promise<void>;
   handleAnswerComplete: (answer: string) => void;
   cancelExecution: () => void;
+  setSessionId: (sessionId: string) => void;
 }
 
 // ============================================================================
 // Helper Functions
 // ============================================================================
+
+/**
+ * Generate diff preview for file edits
+ */
+async function generateDiffPreview(toolName: string, toolInput: any): Promise<string | undefined> {
+  if (toolName === 'Edit' || toolName === 'Write') {
+    try {
+      const filePath = toolInput.file_path || toolInput.path;
+      const newContent = toolInput.new_string || toolInput.content;
+      
+      if (!filePath) return undefined;
+      
+      const currentContent = existsSync(filePath) 
+        ? readFileSync(filePath, 'utf-8')
+        : '';
+      
+      if (toolName === 'Edit' && !currentContent) {
+        return '(New file)';
+      }
+      
+      const diff = diffLines(currentContent, newContent);
+      const diffText = diff.map(part => {
+        const prefix = part.added ? '+' : part.removed ? '-' : ' ';
+        return part.value.split('\n')
+          .filter(line => line.length > 0)
+          .slice(0, 20)  // Limit to 20 lines
+          .map(line => `${prefix} ${line}`)
+          .join('\n');
+      }).join('\n');
+      
+      return diffText || '(No changes)';
+    } catch (e) {
+      return `(Error generating preview: ${e})`;
+    }
+  }
+  
+  if (toolName === 'Bash') {
+    return toolInput.command || toolInput.cmd;
+  }
+  
+  return undefined;
+}
 
 /**
  * Parses tool info from progress message.
@@ -94,6 +142,8 @@ function parseFailureFromMessage(message: string): { tool: string } | null {
  */
 export function useSdkAgentExecution({
   model,
+  permissionMode = 'default',
+  onPermissionRequest,
 }: UseSdkAgentExecutionOptions): UseSdkAgentExecutionResult {
   const [currentTurn, setCurrentTurn] = useState<SdkCurrentTurn | null>(null);
   const [answerStream, setAnswerStream] = useState<AsyncGenerator<string> | null>(null);
@@ -329,8 +379,55 @@ export function useSdkAgentExecution({
           // Enable file checkpointing for undo/redo
           enableFileCheckpointing: true,
           
-          // Full autonomy - bypass permission prompts
-          permissionMode: 'bypassPermissions',
+          // Permission mode from parameter
+          permissionMode,
+          
+          // SDK Hooks for permission checking
+          hooks: {
+            PreToolUse: [{
+              hooks: [async (input: any) => {
+                // Skip if bypass mode
+                if (permissionMode === 'bypassPermissions') {
+                  return { continue: true };
+                }
+                
+                // In plan mode, block all execution
+                if (permissionMode === 'plan') {
+                  if (['Write', 'Edit', 'Bash', 'Delete'].includes(input.tool_name)) {
+                    return { continue: false };
+                  }
+                }
+                
+                // Check if permission needed
+                const needsPermission = ['Write', 'Edit', 'Bash', 'Delete'].includes(input.tool_name);
+                
+                if (needsPermission && permissionMode === 'default') {
+                  // Show permission prompt
+                  if (onPermissionRequest) {
+                    const preview = await generateDiffPreview(input.tool_name, input.tool_input);
+                    
+                    const approved = await onPermissionRequest({
+                      type: input.tool_name === 'Bash' ? 'bash_command' : 'file_edit',
+                      tool: input.tool_name,
+                      description: JSON.stringify(input.tool_input, null, 2),
+                      preview,
+                    });
+                    
+                    if (!approved) {
+                      return { continue: false };
+                    }
+                  }
+                }
+                
+                // acceptEdits mode: auto-approve edits
+                if (needsPermission && permissionMode === 'acceptEdits') {
+                  return { continue: true };
+                }
+                
+                return { continue: true };
+              }],
+            }],
+          },
           
           // MCP servers DISABLED for now
           // mcpServers: mcpServerCount > 0 ? mcpServers : undefined,
@@ -410,6 +507,13 @@ export function useSdkAgentExecution({
     setIsProcessing(false);
   }, []);
 
+  /**
+   * Set session ID for resuming
+   */
+  const setSessionId = useCallback((sessionId: string) => {
+    sessionIdRef.current = sessionId;
+  }, []);
+
   return {
     currentTurn,
     answerStream,
@@ -417,5 +521,6 @@ export function useSdkAgentExecution({
     processQuery,
     handleAnswerComplete,
     cancelExecution,
+    setSessionId,
   };
 }

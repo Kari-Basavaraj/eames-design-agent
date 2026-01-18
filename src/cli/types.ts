@@ -9,7 +9,8 @@ export type AppState =
   | 'api_key_confirm' 
   | 'api_key_input'
   | 'plugin_manager'   // Interactive plugin management
-  | 'mcp_manager';     // Interactive MCP server management
+  | 'mcp_manager'      // Interactive MCP server management
+  | 'session_picker';  // Session picker for /resume
 
 /**
  * Generate a unique ID for turns

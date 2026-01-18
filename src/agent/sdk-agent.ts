@@ -79,6 +79,9 @@ export interface SdkAgentOptions {
   disallowedTools?: string[];
   permissionMode?: PermissionMode;
   
+  // SDK Hooks
+  hooks?: any;  // SDK hooks for PreToolUse, PostToolUse, etc.
+  
   // Features
   enableFileCheckpointing?: boolean;
   enableChrome?: boolean;
@@ -230,6 +233,7 @@ export class SdkAgent {
   private readonly allowedTools?: string[];
   private readonly disallowedTools?: string[];
   private readonly permissionMode: PermissionMode;
+  private readonly hooks?: any;
   private readonly enableFileCheckpointing: boolean;
   private readonly enableChrome: boolean;
   private readonly maxTurns?: number;
@@ -274,6 +278,7 @@ export class SdkAgent {
     // Tools & permissions
     this.allowedTools = options.allowedTools;
     this.disallowedTools = options.disallowedTools;
+    this.hooks = options.hooks;
     this.permissionMode = options.permissionMode ?? 'bypassPermissions';
     
     // Features
@@ -383,8 +388,8 @@ export class SdkAgent {
       ...(this.maxTurns && { maxTurns: this.maxTurns }),
       ...(this.timeoutMs && { timeoutMs: this.timeoutMs }),
       
-      // Hooks for UI updates
-      hooks: {
+      // Hooks for UI updates (can be overridden by options.hooks)
+      hooks: this.hooks || {
         PreToolUse: [{
           hooks: [async (input) => {
             if (input.hook_event_name === 'PreToolUse') {

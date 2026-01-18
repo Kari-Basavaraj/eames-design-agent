@@ -3,6 +3,8 @@ import { Box, Text } from 'ink';
 import InkSpinner from 'ink-spinner';
 import type { Phase } from '../agent/state.js';
 import { colors } from '../theme.js';
+import { PERMISSION_MODE_LABELS, PERMISSION_MODE_COLORS } from '../types/permissions.js';
+import type { PermissionMode } from '../types/permissions.js';
 
 // ============================================================================
 // Phase Labels
@@ -26,6 +28,8 @@ export const phaseLabels: Record<Phase, string> = {
 
 interface PhaseStatusBarProps {
   phase: Phase;
+  permissionMode?: PermissionMode;
+  thinkingMode?: boolean;
   isAnswering?: boolean;
   progressMessage?: string;
 }
@@ -37,6 +41,8 @@ interface PhaseStatusBarProps {
  */
 export const PhaseStatusBar = React.memo(function PhaseStatusBar({
   phase,
+  permissionMode = 'bypassPermissions',
+  thinkingMode = false,
   isAnswering = false,
   progressMessage,
 }: PhaseStatusBarProps) {
@@ -53,6 +59,20 @@ export const PhaseStatusBar = React.memo(function PhaseStatusBar({
 
   return (
     <Box marginTop={1} marginBottom={0}>
+      {/* Permission Mode Indicator */}
+      <Text color={PERMISSION_MODE_COLORS[permissionMode]}>
+        [{PERMISSION_MODE_LABELS[permissionMode]}]
+      </Text>
+      
+      {/* Thinking Mode Indicator */}
+      {thinkingMode && (
+        <Text color="blue"> 🧠</Text>
+      )}
+      
+      {/* Separator */}
+      <Text color="gray"> │ </Text>
+      
+      {/* Spinner and Phase */}
       <Text color={colors.primary} dimColor>
         <InkSpinner type="dots" />
       </Text>

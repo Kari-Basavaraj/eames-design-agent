@@ -12,6 +12,7 @@ export { StatusMessage } from './StatusMessage.js';
 export { AgentProgressView, CurrentTurnView } from './AgentProgressView.js';
 export { PhaseStatusBar, phaseLabels } from './PhaseStatusBar.js';
 export { TaskListView } from './TaskListView.js';
+export { SessionPicker } from './SessionPicker.js';
 export type { AgentProgressState } from './AgentProgressView.js';
 
 // New UX components

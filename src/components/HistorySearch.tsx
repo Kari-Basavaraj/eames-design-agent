@@ -34,12 +34,12 @@ export function HistorySearch({ commands, query, selectedIndex, visible }: Histo
             {isSelected ? (
               <>
                 <Text color={colors.primary} bold>❯ </Text>
-                <Text backgroundColor={colors.selectedBg} color={colors.white}>{displayCmd}</Text>
+                <Text backgroundColor={colors.selection} color={colors.white}>{displayCmd}</Text>
               </>
             ) : (
               <>
                 <Text color={colors.muted}>  </Text>
-                <Text color={colors.text}>{displayCmd}</Text>
+                <Text color={colors.white}>{displayCmd}</Text>
               </>
             )}
           </Box>

@@ -22,6 +22,7 @@ import { TaskListView } from './components/TaskListView.js';
 import { ToolActivityView } from './components/ToolActivityView.js';
 import { PluginManager } from './components/PluginManager.js';
 import { MCPManager } from './components/MCPManager.js';
+import { SessionPicker } from './components/SessionPicker.js';
 import type { Task } from './agent/state.js';
 import type { AgentProgressState } from './components/AgentProgressView.js';
 
@@ -51,6 +52,8 @@ import { DEFAULT_PROVIDER } from './model/llm.js';
 import { colors } from './theme.js';
 
 import type { AppState } from './cli/types.js';
+import type { PermissionMode, PermissionRequest } from './types/permissions.js';
+import { PERMISSION_MODE_LABELS } from './types/permissions.js';
 
 // Load environment variables
 config({ quiet: true });
@@ -149,12 +152,51 @@ export function CLI({ initialQuery }: CLIProps) {
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [interruptedQuery, setInterruptedQuery] = useState<string | null>(null);
 
+  // Permission and thinking modes
+  const [permissionMode, setPermissionMode] = useState<PermissionMode>('default');
+  const [thinkingMode, setThinkingMode] = useState(false);
+  const [permissionRequest, setPermissionRequest] = useState<{
+    type: 'file_edit' | 'bash_command' | 'file_delete';
+    tool: string;
+    description: string;
+    preview?: string;
+    resolve: (approved: boolean) => void;
+  } | null>(null);
+
   // Store the current turn's tasks when answer starts streaming
   const currentTasksRef = useRef<Task[]>([]);
 
   const messageHistoryRef = useRef<MessageHistory>(new MessageHistory(model));
 
   const { queue: queryQueue, enqueue, shift: shiftQueue, clear: clearQueue } = useQueryQueue();
+
+  /**
+   * Cycle through permission modes
+   */
+  const cyclePermissionMode = useCallback(() => {
+    const modes: PermissionMode[] = ['default', 'acceptEdits', 'plan', 'bypassPermissions'];
+    const currentIndex = modes.indexOf(permissionMode);
+    const nextIndex = (currentIndex + 1) % modes.length;
+    setPermissionMode(modes[nextIndex]);
+    setStatusMessage(`Permission mode: ${PERMISSION_MODE_LABELS[modes[nextIndex]]}`);
+  }, [permissionMode]);
+
+  /**
+   * Toggle thinking mode
+   */
+  const toggleThinkingMode = useCallback(() => {
+    setThinkingMode(prev => !prev);
+    setStatusMessage(`Extended thinking: ${!thinkingMode ? 'ON' : 'OFF'}`);
+  }, [thinkingMode]);
+
+  /**
+   * Handle permission request from SDK agent
+   */
+  const handlePermissionRequest = useCallback((request: PermissionRequest): Promise<boolean> => {
+    return new Promise((resolve) => {
+      setPermissionRequest({ ...request, resolve });
+    });
+  }, []);
 
   // Standard agent execution (5-phase)
   const standardAgent = useAgentExecution({
@@ -165,6 +207,8 @@ export function CLI({ initialQuery }: CLIProps) {
   // SDK agent execution (Claude Code style)
   const sdkAgent = useSdkAgentExecution({
     model,
+    permissionMode,
+    onPermissionRequest: handlePermissionRequest,
   });
 
   // Use the appropriate agent based on SDK mode
@@ -175,6 +219,7 @@ export function CLI({ initialQuery }: CLIProps) {
     processQuery,
     handleAnswerComplete: baseHandleAnswerComplete,
     cancelExecution,
+    setSessionId,
   } = useSdkMode ? sdkAgent : standardAgent;
 
   // Capture tasks when answer stream starts
@@ -383,7 +428,7 @@ Est. Cost: ${formatCost(sessionUsage.estimatedCost)}`;
         return true;
 
       case '/resume':
-        setStatusMessage('Resume: (not yet implemented - resumes session)');
+        setState('session_picker');
         return true;
 
       case '/stats': {
@@ -684,6 +729,41 @@ All systems operational!`;
   }, [pendingProvider, pendingModels]);
 
   useInput((input, key) => {
+    // Handle permission prompt input
+    if (permissionRequest) {
+      if (input === 'y' || input === 'Y') {
+        permissionRequest.resolve(true);
+        setPermissionRequest(null);
+        return;
+      }
+      if (input === 'n' || input === 'N') {
+        permissionRequest.resolve(false);
+        setPermissionRequest(null);
+        return;
+      }
+      return; // Block other input while permission prompt is showing
+    }
+
+    // Shift+Tab - cycle permission modes
+    if (input === '\x1b[Z') {
+      cyclePermissionMode();
+      return;
+    }
+
+    // Alt+T - toggle thinking mode
+    if (input === '\x1bt' || input === '†') {
+      toggleThinkingMode();
+      return;
+    }
+
+    // Alt+P - open model picker
+    if (input === '\x1bp' || input === 'π') {
+      setState('model_select');
+      setPendingProvider(provider);
+      setPendingModels(getModelsForProvider(provider));
+      return;
+    }
+
     // Escape key - cancel running operations
     if (key.escape) {
       if (state === 'running') {
@@ -796,6 +876,27 @@ All systems operational!`;
     );
   }
 
+  // Session Picker
+  if (state === 'session_picker') {
+    return (
+      <Box flexDirection="column">
+        <SessionPicker
+          onSelect={(sessionId) => {
+            // Set session ID for SDK agent to resume
+            if (useSdkMode && setSessionId) {
+              setSessionId(sessionId);
+            }
+            setStatusMessage(`Resumed session: ${sessionId.slice(0, 12)}...`);
+            setState('idle');
+          }}
+          onCancel={() => {
+            setState('idle');
+          }}
+        />
+      </Box>
+    );
+  }
+
   // Combine intro and history into a single static stream with stable keys
   const staticItems: Array<{ type: 'intro'; key: string } | { type: 'turn'; turn: CompletedTurn; key: string }> = [
     { type: 'intro', key: 'intro' },
@@ -855,6 +956,50 @@ All systems operational!`;
 
       {/* Status message */}
       <StatusMessage message={statusMessage} />
+
+      {/* Permission prompt */}
+      {permissionRequest && (
+        <Box
+          flexDirection="column"
+          borderStyle="round"
+          borderColor="yellow"
+          paddingX={2}
+          paddingY={1}
+          marginY={1}
+        >
+          <Box marginBottom={1}>
+            <Text color="yellow" bold>⚠️  Permission Required</Text>
+          </Box>
+
+          <Box marginBottom={1} flexDirection="column">
+            <Text color="white">
+              Tool: <Text bold>{permissionRequest.tool}</Text>
+            </Text>
+            <Text color="gray" dimColor>
+              Type: {permissionRequest.type}
+            </Text>
+          </Box>
+
+          {permissionRequest.preview && (
+            <Box marginBottom={1} flexDirection="column">
+              <Text color="gray">Preview:</Text>
+              <Box borderStyle="single" borderColor="gray" paddingX={1}>
+                <Text color="cyan" dimColor>
+                  {permissionRequest.preview.slice(0, 300)}
+                  {permissionRequest.preview.length > 300 ? '\n...' : ''}
+                </Text>
+              </Box>
+            </Box>
+          )}
+
+          <Box marginTop={1}>
+            <Text color="green">Y</Text>
+            <Text color="gray"> = Approve | </Text>
+            <Text color="red">N</Text>
+            <Text color="gray"> = Deny</Text>
+          </Box>
+        </Box>
+      )}
 
       {/* Input bar - always visible and interactive */}
       <Input onSubmit={handleSubmit} commandHistory={commandHistory} />

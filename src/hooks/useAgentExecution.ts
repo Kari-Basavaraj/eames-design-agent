@@ -30,6 +30,7 @@ interface UseAgentExecutionResult {
   processQuery: (query: string) => Promise<void>;
   handleAnswerComplete: (answer: string) => void;
   cancelExecution: () => void;
+  setSessionId?: (sessionId: string) => void;
 }
 
 /**
