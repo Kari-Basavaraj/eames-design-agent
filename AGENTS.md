@@ -15,9 +15,10 @@
 
 ## 🚨 CURRENT STATUS (2026-01-18)
 
-**✅ LANGCHAIN v1.0.1 WORKING:** CLI starts successfully, SDK dependencies removed
-**📍 YOU ARE ON:** `langchain` branch (tag: langchain-v1.0.1)
-**🎯 NEXT STEPS:** Test 5-phase orchestrator with a simple query
+**✅ LANGCHAIN v1.1.0 WORKING:** TUI with fun messages, spacing, emojis
+**📍 YOU ARE ON:** `langchain` branch (tag: langchain-v1.1.0)
+**🎯 CURRENT WORK:** Enhancing TUI to match Dexter's original polish
+**🔧 IN PROGRESS:** Adding status line, better tool tracking, collapsible sections
 
 ---
 
