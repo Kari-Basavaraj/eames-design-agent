@@ -1,27 +1,29 @@
 # Eames 🎨 - Autonomous Product Design Agent
 
-**Last Updated:** 2026-01-18 12:15:00
-**Version:** 2.0.0
-**Branch:** `main` (Archive)
+**Version:** 2.1.0
+**Branch:** `main` (📦 Archive - See branches below for active development)
+**Last Updated:** 2026-01-18
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Bun](https://img.shields.io/badge/Bun-%23000000.svg?style=flat&logo=bun&logoColor=white)](https://bun.sh)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Linear](https://img.shields.io/badge/Linear-5E6AD2?style=flat&logo=linear&logoColor=white)](https://linear.app/basavaraj-team/project/eames-design-agent-93b410b37929)
+[![Linear](https://img.shields.io/badge/Linear-5E6AD2?style=flat&logo=linear&logoColor=white)](https://linear.app/basavaraj-team/project/eames-design-agent-langchain-v100-10213d90db52)
 
-**Eames** is an end-to-end Autonomous Product Design Agent: **Discovery → Delivery**.
+**Eames** is an end-to-end Autonomous Product Design Agent: **Discovery → Delivery**. Transform ideas into production-ready, visually stunning applications deployed to Vercel or Netlify.
 
 > Named after Charles & Ray Eames, pioneers of design who believed "Design is a plan for arranging elements in such a way as best to accomplish a particular purpose."
 
-## 🚨 Important: Choose Your Implementation
+---
 
-**This is the main branch (archive).** Eames v2.0 has **three parallel implementations** in separate branches. Choose the one that fits your needs:
+## 🚨 Choose Your Implementation
 
-| Branch | Focus | Best For | Status |
-|--------|-------|----------|--------|
-| **[langchain](../../tree/langchain)** | Multi-provider LLM, Council pattern | Flexibility, multiple models, research | 🚀 In Development |
-| **[sdk](../../tree/sdk)** | Claude SDK, Skills system | Production, simplicity, Claude-native | 🚧 In Development |
-| **[webapp](../../tree/webapp)** | A2UI/AG-UI, Web interface | Web-based UI, collaboration | 📋 Planned |
+> **⚠️ This is the `main` branch (ARCHIVE).** Switch to an active branch:
+
+| Branch | Architecture | Status |
+|--------|--------------|--------|
+| **[🚀 langchain](../../tree/langchain)** | DeepAgents + LangGraph | ✅ **Active Development** |
+| **[📋 sdk](../../tree/sdk)** | Claude SDK | 📋 Planned |
+| **[📦 main](../../tree/main)** | Archive | 📦 Archived |
 
 ### Quick Start
 

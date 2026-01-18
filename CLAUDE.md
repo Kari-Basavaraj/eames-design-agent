@@ -1,55 +1,47 @@
-# Updated: 2026-01-18 03:50:00
-# EAMES DESIGN AGENT - MASTER CONTEXT FOR AI AGENTS
+# Updated: 2026-01-18 16:55:00
+# EAMES DESIGN AGENT - MAIN BRANCH (ARCHIVE)
 
-> **⚠️ READ THIS FIRST when starting ANY new session with coding agents (Claude, Cursor, Warp, etc.)**
+> **📦 THIS BRANCH IS ARCHIVED**
+>
+> **Switch to `langchain` branch for active V1.1.0 development**
 
-## 🚨 CURRENT STATUS (2026-01-18)
+## 🚨 SWITCH TO ACTIVE BRANCH
 
-**WE ARE CURRENTLY:** About to commit current state and split into two clean branches
-**BRANCH:** main (hybrid state - will be archived)
-**NEXT STEPS:** See "IMMEDIATE ACTIONS" section below
+```bash
+# Switch to active development
+git checkout langchain
+bun install
+bun start
+```
+
+| Branch | Status |
+|--------|--------|
+| **langchain** | ✅ Active Development (DeepAgents + LangGraph) |
+| **sdk** | 📋 Planned |
+| **main** | 📦 Archive (You are here) |
 
 ---
 
 ## 🎯 Vision
 
 **Eames** is an end-to-end Autonomous Product Design Agent: **Discovery → Delivery**.
-- Outputs production-ready, tested code deployed to Netlify/Vercel
-- Two implementations: LangChain (flexible) + Claude SDK (production-ready)
-- GitHub-first workflow with automated deployment
-- Full product design lifecycle: Research → PRD → UI/UX → Code → Live Link
+- Transform ideas into production-ready applications
+- <$1 per app with prompt caching
+- <15 minutes end-to-end
+- GitHub + Vercel/Netlify deployment
+
+See `langchain` branch `MASTER_IMPLEMENTATION_PLAN_V1.1.0.md` for complete details.
 
 ---
 
-## 📊 REPOSITORY STRATEGY
+## 📊 Repository Strategy
 
-### Current State
 ```
 eames-design-agent/
-├── main (branch)      ← Archive (hybrid state)
-├── langchain (branch) ← Pure LangChain version  
-└── sdk (branch)       ← Pure Claude SDK version
+├── main (branch)      ← Archive (You are here)
+├── langchain (branch) ← DeepAgents + LangGraph (ACTIVE)
+└── sdk (branch)       ← Claude SDK (Planned)
 ```
-
-### Versioning
-- **Branch names:** `langchain` and `sdk` (stay constant)
-- **Tag names:** `langchain-v1.0.0`, `sdk-v1.0.0`, etc. (track versions)
-- **See:** `VERSIONING_STRATEGY.md` for complete details
-
-### The Problem
-We tried to merge LangChain + Claude SDK + custom processors. They conflict. After $1000 spent on fixes, we discovered the architecture is fundamentally broken.
-
-### The Solution
-Split into TWO clean implementations:
-1. **langchain** - Pure LangChain with 5-phase orchestration (multi-provider, flexible)
-2. **sdk** - Pure Claude SDK with Eames Brain hooks (production-ready, simple)
-
-**Both will have:**
-- ✅ Discovery → Define → Design → Develop → Deliver phases
-- ✅ Localhost preview
-- ✅ GitHub integration
-- ✅ Netlify/Vercel deployment
-- ✅ Live link sharing
 
 ---
 
