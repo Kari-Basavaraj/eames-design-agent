@@ -17,6 +17,7 @@ import { ApiKeyConfirm, ApiKeyInput } from './components/ApiKeyPrompt.js';
 import { QueueDisplay } from './components/QueueDisplay.js';
 import { StatusMessage } from './components/StatusMessage.js';
 import { CurrentTurnView, AgentProgressView } from './components/AgentProgressView.js';
+import { LiveProgress } from './components/LiveProgress.js';
 import { PhaseStatusBar } from './components/PhaseStatusBar.js';
 import { TaskListView } from './components/TaskListView.js';
 import { ToolActivityView } from './components/ToolActivityView.js';
@@ -50,7 +51,7 @@ import { getOllamaModels } from './utils/ollama.js';
 import { MessageHistory } from './utils/message-history.js';
 
 import { DEFAULT_PROVIDER } from './model/llm.js';
-import { colors } from './theme.js';
+import { colors, spacing } from './theme.js';
 
 import type { AppState } from './cli/types.js';
 import type { PermissionMode, PermissionRequest } from './types/permissions.js';
@@ -944,11 +945,24 @@ All systems operational!`;
       {/* Current turn - clean and minimal */}
       {currentTurn && (
         <Box flexDirection="column">
-          {/* Query + minimal progress */}
-          <CurrentTurnView
-            query={currentTurn.query}
-            state={currentTurn.state}
-          />
+          {/* User query - simple and clean */}
+          <Box marginTop={spacing.normal}>
+            <Text color={colors.primary} bold>❯ </Text>
+            <Text color={colors.white}>{currentTurn.query}</Text>
+          </Box>
+          
+          {/* Real-time tool calls and progress (SDK mode only) */}
+          {useSdkMode && 'liveToolCalls' in currentTurn && Array.isArray(currentTurn.liveToolCalls) ? (
+            <LiveProgress 
+              phase={currentTurn.state.currentPhase}
+              tools={currentTurn.liveToolCalls as import('./agent/enhanced-sdk-processor.js').ToolCallEvent[]}
+              message={currentTurn.state.progressMessage}
+            />
+          ) : currentTurn.state.progressMessage ? (
+            <Box marginLeft={2} marginTop={spacing.tight}>
+              <AgentProgressView state={currentTurn.state} />
+            </Box>
+          ) : null}
 
           {/* Streaming answer - indented */}
           {answerStream && (

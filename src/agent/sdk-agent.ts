@@ -464,6 +464,9 @@ export class SdkAgent {
         if (this.signal?.aborted) {
           throw new Error('Operation was cancelled');
         }
+        
+        // Pass message to external processor for real-time tracking
+        this.callbacks.onSdkMessage?.(message);
 
         // Route message through processor
         const processed = this.messageProcessor.processMessage(message as SDKMessage);

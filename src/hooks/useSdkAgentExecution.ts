@@ -12,6 +12,7 @@ import type { ToolActivity } from '../components/ToolActivityView.js';
 import type { PermissionMode, PermissionRequest } from '../types/permissions.js';
 import { diffLines } from 'diff';
 import { existsSync, readFileSync } from 'fs';
+import { EnhancedSdkProcessor, type ToolCallEvent } from '../agent/enhanced-sdk-processor.js';
 // MCP DISABLED - causing slow responses
 // import { loadAllMcpServers } from '../utils/mcp-loader.js';
 
@@ -25,6 +26,7 @@ export interface SdkCurrentTurn {
   state: AgentProgressState;
   toolActivities: ToolActivity[];
   toolCalls: ToolCallStatus[];
+  liveToolCalls: ToolCallEvent[];
 }
 
 interface UseSdkAgentExecutionOptions {
@@ -148,11 +150,13 @@ export function useSdkAgentExecution({
   const [currentTurn, setCurrentTurn] = useState<SdkCurrentTurn | null>(null);
   const [answerStream, setAnswerStream] = useState<AsyncGenerator<string> | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [liveToolCalls, setLiveToolCalls] = useState<ToolCallEvent[]>([]);
 
   const isProcessingRef = useRef(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const agentRef = useRef<SdkAgent | null>(null);
   const sessionIdRef = useRef<string | null>(null);
+  const processorRef = useRef<EnhancedSdkProcessor | null>(null);
 
   /**
    * Updates the current phase and progress message.
@@ -317,6 +321,10 @@ export function useSdkAgentExecution({
     onAnswerStream: (stream) => setAnswerStream(stream),
     onProgressMessage: setProgressMessage,
     onTaskToolCallsSet: setToolCalls,
+    onSdkMessage: (message: any) => {
+      // Process SDK messages through our enhanced processor for real-time tool tracking
+      processorRef.current?.processMessage(message);
+    },
   }), [setPhase, markPhaseComplete, setAnswering, setProgressMessage, setToolCalls]);
 
   /**
@@ -356,6 +364,32 @@ export function useSdkAgentExecution({
         },
         toolActivities: [],
         toolCalls: [],
+        liveToolCalls: [],
+      });
+      
+      // Initialize enhanced processor for real-time tool tracking
+      processorRef.current = new EnhancedSdkProcessor({
+        onToolStart: (event) => {
+          setLiveToolCalls(calls => [...calls, event]);
+          setCurrentTurn(prev => prev ? { ...prev, liveToolCalls: [...prev.liveToolCalls, event] } : prev);
+        },
+        onToolProgress: (event) => {
+          setLiveToolCalls(calls => calls.map(c => c.id === event.id ? event : c));
+          setCurrentTurn(prev => prev ? { ...prev, liveToolCalls: prev.liveToolCalls.map(c => c.id === event.id ? event : c) } : prev);
+        },
+        onToolComplete: (event) => {
+          setLiveToolCalls(calls => calls.map(c => c.id === event.id ? event : c));
+          setCurrentTurn(prev => prev ? { ...prev, liveToolCalls: prev.liveToolCalls.map(c => c.id === event.id ? event : c) } : prev);
+          
+          // Remove completed tools after 2 seconds
+          setTimeout(() => {
+            setLiveToolCalls(calls => calls.filter(c => c.id !== event.id));
+            setCurrentTurn(prev => prev ? { ...prev, liveToolCalls: prev.liveToolCalls.filter(c => c.id !== event.id) } : prev);
+          }, 2000);
+        },
+        onProgressMessage: (message) => {
+          setProgressMessage(message);
+        },
       });
 
       const callbacks = createAgentCallbacks();

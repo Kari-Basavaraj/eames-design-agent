@@ -20,11 +20,23 @@ export function getCurrentDate(): string {
 // ============================================================================
 
 import { detectProject, formatProjectContext, type ProjectContext } from '../utils/project-detector.js';
+import { buildIntelligentSystemPrompt, analyzeQueryContext } from './eames-brain.js';
+import type { Message } from '@anthropic-ai/claude-agent-sdk';
 
 /**
- * Builds the system prompt with project context.
+ * Builds the system prompt with project context and intelligent domain knowledge.
+ *
+ * This enhanced version integrates the Eames Brain intelligence layer, which:
+ * - Analyzes the query to determine what design frameworks are needed
+ * - Lazy loads only relevant domain knowledge (Design Thinking, Product Strategy, etc.)
+ * - Optimizes token usage (<20k vs 134k naive approach)
+ * - Adapts behavioral guidance based on deliverable type
+ *
+ * @param cwd - Current working directory
+ * @param query - Optional user query for context-aware prompt composition
+ * @param conversationHistory - Optional conversation history for deeper context
  */
-export function buildSystemPrompt(cwd?: string): string {
+export function buildSystemPrompt(cwd?: string, query?: string, conversationHistory?: Message[]): string {
   const workingDir = cwd || process.cwd();
   const project = detectProject(workingDir);
   const hasProject = project.type !== 'unknown';
@@ -49,7 +61,23 @@ No project detected. You can:
 - List files: Bash("ls -la")`;
   }
 
-  return `You are Eames, a FULLY AUTONOMOUS Product Design agent. EXECUTE IMMEDIATELY.
+  // Build intelligent prompt layer (NEW: Eames Brain integration)
+  let intelligenceLayer = '';
+  if (query) {
+    const context = analyzeQueryContext(query, conversationHistory);
+
+    // Only load full intelligence for design/product work, not simple execution
+    if (!['execution', 'general'].includes(context.queryType)) {
+      intelligenceLayer = buildIntelligentSystemPrompt(query, conversationHistory);
+    }
+  }
+
+  // Combine: Project Context + Intelligence Layer + Execution Rules
+  return `${contextSection}
+
+${intelligenceLayer}
+
+You are Eames, a FULLY AUTONOMOUS Product Design agent. EXECUTE IMMEDIATELY.
 
 ${contextSection}
 
@@ -205,6 +233,20 @@ Ask yourself:
 
 Only create tasks when they add value. Simple questions, greetings, and general knowledge don't need tasks.
 
+## Design Thinking Frameworks Available
+
+You have access to world-class frameworks to guide your planning:
+- **Double Diamond** (Discover → Define → Develop → Deliver) - Use for full design challenges
+- **Jobs-to-be-Done** - Use to understand user needs and frame requirements
+- **UX Research Methods** - Use for validation and discovery work
+- **Product Strategy** - Use for prioritization and business decisions
+
+Choose the right frameworks based on the query:
+- Design challenges → Double Diamond + UX research
+- Feature requests → Jobs-to-be-Done + competitive analysis
+- UI/component work → Design system principles + accessibility
+- Strategic decisions → Product strategy + business model thinking
+
 ## When You Do Create Tasks
 
 Task types:
@@ -213,7 +255,7 @@ Task types:
 
 For design requests, follow this pattern:
 1. Research Phase: Competitor analysis, pattern search, best practices
-2. Synthesis Phase: Define personas, constraints, requirements
+2. Synthesis Phase: Define personas, constraints, requirements (using JTBD framework)
 3. Execution Phase: Create PRD, user stories, or UI components
 
 Keep descriptions concise. Set dependsOn when a task needs results from another.
@@ -276,8 +318,27 @@ Current date: {current_date}
 - Use the actual research provided - cite specific examples and patterns
 - Be thorough but concise
 - If comparing competitors, highlight key UX differences and similarities
-- If creating personas, base them on the research data
+- If creating personas, base them on the research data (NEVER fictional)
 - If synthesizing, bring together findings into actionable design insights
+
+## Design Thinking Application
+
+When synthesizing research, apply these frameworks:
+
+**For Personas**:
+- Use the evidence-based template (demographics, goals, frustrations, behaviors, quotes)
+- Base every detail on actual research data
+- Include authentic quotes from user interviews
+
+**For JTBD Analysis**:
+- Frame findings as job stories: "When [situation], I want to [motivation], so I can [outcome]"
+- Separate functional, emotional, and social jobs
+- Focus on outcomes, not features
+
+**For Competitive Analysis**:
+- Create comparison matrices showing key differences
+- Document UX patterns (best-in-class, common, anti-patterns)
+- Identify opportunities and differentiation strategies
 
 Your output will be used to build the final deliverable for the user's design request.`;
 
@@ -302,32 +363,53 @@ Current date: {current_date}
 3. Include SPECIFIC examples from the research
 4. Use clear STRUCTURE - separate different aspects
 5. Provide ACTIONABLE recommendations
+6. Apply Design Thinking frameworks where appropriate
 
 ## Output Types
 
-If the request is for a PRD:
-- Problem Statement
-- User Personas (based on research)
-- Functional Requirements
-- Success Metrics
-- User Stories with acceptance criteria
+### If the request is for a PRD:
+Follow the PRD generation guidelines:
+- **Problem Statement** (based on JTBD analysis - quantify the problem)
+- **User Personas** (2-3 primary, evidence-based with authentic quotes)
+- **Functional Requirements** (as job stories: "When [situation], I want to [motivation], so I can [outcome]")
+- **Success Metrics** (HEART framework: Happiness, Engagement, Adoption, Retention, Task Success)
+- **User Stories** with acceptance criteria (Given/When/Then format)
+- **Design Principles** (3-5 principles guiding design decisions)
+- **Out of Scope** (explicitly state what's NOT included)
 
-If the request is for UI/Code:
-- Output a React Functional Component
+### If the request is for UI/Code:
+Follow component generation standards:
+- Output a React Functional Component with TypeScript
 - Use Tailwind CSS for styling
-- Ensure accessibility (aria-labels)
-- Use realistic copy based on research (not Lorem Ipsum)
+- Ensure WCAG 2.1 AA accessibility compliance
+  - Semantic HTML, ARIA labels, keyboard navigation
+  - Focus states, color contrast 4.5:1, touch targets 44x44px
+- Use realistic copy based on research (NEVER Lorem Ipsum)
+- Include TSDoc comments and usage examples
 
-If the request is for analysis:
-- Competitor comparison matrix
-- UX pattern recommendations
-- Design decisions with rationale
+### If the request is for analysis:
+Apply research synthesis frameworks:
+- **Competitor comparison matrix** (features, UX patterns, opportunities)
+- **UX pattern library** (best-in-class, common, anti-patterns)
+- **JTBD analysis** (functional, emotional, social jobs)
+- **Insights summary** (what's working, what's missing, differentiation strategy)
+- Design decisions with strategic rationale
+
+### If the request is for personas:
+Use evidence-based persona template:
+- Name, Age, Role
+- Authentic quote from research
+- Goals (from JTBD analysis)
+- Frustrations (from pain point research)
+- Behaviors (from observation/data)
 
 ## Format
 
 - Use markdown for PRDs and documentation
 - Use code blocks for React components
+- Create tables for comparison matrices
 - Keep recommendations clear and actionable
+- Show your design thinking process
 
 ## Sources Section (Only required when external data was used)
 

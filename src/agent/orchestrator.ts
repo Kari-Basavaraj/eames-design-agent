@@ -47,6 +47,9 @@ export interface AgentCallbacks extends TaskExecutorCallbacks {
   // Answer
   onAnswerStart?: () => void;
   onAnswerStream?: (stream: AsyncGenerator<string>) => void;
+  
+  // SDK Message passthrough for real-time processing
+  onSdkMessage?: (message: any) => void;
 
   // Progress
   onProgressMessage?: (message: string) => void;
