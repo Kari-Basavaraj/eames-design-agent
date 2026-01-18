@@ -21,6 +21,7 @@ export interface AgentProgressState {
   tasks: Task[];
   isAnswering: boolean;
   progressMessage?: string;
+  taskCount?: number;
 }
 
 // ============================================================================
@@ -38,10 +39,13 @@ interface AgentProgressViewProps {
 export const AgentProgressView = React.memo(function AgentProgressView({
   state
 }: AgentProgressViewProps) {
-  const { progressMessage, currentPhase } = state;
+  const { progressMessage, currentPhase, tasks, taskCount } = state;
   const [frame, setFrame] = useState(0);
   const [message, setMessage] = useState(progressMessage || '');
   const frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+  
+  // Count active tasks
+  const activeTaskCount = taskCount || tasks?.length || 0;
 
   // Rotate spinner frames
   useEffect(() => {
@@ -64,12 +68,31 @@ export const AgentProgressView = React.memo(function AgentProgressView({
     }
   }, [progressMessage, currentPhase]);
 
-  if (!message) return null;
+  if (!message && activeTaskCount === 0) return null;
+
+  // Phase emoji indicators
+  const phaseEmoji: Record<string, string> = {
+    understand: '🔍',
+    plan: '📋',
+    execute: '⚙️',
+    reflect: '🧐',
+    answer: '✨',
+  };
+
+  const emoji = currentPhase ? phaseEmoji[currentPhase] || '' : '';
+  
+  // Show task count when executing
+  const showingTaskCount = currentPhase === 'execute' && activeTaskCount > 0;
+  const displayMessage = showingTaskCount 
+    ? `Executing ${activeTaskCount} task${activeTaskCount !== 1 ? 's' : ''}...`
+    : message;
 
   return (
     <Box marginTop={spacing.tight}>
       <Text color={colors.primary}>{frames[frame]} </Text>
-      <Text color={colors.muted} dimColor>{message}</Text>
+      {showingTaskCount && <Text color="yellow">⚡ </Text>}
+      {!showingTaskCount && emoji && <Text>{emoji} </Text>}
+      <Text color={colors.muted} dimColor>{displayMessage}</Text>
     </Box>
   );
 });

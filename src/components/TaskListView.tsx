@@ -87,31 +87,13 @@ function truncateOutput(output: string, maxLength: number): string {
 function ToolCallRow({ toolCall, isLast }: ToolCallRowProps) {
   const prefix = isLast ? '└─' : '├─';
   const description = formatToolDescription(toolCall);
-  // Completed tool calls get default text color, others stay muted
-  const textColor = toolCall.status === 'completed' ? undefined : colors.muted;
 
   return (
-    <Box flexDirection="column">
-      {/* Main tool call line */}
-      <Box>
-        <Text color={colors.muted}>{prefix} </Text>
-        <Text color={textColor}>{description} </Text>
-        <StatusIcon status={toolCall.status} />
-      </Box>
-
-      {/* Show truncated output for completed tools */}
-      {toolCall.status === 'completed' && toolCall.output && (
-        <Box marginLeft={5}>
-          <Text dimColor>{truncateOutput(toolCall.output, 100)}</Text>
-        </Box>
-      )}
-
-      {/* Show error for failed tools */}
-      {toolCall.status === 'failed' && toolCall.error && (
-        <Box marginLeft={5}>
-          <Text color={colors.error}>{toolCall.error}</Text>
-        </Box>
-      )}
+    <Box>
+      <Text color={colors.muted}>{prefix} </Text>
+      <Text color={colors.muted}>{description}</Text>
+      <Text> </Text>
+      <StatusIcon status={toolCall.status} />
     </Box>
   );
 }
@@ -155,7 +137,7 @@ const TaskRow = React.memo(function TaskRow({ task }: TaskRowProps) {
   const showToolCalls = hasToolCalls && isActive;
 
   return (
-    <Box flexDirection="column" marginBottom={1}>
+    <Box flexDirection="column">
       {/* Main task row */}
       <Box>
         <StatusIcon status={task.status} />
@@ -163,11 +145,9 @@ const TaskRow = React.memo(function TaskRow({ task }: TaskRowProps) {
         <Text color={textColor} bold={task.status === 'in_progress'}>{task.description}</Text>
       </Box>
 
-      {/* Tool calls tree */}
+      {/* Tool calls tree - compact */}
       {showToolCalls && task.toolCalls && (
-        <Box marginTop={0.5}>
-          <ToolCallsTree toolCalls={task.toolCalls} />
-        </Box>
+        <ToolCallsTree toolCalls={task.toolCalls} />
       )}
 
       {/* Task error display */}
