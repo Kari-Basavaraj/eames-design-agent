@@ -1,46 +1,165 @@
-# Updated: 2026-01-17 18:30:00
-# Eames Progress Tracker
+# Updated: 2026-01-18 12:50:00
+# Eames Progress Tracker - v2.0 Multi-Branch
 
-> **Purpose:** Single source of truth for all tasks, features, and progress.
-> **Update Frequency:** After every significant change.
-> **Project Management:** Linear (via MCP)
-> **Linear Project:** [Eames Design Agent](https://linear.app/basavaraj-team/project/eames-design-agent-93b410b37929)
-> **Roadmap:** [ROADMAP.md](./ROADMAP.md)
-> **Based On:** [Dexter](https://github.com/virattt/dexter) by Virat Singh
+> **Purpose:** Single source of truth for all branches, tasks, features, and progress.
+> **Update Frequency:** After every significant milestone.
+> **Project Management:** [Linear](https://linear.app/basavaraj-team)
+> **Architecture:** Three parallel implementations (LangChain, SDK, WebApp)
+> **Current Focus:** LangChain v2.0.0 implementation
 
 ---
 
-## Quick Status
+## 🎯 Quick Status (All Branches)
 
 | Metric | Value |
 |--------|-------|
-| **Current Phase** | Phase 2: Core Integration |
-| **Overall Progress** | 40% |
-| **Tests Passing** | 61/61 |
-| **Blockers** | None |
-| **PRDs Written** | 0 (TODO) |
+| **Repository Strategy** | ✅ Complete (3 branches) |
+| **Documentation** | ✅ Organized (all branches) |
+| **Linear Integration** | ✅ Complete (24 issues) |
+| **v2.0 Architecture** | ✅ Complete (3 versions) |
+| **README Updates** | ✅ Complete (all branches) |
+| **Current Sprint** | Week 1-2: Intent Understanding |
 
 ---
 
-## Phase Overview
+## 🌳 Branch Status
 
-| Phase | Status | Progress | Description | PRD |
-|-------|--------|----------|-------------|-----|
-| Phase 0: Foundation (Dexter→Eames) | ✅ Complete | 100% | Clone, rebrand, adapt for design | N/A |
-| Phase 1: Foundation | ✅ Complete | 100% | SDK install, feature flag, wrapper | N/A |
-| Phase 2: Core Integration | 🔄 In Progress | 90% | Message mapping, streaming, UI | TODO |
-| Phase 3: Unified Tool Layer | ⏳ Planned | 0% | MCP consolidation | TODO |
-| Phase 4: Discovery | ⏳ Planned | 0% | Research automation | TODO |
-| Phase 5: Define | ⏳ Planned | 0% | PRD generation | TODO |
-| Phase 6: Design | ⏳ Planned | 0% | UI/UX generation (A2UI) | TODO |
-| Phase 7: Develop | ⏳ Planned | 0% | Code generation | TODO |
-| Phase 8: Deliver | ⏳ Planned | 0% | CI/CD, deployment | TODO |
-| Phase 9: LLM Council | ⏳ Future | 0% | Multi-agent orchestration | TODO |
-| Phase 10: Production | ⏳ Future | 0% | Security, performance | TODO |
+| Branch | Status | Version | Focus | Linear Project |
+|--------|--------|---------|-------|----------------|
+| **main** | 📦 Archive | v0.9.0-hybrid | Documentation hub | [Main Project](https://linear.app/basavaraj-team/project/eames-design-agent-93b410b37929) |
+| **langchain** | 🚀 Active | v2.0.0 | LLM Council, multi-provider | [LangChain v1.0.0](https://linear.app/basavaraj-team/project/eames-design-agent-langchain-v100-10213d90db52) |
+| **sdk** | 📋 Planned | v2.0.0 | Claude SDK, Skills system | TBD |
+| **webapp** | 📋 Planned | v2.0.0 | A2UI/AG-UI, Web interface | TBD |
 
 ---
 
-## Claude Code Parity (2026-01-17 18:30:00)
+## 📊 LangChain Branch Progress (v2.0.0)
+
+**Current Sprint:** Week 1-2 (Intent Understanding Foundation)
+
+### 12-Week Roadmap
+
+| Week | Focus | Issues | Status |
+|------|-------|--------|--------|
+| **1-2** | Intent Understanding | BAS-32 to BAS-35 | ⏳ Ready to Start |
+| **3-4** | LLM Council | BAS-36 to BAS-39 | 📋 Backlog |
+| **5-6** | Phase Implementation | BAS-40 to BAS-43 | 📋 Backlog |
+| **7-8** | Memory & Context | BAS-44 to BAS-47 | 📋 Backlog |
+| **9-10** | Delivery & Deployment | BAS-48 to BAS-51 | 📋 Backlog |
+| **11-12** | Polish & Production | BAS-52 to BAS-55 | 📋 Backlog |
+
+---
+
+## ✅ Completed Milestones (2026-01-18)
+
+### v2.0 Architecture Strategy
+- ✅ Created EAMES_V2_ARCHITECTURE_LANGCHAIN.md (1,011 lines)
+- ✅ Created EAMES_V2_ARCHITECTURE_SDK.md (1,056 lines)
+- ✅ Created EAMES_V2_ARCHITECTURE_WEBAPP.md (1,078 lines)
+- ✅ Documented Intent Understanding (Stage 0)
+- ✅ Documented Ask/Plan/Execute modes
+- ✅ Documented Ralph Wiggum loops in every phase
+- ✅ Documented adaptive phase routing
+
+### Repository Organization
+- ✅ Created 3 clean branches (main, langchain, sdk)
+- ✅ Tagged versions (langchain-v2.0.0, sdk-v2.0.0)
+- ✅ Updated all branch READMEs
+- ✅ Organized 45 MD files into docs/ subdirectories
+- ✅ Moved 5 demo apps to examples/
+- ✅ Created docs/INDEX.md for navigation
+- ✅ Pushed all changes to GitHub
+
+### Linear Integration
+- ✅ Created Linear project for LangChain v1.0.0
+- ✅ Created 24 issues (BAS-32 to BAS-55)
+- ✅ Organized issues by week (12-week roadmap)
+- ✅ Added acceptance criteria to all issues
+- ✅ Linked architecture docs to issues
+
+---
+
+## 📝 Week 1-2 Tasks (Current Sprint)
+
+### BAS-32: Intent Classifier - Analyze query clarity
+**Status:** ⏳ Ready to Start  
+**Goal:** Determine if user query is vague or clear
+
+- [ ] Parse query and extract entities
+- [ ] Score clarity (0.0-1.0)
+- [ ] Determine context level
+- [ ] Identify domain
+- [ ] Return classification with reasoning
+
+### BAS-33: Ask Mode - Question Generator
+**Status:** ⏳ Ready to Start  
+**Goal:** Generate 3-5 strategic questions to gather context
+
+- [ ] Generate domain-specific questions
+- [ ] Avoid yes/no questions
+- [ ] Include reasoning for each question
+- [ ] Parse responses
+- [ ] Update context
+
+### BAS-34: Plan Mode - Phase Router
+**Status:** ⏳ Ready to Start  
+**Goal:** Generate execution plan with adaptive phase selection
+
+- [ ] Analyze query and determine needed phases
+- [ ] Generate execution plan
+- [ ] Include cost/time estimates
+- [ ] Provide alternative approaches
+- [ ] Format for user approval
+
+### BAS-35: Basic LangGraph Workflow
+**Status:** ⏳ Ready to Start  
+**Goal:** Orchestrate Intent → Ask/Plan/Execute modes
+
+- [ ] Create LangGraph state schema
+- [ ] Define nodes (intent, ask, plan, execute)
+- [ ] Implement conditional edges
+- [ ] Add state persistence
+- [ ] Test sample workflows
+
+---
+
+## 📊 Progress Metrics
+
+### Overall v2.0 Progress
+- **Architecture:** 100% (3 documents complete)
+- **Repository Setup:** 100% (all branches organized)
+- **Project Management:** 100% (24 issues in Linear)
+- **Implementation:** 0% (starting Week 1-2)
+
+### Code Metrics
+- **Tests Passing:** 61/61 (v1.0 baseline)
+- **Test Coverage:** TBD (will track for v2.0)
+- **Type Errors:** 0
+- **Lint Errors:** 0
+
+---
+
+## 🔗 Quick Links
+
+### Linear
+- [Main Project](https://linear.app/basavaraj-team/project/eames-design-agent-93b410b37929)
+- [LangChain v1.0.0](https://linear.app/basavaraj-team/project/eames-design-agent-langchain-v100-10213d90db52)
+
+### Architecture Docs
+- [LangChain Architecture](v2.0-architecture/EAMES_V2_ARCHITECTURE_LANGCHAIN.md)
+- [SDK Architecture](v2.0-architecture/EAMES_V2_ARCHITECTURE_SDK.md)
+- [WebApp Architecture](v2.0-architecture/EAMES_V2_ARCHITECTURE_WEBAPP.md)
+
+### GitHub
+- [Repository](https://github.com/Kari-Basavaraj/eames-design-agent)
+- [Branches](https://github.com/Kari-Basavaraj/eames-design-agent/branches)
+- [Tags](https://github.com/Kari-Basavaraj/eames-design-agent/tags)
+
+---
+
+## 📝 Old v1.0 Tracking (Archived)
+
+### Claude Code Parity (2026-01-17 18:30:00)
 
 ### ✅ Implemented Features
 | Feature | Status | Notes |
