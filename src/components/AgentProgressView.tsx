@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Box, Text } from 'ink';
 import { colors, spacing } from '../theme.js';
 import { TaskListView } from './TaskListView.js';
+import { getPhaseMessage } from '../utils/progress-messages.js';
 import type { Phase, Task } from '../agent/state.js';
 
 // ============================================================================
@@ -37,10 +38,12 @@ interface AgentProgressViewProps {
 export const AgentProgressView = React.memo(function AgentProgressView({
   state
 }: AgentProgressViewProps) {
-  const { progressMessage } = state;
+  const { progressMessage, currentPhase } = state;
   const [frame, setFrame] = useState(0);
+  const [message, setMessage] = useState(progressMessage || '');
   const frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
 
+  // Rotate spinner frames
   useEffect(() => {
     const interval = setInterval(() => {
       setFrame(f => (f + 1) % frames.length);
@@ -48,12 +51,25 @@ export const AgentProgressView = React.memo(function AgentProgressView({
     return () => clearInterval(interval);
   }, []);
 
-  if (!progressMessage) return null;
+  // Rotate fun messages every 2 seconds if no specific message
+  useEffect(() => {
+    if (!progressMessage && currentPhase) {
+      setMessage(getPhaseMessage(currentPhase));
+      const interval = setInterval(() => {
+        setMessage(getPhaseMessage(currentPhase));
+      }, 2000);
+      return () => clearInterval(interval);
+    } else if (progressMessage) {
+      setMessage(progressMessage);
+    }
+  }, [progressMessage, currentPhase]);
+
+  if (!message) return null;
 
   return (
     <Box marginTop={spacing.tight}>
       <Text color={colors.primary}>{frames[frame]} </Text>
-      <Text color={colors.muted} dimColor>{progressMessage}</Text>
+      <Text color={colors.muted} dimColor>{message}</Text>
     </Box>
   );
 });

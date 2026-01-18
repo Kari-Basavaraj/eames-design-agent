@@ -94,21 +94,21 @@ function ToolCallRow({ toolCall, isLast }: ToolCallRowProps) {
     <Box flexDirection="column">
       {/* Main tool call line */}
       <Box>
-        <Text color={textColor}>{prefix} </Text>
+        <Text color={colors.muted}>{prefix} </Text>
         <Text color={textColor}>{description} </Text>
         <StatusIcon status={toolCall.status} />
       </Box>
 
       {/* Show truncated output for completed tools */}
       {toolCall.status === 'completed' && toolCall.output && (
-        <Box marginLeft={4}>
+        <Box marginLeft={5}>
           <Text dimColor>{truncateOutput(toolCall.output, 100)}</Text>
         </Box>
       )}
 
       {/* Show error for failed tools */}
       {toolCall.status === 'failed' && toolCall.error && (
-        <Box marginLeft={4}>
+        <Box marginLeft={5}>
           <Text color={colors.error}>{toolCall.error}</Text>
         </Box>
       )}
@@ -155,22 +155,24 @@ const TaskRow = React.memo(function TaskRow({ task }: TaskRowProps) {
   const showToolCalls = hasToolCalls && isActive;
 
   return (
-    <Box flexDirection="column">
+    <Box flexDirection="column" marginBottom={1}>
       {/* Main task row */}
       <Box>
         <StatusIcon status={task.status} />
         <Text> </Text>
-        <Text color={textColor}>{task.description}</Text>
+        <Text color={textColor} bold={task.status === 'in_progress'}>{task.description}</Text>
       </Box>
 
       {/* Tool calls tree */}
       {showToolCalls && task.toolCalls && (
-        <ToolCallsTree toolCalls={task.toolCalls} />
+        <Box marginTop={0.5}>
+          <ToolCallsTree toolCalls={task.toolCalls} />
+        </Box>
       )}
 
       {/* Task error display */}
       {task.status === 'failed' && task.error && (
-        <Box marginLeft={4} paddingX={1} borderStyle="single" borderColor="red">
+        <Box marginLeft={4} marginTop={0.5} paddingX={1} borderStyle="single" borderColor="red">
           <Text color={colors.error}>{task.error}</Text>
         </Box>
       )}

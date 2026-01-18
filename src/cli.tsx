@@ -898,7 +898,7 @@ All systems operational!`;
       {currentTurn && (
         <Box flexDirection="column">
           {/* User query - simple and clean */}
-          <Box marginTop={spacing.normal}>
+          <Box marginTop={1}>
             <Text color={colors.primary} bold>❯ </Text>
             <Text color={colors.white}>{currentTurn.query}</Text>
           </Box>
@@ -906,21 +906,21 @@ All systems operational!`;
           {/* Real-time tool calls and progress */}
           {currentTurn.state.progressMessage && (
             // LangChain mode: show phase progress
-            <Box marginLeft={2} marginTop={spacing.tight}>
+            <Box marginLeft={2} marginTop={1}>
               <AgentProgressView state={currentTurn.state} />
             </Box>
           )}
           
           {/* Task list - Dexter-style beautiful tree view */}
           {currentTurn.state.tasks.length > 0 && (
-            <Box marginLeft={2} marginTop={spacing.tight}>
+            <Box marginLeft={2} marginTop={1}>
               <TaskListView tasks={currentTurn.state.tasks} />
             </Box>
           )}
 
           {/* Streaming answer - indented */}
           {answerStream && (
-            <Box marginLeft={2}>
+            <Box marginLeft={2} marginTop={1}>
               <AnswerBox
                 stream={answerStream}
                 onComplete={handleAnswerComplete}
