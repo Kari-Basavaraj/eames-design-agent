@@ -1,4 +1,5 @@
 #!/usr/bin/env bun
+// Updated: 2026-01-18 03:09:30
 /**
  * CLI - Multi-phase Agent Interface
  * 
@@ -15,12 +16,8 @@ import { AnswerBox } from './components/AnswerBox.js';
 import { ProviderSelector, ModelSelector, getModelsForProvider, getDefaultModelForProvider } from './components/ModelSelector.js';
 import { ApiKeyConfirm, ApiKeyInput } from './components/ApiKeyPrompt.js';
 import { QueueDisplay } from './components/QueueDisplay.js';
-import { StatusMessage } from './components/StatusMessage.js';
-import { CurrentTurnView, AgentProgressView } from './components/AgentProgressView.js';
+import { AgentProgressView } from './components/AgentProgressView.js';
 import { LiveProgress } from './components/LiveProgress.js';
-import { PhaseStatusBar } from './components/PhaseStatusBar.js';
-import { TaskListView } from './components/TaskListView.js';
-import { ToolActivityView } from './components/ToolActivityView.js';
 import { PluginManager } from './components/PluginManager.js';
 import { MCPManager } from './components/MCPManager.js';
 import { SessionPicker } from './components/SessionPicker.js';
@@ -72,9 +69,6 @@ interface CompletedTurn {
 }
 
 const CompletedTurnView = React.memo(function CompletedTurnView({ turn }: { turn: CompletedTurn }) {
-  // Mark all tasks as completed for display
-  const completedTasks = turn.tasks.map(t => ({ ...t, status: 'completed' as const }));
-
   return (
     <Box flexDirection="column" marginBottom={1}>
       {/* Query */}
@@ -83,17 +77,8 @@ const CompletedTurnView = React.memo(function CompletedTurnView({ turn }: { turn
         <Text color={colors.white} backgroundColor={colors.queryBg}>{` ${turn.query} `}</Text>
       </Box>
 
-      {/* Task list (completed) */}
-      {completedTasks.length > 0 && (
-        <Box flexDirection="column" marginTop={1}>
-          <Box marginLeft={2} flexDirection="column">
-            <TaskListView tasks={completedTasks} />
-          </Box>
-        </Box>
-      )}
-
-      {/* Answer */}
-      <Box marginTop={1}>
+      {/* Answer - Claude Code style: minimal, just the answer */}
+      <Box marginTop={1} marginLeft={2}>
         <AnswerBox text={turn.answer} />
       </Box>
     </Box>
@@ -912,6 +897,7 @@ All systems operational!`;
         <StatusBar 
           permissionMode={permissionMode}
           thinkingMode={thinkingMode}
+          sdkMode={useSdkMode}
           model={model}
         />
       )}
@@ -951,22 +937,16 @@ All systems operational!`;
             <Text color={colors.white}>{currentTurn.query}</Text>
           </Box>
           
-          {/* Real-time tool calls and progress (SDK mode only) */}
-          {useSdkMode && 'liveToolCalls' in currentTurn && Array.isArray(currentTurn.liveToolCalls) ? (
-            <>
-              {/* Debug info */}
-              {currentTurn.liveToolCalls.length > 0 && (
-                <Box marginLeft={2} marginTop={1}>
-                  <Text color="cyan">DEBUG: {currentTurn.liveToolCalls.length} live tools</Text>
-                </Box>
-              )}
-              <LiveProgress 
-                phase={currentTurn.state.currentPhase}
-                tools={currentTurn.liveToolCalls as import('./agent/enhanced-sdk-processor.js').ToolCallEvent[]}
-                message={currentTurn.state.progressMessage}
-              />
-            </>
+          {/* Real-time tool calls and progress */}
+          {useSdkMode ? (
+            // SDK mode: ALWAYS show LiveProgress (component handles empty states)
+            <LiveProgress 
+              phase={currentTurn.state.currentPhase}
+              tools={(currentTurn as any).liveToolCalls || []}
+              message={currentTurn.state.progressMessage}
+            />
           ) : currentTurn.state.progressMessage ? (
+            // Standard mode: show phase progress
             <Box marginLeft={2} marginTop={spacing.tight}>
               <AgentProgressView state={currentTurn.state} />
             </Box>
@@ -1006,11 +986,11 @@ All systems operational!`;
           <Box marginLeft={2} flexDirection="column">
             <Box>
               <Text color="white" bold>{permissionRequest.tool}</Text>
-              <Text color="gray" dimColor> wants to execute</Text>
+              <Text color="gray" dimColor> wants to execute:</Text>
             </Box>
 
             {/* Preview/Command - highlighted */}
-            {permissionRequest.preview && (
+            {permissionRequest.preview && permissionRequest.preview.trim() && (
               <Box marginTop={1} flexDirection="column">
                 <Box 
                   paddingX={2} 

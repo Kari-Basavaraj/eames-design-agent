@@ -465,10 +465,17 @@ export class SdkAgent {
           throw new Error('Operation was cancelled');
         }
         
-        // Pass message to external processor for real-time tracking
-        this.callbacks.onSdkMessage?.(message);
+        // CRITICAL: Pass message to external processor BEFORE internal processing
+        // This allows the hook's EnhancedSdkProcessor to track tools in real-time
+        if (this.callbacks.onSdkMessage) {
+          try {
+            this.callbacks.onSdkMessage(message);
+          } catch (e) {
+            console.error('[SDK Agent] Error in onSdkMessage callback:', e);
+          }
+        }
 
-        // Route message through processor
+        // Route message through internal processor for phase tracking
         const processed = this.messageProcessor.processMessage(message as SDKMessage);
 
         // Capture text content and results

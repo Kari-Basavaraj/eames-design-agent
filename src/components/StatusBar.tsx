@@ -1,4 +1,4 @@
-// Updated: 2026-01-18 - Simplified for Claude Code UX
+// Updated: 2026-01-18 03:08:45
 // Eames Design Agent - Status Bar Component
 // MINIMAL status bar - one line, key info only
 
@@ -10,6 +10,7 @@ import type { PermissionMode } from '../types/permissions.js';
 interface StatusBarProps {
 	permissionMode?: PermissionMode;
 	thinkingMode?: boolean;
+	sdkMode?: boolean;
 	model?: string;
 }
 
@@ -20,6 +21,7 @@ interface StatusBarProps {
 export function StatusBar({ 
 	permissionMode = 'bypassPermissions', 
 	thinkingMode = false,
+	sdkMode = false,
 	model = 'claude-sonnet-4-5'
 }: StatusBarProps) {
 	const modeColors: Record<PermissionMode, string> = {
@@ -45,6 +47,11 @@ export function StatusBar({
 			<Text color={modeColors[permissionMode]} dimColor>
 				[{modeLabels[permissionMode]}]
 			</Text>
+		
+		{/* SDK mode */}
+		{sdkMode && (
+			<Text color={colors.primary} dimColor> ⚡</Text>
+		)}
 
 			{/* Thinking mode */}
 			{thinkingMode && (

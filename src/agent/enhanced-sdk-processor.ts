@@ -28,11 +28,6 @@ export class EnhancedSdkProcessor {
   processMessage(message: SdkMessage) {
     if (!message || !message.type) return;
     
-    // Debug: Log all message types to understand SDK output
-    if (process.env.DEBUG_SDK) {
-      console.log('SDK Message:', message.type, JSON.stringify(message).slice(0, 200));
-    }
-    
     switch (message.type) {
       // Primary SDK message type for tool calls
       case 'assistant':
@@ -86,8 +81,6 @@ export class EnhancedSdkProcessor {
     
     for (const block of content) {
       if (block.type === 'tool_use' && block.name && block.id) {
-        console.log('[EnhancedSDK] Tool detected:', block.name, block.id);
-        
         const event: ToolCallEvent = {
           id: block.id,
           tool: block.name,

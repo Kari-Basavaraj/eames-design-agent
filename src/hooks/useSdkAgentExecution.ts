@@ -1,4 +1,4 @@
-// Updated: 2026-01-12 20:00:00
+// Updated: 2026-01-18 03:07:30
 // Eames Design Agent - SDK Agent Execution Hook
 // Connects SDK agent to React state for the Ink UI
 
@@ -88,7 +88,30 @@ async function generateDiffPreview(toolName: string, toolInput: any): Promise<st
     return toolInput.command || toolInput.cmd;
   }
   
+  if (toolName === 'Delete') {
+    return toolInput.path || toolInput.file_path || toolInput.target;
+  }
+  
   return undefined;
+}
+
+/**
+ * Build a clean permission prompt request.
+ */
+function buildPermissionRequest(
+  toolName: string,
+  toolInput: any,
+  preview?: string
+): PermissionRequest {
+  const isBash = toolName === 'Bash';
+  const isDelete = toolName === 'Delete';
+  
+  return {
+    type: isBash ? 'bash_command' : isDelete ? 'file_delete' : 'file_edit',
+    tool: toolName,
+    description: isBash ? toolInput?.command || '' : '',
+    preview,
+  };
 }
 
 /**
@@ -320,9 +343,6 @@ export function useSdkAgentExecution({
     onTaskToolCallsSet: setToolCalls,
     onSdkMessage: (message: any) => {
       // Process SDK messages through our enhanced processor for real-time tool tracking
-      if (message?.type === 'assistant') {
-        console.log('[Hook] Received assistant message, processing...');
-      }
       processorRef.current?.processMessage(message);
     },
   }), [setPhase, markPhaseComplete, setAnswering, setProgressMessage, setToolCalls]);
@@ -348,7 +368,53 @@ export function useSdkAgentExecution({
       const abortController = new AbortController();
       abortControllerRef.current = abortController;
 
-      // Initialize turn state starting at Understand phase
+      // Initialize enhanced processor BEFORE initializing turn
+      // This ensures it's ready to process messages as soon as they arrive
+      processorRef.current = new EnhancedSdkProcessor({
+        onToolStart: (event) => {
+          // CRITICAL: Update currentTurn with new array reference to force re-render
+          setCurrentTurn(prev => {
+            if (!prev) return prev;
+            const updated = [...prev.liveToolCalls, event];
+            // Return new object with new array to force React update
+            return { ...prev, liveToolCalls: updated };
+          });
+        },
+        onToolProgress: (event) => {
+          // CRITICAL: Create new array with map to force re-render
+          setCurrentTurn(prev => {
+            if (!prev) return prev;
+            const updated = prev.liveToolCalls.map(c => 
+              c.id === event.id ? { ...event } : c
+            );
+            return { ...prev, liveToolCalls: updated };
+          });
+        },
+        onToolComplete: (event) => {
+          // CRITICAL: Create new array with updated event
+          setCurrentTurn(prev => {
+            if (!prev) return prev;
+            const updated = prev.liveToolCalls.map(c =>
+              c.id === event.id ? { ...event, status: event.status } : c
+            );
+            return { ...prev, liveToolCalls: updated };
+          });
+          
+          // Keep completed tools visible for 5 seconds so user sees result
+          setTimeout(() => {
+            setCurrentTurn(prev => {
+              if (!prev) return prev;
+              const filtered = prev.liveToolCalls.filter(c => c.id !== event.id);
+              return { ...prev, liveToolCalls: filtered };
+            });
+          }, 5000);
+        },
+        onProgressMessage: (message) => {
+          setProgressMessage(message);
+        },
+      });
+      
+      // Now initialize turn state AFTER processor is ready
       setCurrentTurn({
         id: generateId(),
         query,
@@ -365,34 +431,6 @@ export function useSdkAgentExecution({
         toolActivities: [],
         toolCalls: [],
         liveToolCalls: [],
-      });
-      
-      // Initialize enhanced processor for real-time tool tracking
-      processorRef.current = new EnhancedSdkProcessor({
-        onToolStart: (event) => {
-          console.log('[Hook] Tool started:', event.tool, event.id);
-          setLiveToolCalls(calls => [...calls, event]);
-          setCurrentTurn(prev => prev ? { ...prev, liveToolCalls: [...prev.liveToolCalls, event] } : prev);
-        },
-        onToolProgress: (event) => {
-          console.log('[Hook] Tool progress:', event.tool, event.status);
-          setLiveToolCalls(calls => calls.map(c => c.id === event.id ? event : c));
-          setCurrentTurn(prev => prev ? { ...prev, liveToolCalls: prev.liveToolCalls.map(c => c.id === event.id ? event : c) } : prev);
-        },
-        onToolComplete: (event) => {
-          console.log('[Hook] Tool completed:', event.tool);
-          setLiveToolCalls(calls => calls.map(c => c.id === event.id ? event : c));
-          setCurrentTurn(prev => prev ? { ...prev, liveToolCalls: prev.liveToolCalls.map(c => c.id === event.id ? event : c) } : prev);
-          
-          // Remove completed tools after 2 seconds
-          setTimeout(() => {
-            setLiveToolCalls(calls => calls.filter(c => c.id !== event.id));
-            setCurrentTurn(prev => prev ? { ...prev, liveToolCalls: prev.liveToolCalls.filter(c => c.id !== event.id) } : prev);
-          }, 2000);
-        },
-        onProgressMessage: (message) => {
-          setProgressMessage(message);
-        },
       });
 
       const callbacks = createAgentCallbacks();
@@ -423,44 +461,56 @@ export function useSdkAgentExecution({
           hooks: {
             PreToolUse: [{
               hooks: [async (input: any) => {
-                // Skip if bypass mode
+                const toolName = input.tool_name;
+                const isWrite = toolName === 'Write' || toolName === 'Edit';
+                const isDelete = toolName === 'Delete';
+                const isBash = toolName === 'Bash';
+                const needsPermission = isWrite || isDelete || isBash;
+                
+                const requestPermission = async (): Promise<boolean> => {
+                  if (!onPermissionRequest) return false;
+                  const preview = await generateDiffPreview(toolName, input.tool_input);
+                  const approved = await onPermissionRequest(
+                    buildPermissionRequest(toolName, input.tool_input, preview)
+                  );
+                  return approved;
+                };
+                
+                // Mode: BYPASS (no prompts)
                 if (permissionMode === 'bypassPermissions') {
                   return { continue: true };
                 }
                 
-                // In plan mode, block all execution
+                // Mode: PLAN (block execution)
                 if (permissionMode === 'plan') {
-                  if (['Write', 'Edit', 'Bash', 'Delete'].includes(input.tool_name)) {
+                  if (needsPermission) {
                     return { continue: false };
                   }
-                }
-                
-                // Check if permission needed
-                const needsPermission = ['Write', 'Edit', 'Bash', 'Delete'].includes(input.tool_name);
-                
-                if (needsPermission && permissionMode === 'default') {
-                  // Show permission prompt
-                  if (onPermissionRequest) {
-                    const preview = await generateDiffPreview(input.tool_name, input.tool_input);
-                    
-                    const approved = await onPermissionRequest({
-                      type: input.tool_name === 'Bash' ? 'bash_command' : 'file_edit',
-                      tool: input.tool_name,
-                      description: JSON.stringify(input.tool_input, null, 2),
-                      preview,
-                    });
-                    
-                    if (!approved) {
-                      return { continue: false };
-                    }
-                  }
-                }
-                
-                // acceptEdits mode: auto-approve edits
-                if (needsPermission && permissionMode === 'acceptEdits') {
                   return { continue: true };
                 }
                 
+                // If no permission needed, proceed
+                if (!needsPermission) {
+                  return { continue: true };
+                }
+                
+                // Mode: ACCEPT_EDITS (auto-approve file edits only)
+                if (permissionMode === 'acceptEdits') {
+                  if (isWrite) {
+                    return { continue: true };
+                  }
+                  // Prompt for Bash/Delete
+                  const approved = await requestPermission();
+                  return { continue: approved };
+                }
+                
+                // Mode: DEFAULT (prompt for all dangerous tools)
+                if (permissionMode === 'default') {
+                  const approved = await requestPermission();
+                  return { continue: approved };
+                }
+                
+                // Fallback: allow
                 return { continue: true };
               }],
             }],

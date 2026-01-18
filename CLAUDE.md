@@ -1,18 +1,131 @@
-# Updated: 2026-01-12 17:15:00
-# Eames Design Agent - Claude Code Instructions
+# Updated: 2026-01-18 03:50:00
+# EAMES DESIGN AGENT - MASTER CONTEXT FOR AI AGENTS
 
-## Vision
+> **⚠️ READ THIS FIRST when starting ANY new session with coding agents (Claude, Cursor, Warp, etc.)**
+
+## 🚨 CURRENT STATUS (2026-01-18)
+
+**WE ARE CURRENTLY:** About to commit current state and split into two clean branches
+**BRANCH:** main (hybrid state - will be archived)
+**NEXT STEPS:** See "IMMEDIATE ACTIONS" section below
+
+---
+
+## 🎯 Vision
 
 **Eames** is an end-to-end Autonomous Product Design Agent: **Discovery → Delivery**.
-- Outputs production-ready, tested code deployed for customers
-- Unified AI architecture (Claude SDK + LangChain + Agentic UI + LLM Council)
-- GitHub-first workflow with SDLC best practices
-- Linear for project management, PRD-driven development
+- Outputs production-ready, tested code deployed to Netlify/Vercel
+- Two implementations: LangChain (flexible) + Claude SDK (production-ready)
+- GitHub-first workflow with automated deployment
+- Full product design lifecycle: Research → PRD → UI/UX → Code → Live Link
 
-**References:**
-- `docs/EAMES_VISION.md` - Full architecture
-- `llm-council-design-leadership-guide.md` - Multi-agent council design
-- `A2UI_RESEARCH.md` - Agent-to-User Interface protocols
+---
+
+## 📊 REPOSITORY STRATEGY
+
+### Current State
+```
+eames-design-agent/
+├── main (branch)           ← YOU ARE HERE (hybrid/archive)
+├── langchain-v1 (branch)   ← NEXT: Pure LangChain version
+└── sdk-v1 (branch)         ← NEXT: Pure Claude SDK version
+```
+
+### The Problem
+We tried to merge LangChain + Claude SDK + custom processors. They conflict. After $1000 spent on fixes, we discovered the architecture is fundamentally broken.
+
+### The Solution
+Split into TWO clean implementations:
+1. **langchain-v1** - Pure LangChain with 5-phase orchestration (multi-provider, flexible)
+2. **sdk-v1** - Pure Claude SDK with Eames Brain hooks (production-ready, simple)
+
+**Both will have:**
+- ✅ Discovery → Define → Design → Develop → Deliver phases
+- ✅ Localhost preview
+- ✅ GitHub integration
+- ✅ Netlify/Vercel deployment
+- ✅ Live link sharing
+
+---
+
+## 📚 KEY DOCUMENTS (Priority Order)
+
+### Start Here
+1. **THIS FILE** (`CLAUDE.md`) - Master context, read every session
+2. `REPOSITORY_STRATEGY.md` - Complete plan for repository split
+3. `LANGCHAIN_VS_SDK_COMPLETE.md` - Comprehensive tech comparison
+4. `docs/EAMES_VISION.md` - Original vision document
+
+### Reference (As Needed)
+- `EAMES_2.0_REWRITE_PLAN.md` - SDK version implementation plan
+- `COMPLETE_REWRITE_REQUIRED.md` - Root cause analysis
+- `WARP.md` - Warp-specific development instructions
+- `EAMES_VS_CLAUDE_CODE.md` - Feature parity analysis
+
+---
+
+## 🚀 IMMEDIATE ACTIONS (Phase 1)
+
+**You should execute these NOW:**
+
+```bash
+cd /Users/basavarajkm/code/eames-design-agent
+
+# 1. Commit everything
+git add .
+git commit -m "chore: archive current hybrid state
+
+- Mixed LangChain + SDK implementation
+- Analysis documents added
+- Identified architectural conflicts  
+- Ready to split into clean versions"
+
+# 2. Push to GitHub
+git push origin main
+
+# 3. Tag this milestone
+git tag -a v0.9.0-hybrid -m "Hybrid state before split"
+git push origin v0.9.0-hybrid
+
+# 4. Verify
+git log --oneline -1
+git tag -l
+```
+
+**After Phase 1:** We'll create langchain-v1 and sdk-v1 branches
+
+---
+
+## 🎯 PRODUCT DESIGN LIFECYCLE (Both Versions)
+
+### Phase 1: Discovery 🔍
+- Research competitors, market trends, user needs
+- Tools: search_competitors, analyze_market
+- Output: Research synthesis, pain points
+
+### Phase 2: Define 📋  
+- Generate PRD, user stories, requirements
+- Tools: generate_prd, create_user_stories
+- Output: PRD document, acceptance criteria
+
+### Phase 3: Design 🎨
+- Create UI/UX, wireframes, components
+- Tools: generate_wireframes, create_components
+- Output: Component specs, design system
+
+### Phase 4: Develop ⚙️
+- Generate production-ready code
+- Tools: File ops, generate_react_app
+- Output: Working app on localhost
+
+### Phase 5: Deliver 🚀
+- Deploy to Netlify/Vercel, share link
+- Tools: deploy_project, create_github_repo  
+- Output: GitHub URL + Live site URL
+
+---
+
+## 🛠️ Tech Stack
 
 ---
 

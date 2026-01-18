@@ -21,34 +21,46 @@ export function LiveProgress({ phase, tools, message }: LiveProgressProps) {
   
   const phaseLabel = phase ? phaseLabels[phase] || phase : '';
   
-  // Debug: Log to see if component is rendering
-  console.log('[LiveProgress] Rendering with:', { phase, toolCount: tools.length, message });
+  // Show during execute phase OR when we have content
+  const isExecuting = phase === 'execute';
+  const hasContent = message || tools.length > 0;
   
-  // Don't show anything if no message and no tools
-  if (!message && tools.length === 0) {
-    console.log('[LiveProgress] Returning null - no content to show');
+  // Only hide if NOT executing AND no content
+  if (!isExecuting && !hasContent) {
     return null;
   }
   
   return (
     <Box flexDirection="column" marginLeft={2} marginTop={spacing.tight}>
-      {/* Phase indicator with message */}
-      {message && (
+      {/* Phase indicator - always show during execute */}
+      {isExecuting && (
         <Box marginBottom={tools.length > 0 ? 1 : 0}>
           <Text color={colors.primary}>
             <Spinner type="dots" />
           </Text>
           <Text color={colors.muted} dimColor>
             {' '}
-            {phaseLabel ? `${phaseLabel}: ` : ''}
-            {message}
+            {message || phaseLabel || 'Executing...'}
+          </Text>
+        </Box>
+      )}
+      
+      {/* Show message even when not executing */}
+      {!isExecuting && message && (
+        <Box marginBottom={tools.length > 0 ? 1 : 0}>
+          <Text color={colors.primary}>
+            <Spinner type="dots" />
+          </Text>
+          <Text color={colors.muted} dimColor>
+            {' '}
+            {phaseLabel ? `${phaseLabel}: ${message}` : message}
           </Text>
         </Box>
       )}
       
       {/* Active tool calls */}
       {tools.length > 0 && (
-        <Box flexDirection="column">
+        <Box flexDirection="column" marginTop={1}>
           {tools.map((tool) => (
             <ToolCallRow key={tool.id} tool={tool} />
           ))}
