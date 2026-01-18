@@ -994,35 +994,52 @@ All systems operational!`;
         </Box>
       )}
 
-      {/* Permission prompt */}
+      {/* Permission prompt - Claude Code style */}
       {permissionRequest && (
-        <Box flexDirection="column" marginTop={2}>
-          {/* Header - simple */}
-          <Box>
-            <Text color="yellow">⚠️  </Text>
-            <Text color="yellow" bold>Permission required: </Text>
-            <Text color="white">{permissionRequest.tool}</Text>
+        <Box flexDirection="column" marginTop={2} marginBottom={1}>
+          {/* Header with warning */}
+          <Box marginBottom={1}>
+            <Text color="yellow" bold>⚠️  Permission Required</Text>
           </Box>
 
-          {/* Preview - indented, no border */}
-          {permissionRequest.preview && (
-            <Box marginTop={1} marginLeft={2}>
-              <Box flexDirection="column">
-                <Text color="gray" dimColor>Preview:</Text>
-                <Text color="cyan" dimColor>
-                  {permissionRequest.preview.slice(0, 200)}
-                  {permissionRequest.preview.length > 200 ? '...' : ''}
-                </Text>
-              </Box>
+          {/* Tool and action description */}
+          <Box marginLeft={2} flexDirection="column">
+            <Box>
+              <Text color="white" bold>{permissionRequest.tool}</Text>
+              <Text color="gray" dimColor> wants to execute</Text>
             </Box>
-          )}
 
-          {/* Actions - simple */}
-          <Box marginTop={1}>
-            <Text color="green">Y</Text>
-            <Text color="gray"> = approve  </Text>
-            <Text color="red">N</Text>
-            <Text color="gray"> = deny</Text>
+            {/* Preview/Command - highlighted */}
+            {permissionRequest.preview && (
+              <Box marginTop={1} flexDirection="column">
+                <Box 
+                  paddingX={2} 
+                  paddingY={1} 
+                  borderStyle="single" 
+                  borderColor="gray"
+                  flexDirection="column"
+                >
+                  {permissionRequest.preview.split('\n').slice(0, 10).map((line, i) => (
+                    <Text key={i} color="cyan">
+                      {line}
+                    </Text>
+                  ))}
+                  {permissionRequest.preview.split('\n').length > 10 && (
+                    <Text color="gray" dimColor>
+                      ... ({permissionRequest.preview.split('\n').length - 10} more lines)
+                    </Text>
+                  )}
+                </Box>
+              </Box>
+            )}
+          </Box>
+
+          {/* Action buttons - prominent */}
+          <Box marginTop={1} marginLeft={2}>
+            <Text color="green" bold>Y</Text>
+            <Text color="white"> Approve  </Text>
+            <Text color="red" bold>N</Text>
+            <Text color="white"> Deny</Text>
           </Box>
         </Box>
       )}
