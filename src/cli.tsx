@@ -953,11 +953,19 @@ All systems operational!`;
           
           {/* Real-time tool calls and progress (SDK mode only) */}
           {useSdkMode && 'liveToolCalls' in currentTurn && Array.isArray(currentTurn.liveToolCalls) ? (
-            <LiveProgress 
-              phase={currentTurn.state.currentPhase}
-              tools={currentTurn.liveToolCalls as import('./agent/enhanced-sdk-processor.js').ToolCallEvent[]}
-              message={currentTurn.state.progressMessage}
-            />
+            <>
+              {/* Debug info */}
+              {currentTurn.liveToolCalls.length > 0 && (
+                <Box marginLeft={2} marginTop={1}>
+                  <Text color="cyan">DEBUG: {currentTurn.liveToolCalls.length} live tools</Text>
+                </Box>
+              )}
+              <LiveProgress 
+                phase={currentTurn.state.currentPhase}
+                tools={currentTurn.liveToolCalls as import('./agent/enhanced-sdk-processor.js').ToolCallEvent[]}
+                message={currentTurn.state.progressMessage}
+              />
+            </>
           ) : currentTurn.state.progressMessage ? (
             <Box marginLeft={2} marginTop={spacing.tight}>
               <AgentProgressView state={currentTurn.state} />

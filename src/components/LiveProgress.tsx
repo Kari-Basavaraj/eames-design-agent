@@ -21,8 +21,12 @@ export function LiveProgress({ phase, tools, message }: LiveProgressProps) {
   
   const phaseLabel = phase ? phaseLabels[phase] || phase : '';
   
+  // Debug: Log to see if component is rendering
+  console.log('[LiveProgress] Rendering with:', { phase, toolCount: tools.length, message });
+  
   // Don't show anything if no message and no tools
   if (!message && tools.length === 0) {
+    console.log('[LiveProgress] Returning null - no content to show');
     return null;
   }
   

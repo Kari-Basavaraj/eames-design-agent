@@ -265,11 +265,8 @@ export function useSdkAgentExecution({
         }
       }
 
-      // Keep phase context in the message during execute phase
-      const phasePrefix = prev.state.currentPhase === 'execute' ? '⚙️  Executing: ' : '';
-      const displayMessage = prev.state.currentPhase === 'execute' 
-        ? `${phasePrefix}${message}`
-        : message;
+      // Use clean message without emoji prefix for better UI
+      const displayMessage = message;
 
       return {
         ...prev,
