@@ -903,12 +903,19 @@ All systems operational!`;
           </Box>
           
           {/* Real-time tool calls and progress */}
-          {currentTurn.state.progressMessage ? (
+          {currentTurn.state.progressMessage && (
             // LangChain mode: show phase progress
             <Box marginLeft={2} marginTop={spacing.tight}>
               <AgentProgressView state={currentTurn.state} />
             </Box>
-          ) : null}
+          )}
+          
+          {/* Task list - Dexter-style beautiful tree view */}
+          {currentTurn.state.tasks.length > 0 && (
+            <Box marginLeft={2} marginTop={spacing.tight}>
+              <TaskListView tasks={currentTurn.state.tasks} />
+            </Box>
+          )}
 
           {/* Streaming answer - indented */}
           {answerStream && (
