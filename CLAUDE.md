@@ -1,23 +1,20 @@
-# Updated: 2026-01-18 04:07:00
+# Updated: 2026-01-18 16:50:00
 # EAMES DESIGN AGENT - MASTER CONTEXT FOR AI CODING AGENTS
 
 > **⚠️ READ THIS FIRST when starting ANY new session with ANY coding agent**
-> 
+>
 > **Supported agents:** Claude Code, Cursor, Windsurf, Aider, Continue, Warp AI, GitHub Copilot, etc.
 
 ## 📝 Which File To Read?
 
-- **AGENTS.md** (this file) - Universal context for ANY coding agent
-- **CLAUDE.md** - Same content, kept for Claude Code compatibility
-- **WARP.md** - Warp-specific development instructions
-
-**TL;DR:** Read THIS file (AGENTS.md) first, regardless of which agent you're using.
+- **AGENTS.md** / **CLAUDE.md** / **WARP.md** - Same content, synced
+- **MASTER_IMPLEMENTATION_PLAN_V1.1.0.md** - Complete implementation blueprint
 
 ## 🚨 CURRENT STATUS (2026-01-18)
 
-**✅ LANGCHAIN v1.0.1 WORKING:** CLI starts successfully, SDK dependencies removed
-**📍 YOU ARE ON:** `langchain` branch (tag: langchain-v1.0.1)
-**🎯 NEXT STEPS:** Test 5-phase orchestrator with a simple query
+**✅ V1.1.0 PLAN COMPLETE:** Unified DeepAgents + LangGraph architecture defined
+**📍 YOU ARE ON:** `langchain` branch
+**🎯 NEXT STEPS:** Execute Phase 0 (Foundation, Days 1-10)
 
 ---
 
@@ -46,20 +43,21 @@ eames-design-agent/
 - **Tag names:** `langchain-v1.0.0`, `sdk-v1.0.0`, etc. (track versions)
 - **See:** `VERSIONING_STRATEGY.md` for complete details
 
-### The Problem
-We tried to merge LangChain + Claude SDK + custom processors. They conflict. After $1000 spent on fixes, we discovered the architecture is fundamentally broken.
+### V1.1.0 Architecture (Current)
 
-### The Solution
-Split into TWO clean implementations:
-1. **langchain** - Pure LangChain with 5-phase orchestration (multi-provider, flexible)
-2. **sdk** - Pure Claude SDK with Eames Brain hooks (production-ready, simple)
+The unified plan combines the best of all research into a **Hybrid Architecture**:
 
-**Both will have:**
+1. **Custom LangGraph Orchestrator** - 5-phase workflow control with approval gates
+2. **DeepAgents Phase Agents** - Battle-tested planning, memory, and subagents
+3. **Eames Brain 2.0** - Domain intelligence (design + engineering prompts)
+4. **Filesystem as Universal Interface** - CompositeBackend for hybrid storage
+
+**Key Outcomes:**
 - ✅ Discovery → Define → Design → Develop → Deliver phases
-- ✅ Localhost preview
-- ✅ GitHub integration
-- ✅ Netlify/Vercel deployment
-- ✅ Live link sharing
+- ✅ <$1 per app with prompt caching
+- ✅ <15 minutes end-to-end
+- ✅ GitHub + Vercel/Netlify deployment
+- ✅ Human approval checkpoints (PRD, deployment)
 
 ---
 
@@ -162,47 +160,46 @@ When user asks to work on a version:
 
 ### Start Here
 1. **THIS FILE** (`CLAUDE.md`) - Master context, read every session
-2. `REPOSITORY_STRATEGY.md` - Complete plan for repository split
-3. `LANGCHAIN_VS_SDK_COMPLETE.md` - Comprehensive tech comparison
-4. `docs/EAMES_VISION.md` - Original vision document
+2. **`MASTER_IMPLEMENTATION_PLAN_V1.1.0.md`** - Complete implementation blueprint (READ THIS!)
+3. `docs/EAMES_VISION.md` - Original vision document
 
 ### Reference (As Needed)
-- `EAMES_2.0_REWRITE_PLAN.md` - SDK version implementation plan
-- `COMPLETE_REWRITE_REQUIRED.md` - Root cause analysis
-- `WARP.md` - Warp-specific development instructions
-- `EAMES_VS_CLAUDE_CODE.md` - Feature parity analysis
+- `docs/research/` - Research findings and analysis
 
 ---
 
-## 🚀 IMMEDIATE ACTIONS (Phase 1)
+## 🚀 IMMEDIATE ACTIONS (Phase 0)
 
-**You should execute these NOW:**
+**Execute V1.1.0 Phase 0: Foundation (Days 1-10)**
 
+See `MASTER_IMPLEMENTATION_PLAN_V1.1.0.md` for complete details.
+
+**Quick Start:**
 ```bash
 cd /Users/basavarajkm/code/eames-design-agent
+git checkout langchain
 
-# 1. Commit everything
-git add .
-git commit -m "chore: archive current hybrid state
+# Install dependencies
+bun install
 
-- Mixed LangChain + SDK implementation
-- Analysis documents added
-- Identified architectural conflicts  
-- Ready to split into clean versions"
+# Start PostgreSQL
+docker run -d --name eames-postgres \
+  -e POSTGRES_PASSWORD=eames \
+  -p 5432:5432 \
+  postgres:16-alpine
 
-# 2. Push to GitHub
-git push origin main
+# Configure environment
+cp env.example .env  # Add API keys
 
-# 3. Tag this milestone
-git tag -a v0.9.0-hybrid -m "Hybrid state before split"
-git push origin v0.9.0-hybrid
-
-# 4. Verify
-git log --oneline -1
-git tag -l
+# Run
+bun start
 ```
 
-**After Phase 1:** We'll create langchain-v1 and sdk-v1 branches
+**Phase 0 Goals:**
+- [ ] DeepAgent "Hello World" working
+- [ ] CompositeBackend routing verified
+- [ ] LangSmith traces appearing
+- [ ] Basic Ink CLI shell
 
 ---
 
@@ -237,21 +234,19 @@ git tag -l
 
 ## 🛠️ Tech Stack
 
----
-
-## Tech Stack
-
 | Layer | Technology |
 |-------|------------|
-| **Runtime** | Bun |
-| **UI** | Ink (React for CLI) → future: Web (React), Mobile (Flutter) |
-| **AI Core** | Claude Agent SDK + LangChain |
-| **Protocols** | A2UI, AG-UI, MCP |
+| **Orchestration** | LangGraph (StateGraph) |
+| **Phase Agents** | DeepAgents v0.3.2+ |
+| **LLM Providers** | Anthropic (Sonnet 4, Haiku) |
+| **Runtime** | Bun (dev) / Node.js 20+ (prod) |
+| **UI** | Ink (React for CLI) |
+| **Memory** | PostgreSQL + CompositeBackend |
+| **Tracing** | LangSmith |
 | **Testing** | Bun test (Jest-compatible) |
 | **Language** | TypeScript (ESM) |
 | **VCS** | Git + GitHub |
 | **Project Mgmt** | Linear (via MCP) |
-| **Multi-Agent** | LLM Council pattern |
 
 ---
 
@@ -585,18 +580,19 @@ export function Component({ value }: Props) {
 
 ---
 
-## Current Phase: Phase 2
+## Current Phase: V1.1.0 Phase 0 (Foundation)
 
 ### Goals
-- SDK message → UI callback mapping
-- Streaming improvements
-- Tool call visualization
-- Phase visualization in SDK mode
+- Prove DeepAgents + LangGraph hybrid works
+- Set up infrastructure (PostgreSQL, LangSmith)
+- Create basic Ink CLI shell
+- Test CompositeBackend routing
 
 ### Success Criteria
-- [ ] SDK mode produces identical UI output
-- [ ] Streaming works correctly
-- [ ] Tool calls visible in TaskListView
+- [ ] DeepAgent invokes successfully
+- [ ] CompositeBackend routes /workspace, /memories, /deliverables
+- [ ] LangSmith traces appear
+- [ ] CLI displays streaming output
 
 ---
 
@@ -640,5 +636,5 @@ All file modifications must include timestamp:
 
 ---
 
-**Version:** 3.0.0
-**Last Updated:** 2026-01-12 17:15:00
+**Version:** 4.0.0 (V1.1.0 Architecture)
+**Last Updated:** 2026-01-18 16:50:00
