@@ -1,26 +1,51 @@
-# Eames 🎨
+# Eames 🎨 - Claude SDK Edition
 
-**Last Updated:** 2026-01-12 18:45:00
-**Version:** 1.0.0
+**Last Updated:** 2026-01-18 12:15:00
+**Version:** 2.0.0 (Claude SDK)
+**Branch:** `sdk`
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Bun](https://img.shields.io/badge/Bun-%23000000.svg?style=flat&logo=bun&logoColor=white)](https://bun.sh)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Claude](https://img.shields.io/badge/Claude-Agent_SDK-CC6B4C?style=flat&logo=anthropic&logoColor=white)](https://docs.anthropic.com/en/docs/agents)
 
-Eames is an autonomous Product Design agent that researches, synthesizes, and creates. It conducts deep research on user needs, design patterns, and competitors, then outputs actionable deliverables like PRDs and React components. Think Claude Code, but built specifically for Product Design.
+**Eames** is an end-to-end Autonomous Product Design Agent: **Discovery → Delivery**. This is the **Claude SDK implementation** featuring native Claude Agent SDK integration, hierarchical Skills system, and Claude Code CLI features.
 
 > Named after Charles & Ray Eames, pioneers of design who believed "Design is a plan for arranging elements in such a way as best to accomplish a particular purpose."
 
-## Overview
+## 🌟 What's New in v2.0.0
 
-Eames takes complex design challenges and turns them into clear, step-by-step research plans. It searches for competitor patterns, synthesizes findings into personas and requirements, and generates production-ready deliverables.
+### Revolutionary Architecture
+- **🧠 Intent Understanding**: Analyzes your query before execution to determine the best approach
+- **💬 Ask Mode**: Generates strategic questions to gather missing context
+- **📋 Plan Mode**: Proposes execution plans with only relevant phases (not rigid 5-phase pipeline)
+- **⚡ Execute Mode**: Adaptive phase routing - only runs phases you need
+- **🔄 Ralph Wiggum Loops**: Continuous validation in EVERY phase, not just code
 
-**Key Capabilities:**
-- **Intelligent Task Planning**: Decomposes design requests into research, synthesis, and execution phases
-- **Autonomous Research**: Searches for competitor features, UX patterns, and design trends
-- **Synthesis Engine**: Creates personas, user journeys, and requirements from research
-- **Output Generation**: Produces PRDs, user stories, and React/Tailwind components
-- **Self-Validation**: Reflects on research completeness before generating outputs
+### SDK-Specific Features
+- **📦 Hierarchical Skills System**: `.eames/skills/` directory structure
+  - Load skills on-demand with metadata
+  - Nested resources (docs, examples, templates)
+  - Skills override per project
+- **🤖 Sub-Agents with Context Forking**: 5 specialized sub-agents
+  - Research Agent (discovery)
+  - Strategy Agent (planning)
+  - Design Agent (UI/UX)
+  - Code Agent (implementation)
+  - Review Agent (quality)
+- **💻 Claude Code CLI Features**:
+  - `/ask` - Gather context mode
+  - `/plan` - Generate execution plan
+  - `/skills` - List available skills
+  - `/agents` - View sub-agent status
+- **🔒 Permissions System**: Explicit approval for file/network operations
+- **💾 Session Persistence**: Resume from where you left off
+
+## 📊 Project Tracking
+
+**Linear Project**: Coming soon for SDK version
+
+## 🚀 Quick Start
 
 ## Prerequisites
 
@@ -125,48 +150,173 @@ Eames will automatically:
 
 ## Architecture
 
-Eames uses a 5-phase agentic loop:
+### v2.0 Adaptive Orchestration with Skills
 
-1. **Understand**: Extract intent and entities from your design request
-2. **Plan**: Create task list (research → synthesis → execution)
-3. **Execute**: Run tools to gather design research
-4. **Reflect**: Evaluate research completeness
-5. **Answer**: Generate final deliverable
+```
+Stage 0: Intent Understanding
+    ↓
+[Analyze query + Load relevant skills]
+    ↓
+┌─────────────┬─────────────┬─────────────┐
+│  Ask Mode   │  Plan Mode  │ Execute Mode│
+│(gather ctx) │(propose plan)│(run phases) │
+└─────────────┴─────────────┴─────────────┘
+         ↓
+   [Fork sub-agents for complex tasks]
+```
 
-### Agent Roles
+### Hierarchical Skills System
 
-| Role | Responsibility |
-|------|----------------|
-| Design Ops Lead | Plans and sequences research tasks |
-| UX Researcher | Searches for patterns and competitor analysis |
-| Synthesis Engine | Creates personas and requirements |
-| UI/Product Engineer | Outputs PRDs and React components |
+```
+.eames/
+└── skills/
+    ├── discovery/
+    │   ├── skill.json          # Metadata
+    │   ├── README.md           # Full description
+    │   └── resources/
+    │       ├── competitor_template.md
+    │       └── research_checklist.md
+    ├── design/
+    │   ├── skill.json
+    │   ├── README.md
+    │   └── resources/
+    │       ├── wireframe_spec.json
+    │       └── component_library/
+    └── develop/
+        ├── skill.json
+        └── README.md
+```
 
-## Tools Available
+**Loading Strategy**: Metadata → Full docs (on use) → Resources (on demand)
 
-| Tool | Description |
-|------|-------------|
-| `search_competitors` | Find competitor features, user flows, UX analysis |
-| `search_ux_patterns` | Research Nielsen Norman patterns, best practices |
-| `search_design_trends` | Current Dribbble/Behance trends |
-| `search_accessibility` | WCAG guidelines, a11y best practices |
-| `search_web` | General web search via Tavily |
+### Sub-Agents with Context Forking
+
+| Sub-Agent | Purpose | Context |
+|-----------|---------|----------|
+| **Research** | Discovery phase | Forked + research tools |
+| **Strategy** | Define phase, PRD | Forked + strategy skills |
+| **Design** | UI/UX, wireframes | Forked + design system |
+| **Code** | Implementation | Forked + code skills |
+| **Review** | Quality gates | Forked + all artifacts |
+
+**How it works**: Main agent forks context to sub-agent → sub-agent executes → results merge back
+
+### Product Design Phases (Adaptive)
+
+| Phase | Focus | Ralph Loop |
+|-------|-------|------------|
+| **Discovery** | Research competitors, users | Research → Synthesize → Validate |
+| **Define** | Create PRD, user stories | Draft → Review → Refine |
+| **Design** | UI/UX, wireframes | Sketch → Prototype → Critique |
+| **Develop** | Generate code | Code → Test → Fix |
+| **Deliver** | Deploy to production | Deploy → Monitor → Iterate |
+
+## CLI Commands
+
+### Slash Commands (Claude Code Style)
+| Command | Description |
+|---------|-------------|
+| `/ask` | Enter Ask Mode - gather context via questions |
+| `/plan` | Enter Plan Mode - generate execution plan |
+| `/skills` | List available skills in `.eames/skills/` |
+| `/agents` | View sub-agent status and context |
+| `/session` | Manage session (save/load/clear) |
+| `/permissions` | Review permission requests |
+
+## Skills Catalog
+
+### Built-in Skills
+| Skill | Phase | Description |
+|-------|-------|-------------|
+| `discovery` | 1 | Competitor research, user research |
+| `define` | 2 | PRD generation, user stories |
+| `design` | 3 | Wireframes, component specs |
+| `develop` | 4 | Code generation, testing |
+| `deliver` | 5 | Deployment, monitoring |
+
+### Creating Custom Skills
+
+Create `.eames/skills/my-skill/skill.json`:
+```json
+{
+  "name": "my-skill",
+  "version": "1.0.0",
+  "description": "Custom skill description",
+  "phase": "design",
+  "tools": ["tool1", "tool2"],
+  "resources": ["README.md", "templates/"]
+}
+```
 
 ## Tech Stack
 
-- **Runtime**: [Bun](https://bun.sh)
-- **UI Framework**: [React](https://react.dev) + [Ink](https://github.com/vadimdemedes/ink) (terminal UI)
-- **LLM Integration**: [LangChain.js](https://js.langchain.com) with multi-provider support
-- **Schema Validation**: [Zod](https://zod.dev)
-- **Language**: TypeScript
+| Layer | Technology |
+|-------|------------|
+| **Runtime** | [Bun](https://bun.sh) |
+| **UI** | [Ink](https://github.com/vadimdemedes/ink) (React for CLI) |
+| **AI Core** | [Claude Agent SDK](https://docs.anthropic.com/en/docs/agents) |
+| **Model** | Claude Sonnet 4.5, Opus |
+| **Skills System** | Hierarchical file-based loading |
+| **Sub-Agents** | Context forking with SDK |
+| **Session** | JSON-based persistence |
+| **Schema Validation** | [Zod](https://zod.dev) |
+| **Language** | TypeScript (ESM) |
+| **VCS** | Git + GitHub |
+| **Project Mgmt** | Linear (via MCP) |
 
-### Changing Models
+## Development Roadmap
 
-Type `/model` in the CLI to switch between:
-- Claude Sonnet 4.5 (Anthropic) - **Recommended**
-- GPT 4.1 (OpenAI)
-- Gemini 3 (Google)
-- Ollama (Local LLMs)
+### Week 1-2: Skills Foundation
+- [ ] Hierarchical skills loader
+- [ ] Skill metadata parser
+- [ ] Resource lazy loading
+- [ ] Skills CLI commands
+
+### Week 3-4: Sub-Agents
+- [ ] Context forking system
+- [ ] 5 specialized sub-agents
+- [ ] Result merging
+- [ ] Sub-agent monitoring
+
+### Week 5-6: Claude Code Features
+- [ ] Slash command parser
+- [ ] Permissions system
+- [ ] Session persistence
+- [ ] CLI improvements
+
+### Week 7-8: Phase Implementation
+- [ ] Discovery phase + skills
+- [ ] Define phase + skills
+- [ ] Design phase + skills
+- [ ] Develop phase + skills
+
+### Week 9-10: Delivery & Integration
+- [ ] Deliver phase completion
+- [ ] GitHub workflow
+- [ ] Netlify/Vercel deployment
+- [ ] Live preview
+
+### Week 11-12: Polish & Production
+- [ ] Error handling
+- [ ] Performance optimization
+- [ ] Documentation
+- [ ] Production release
+
+## Other Implementations
+
+Eames has three parallel implementations:
+
+| Branch | Focus | Status |
+|--------|-------|--------|
+| **langchain** | Multi-provider, LLM Council | 🚀 In Development |
+| **sdk** | Claude SDK, Skills system | 🚧 In Development (You are here) |
+| **webapp** | A2UI/AG-UI, Web interface | 📋 Planned |
+
+Switch branches:
+```bash
+git checkout langchain  # LangChain version
+git checkout webapp     # Web app version
+```
 
 ## Credits
 
