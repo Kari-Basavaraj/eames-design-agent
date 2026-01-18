@@ -323,6 +323,9 @@ export function useSdkAgentExecution({
     onTaskToolCallsSet: setToolCalls,
     onSdkMessage: (message: any) => {
       // Process SDK messages through our enhanced processor for real-time tool tracking
+      if (message?.type === 'assistant') {
+        console.log('[Hook] Received assistant message, processing...');
+      }
       processorRef.current?.processMessage(message);
     },
   }), [setPhase, markPhaseComplete, setAnswering, setProgressMessage, setToolCalls]);
@@ -370,14 +373,17 @@ export function useSdkAgentExecution({
       // Initialize enhanced processor for real-time tool tracking
       processorRef.current = new EnhancedSdkProcessor({
         onToolStart: (event) => {
+          console.log('[Hook] Tool started:', event.tool, event.id);
           setLiveToolCalls(calls => [...calls, event]);
           setCurrentTurn(prev => prev ? { ...prev, liveToolCalls: [...prev.liveToolCalls, event] } : prev);
         },
         onToolProgress: (event) => {
+          console.log('[Hook] Tool progress:', event.tool, event.status);
           setLiveToolCalls(calls => calls.map(c => c.id === event.id ? event : c));
           setCurrentTurn(prev => prev ? { ...prev, liveToolCalls: prev.liveToolCalls.map(c => c.id === event.id ? event : c) } : prev);
         },
         onToolComplete: (event) => {
+          console.log('[Hook] Tool completed:', event.tool);
           setLiveToolCalls(calls => calls.map(c => c.id === event.id ? event : c));
           setCurrentTurn(prev => prev ? { ...prev, liveToolCalls: prev.liveToolCalls.map(c => c.id === event.id ? event : c) } : prev);
           
