@@ -15,9 +15,9 @@
 
 ## 🚨 CURRENT STATUS (2026-01-18)
 
-**✅ BRANCHES CREATED:** Both langchain and sdk branches are ready!
-**📍 YOU ARE ON:** `langchain` branch (LangChain implementation)
-**🎯 NEXT STEPS:** Test and develop features on this branch
+**✅ LANGCHAIN v1.0.1 WORKING:** CLI starts successfully, SDK dependencies removed
+**📍 YOU ARE ON:** `langchain` branch (tag: langchain-v1.0.1)
+**🎯 NEXT STEPS:** Test 5-phase orchestrator with a simple query
 
 ---
 
