@@ -1,26 +1,87 @@
-# Eames 🎨
+# Eames 🎨 - Autonomous Product Design Agent
 
-**Last Updated:** 2026-01-12 18:45:00
-**Version:** 1.0.0
+**Last Updated:** 2026-01-18 12:15:00
+**Version:** 2.0.0
+**Branch:** `main` (Archive)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Bun](https://img.shields.io/badge/Bun-%23000000.svg?style=flat&logo=bun&logoColor=white)](https://bun.sh)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Linear](https://img.shields.io/badge/Linear-5E6AD2?style=flat&logo=linear&logoColor=white)](https://linear.app/basavaraj-team/project/eames-design-agent-93b410b37929)
 
-Eames is an autonomous Product Design agent that researches, synthesizes, and creates. It conducts deep research on user needs, design patterns, and competitors, then outputs actionable deliverables like PRDs and React components. Think Claude Code, but built specifically for Product Design.
+**Eames** is an end-to-end Autonomous Product Design Agent: **Discovery → Delivery**.
 
 > Named after Charles & Ray Eames, pioneers of design who believed "Design is a plan for arranging elements in such a way as best to accomplish a particular purpose."
 
-## Overview
+## 🚨 Important: Choose Your Implementation
 
-Eames takes complex design challenges and turns them into clear, step-by-step research plans. It searches for competitor patterns, synthesizes findings into personas and requirements, and generates production-ready deliverables.
+**This is the main branch (archive).** Eames v2.0 has **three parallel implementations** in separate branches. Choose the one that fits your needs:
 
-**Key Capabilities:**
-- **Intelligent Task Planning**: Decomposes design requests into research, synthesis, and execution phases
-- **Autonomous Research**: Searches for competitor features, UX patterns, and design trends
-- **Synthesis Engine**: Creates personas, user journeys, and requirements from research
-- **Output Generation**: Produces PRDs, user stories, and React/Tailwind components
-- **Self-Validation**: Reflects on research completeness before generating outputs
+| Branch | Focus | Best For | Status |
+|--------|-------|----------|--------|
+| **[langchain](../../tree/langchain)** | Multi-provider LLM, Council pattern | Flexibility, multiple models, research | 🚀 In Development |
+| **[sdk](../../tree/sdk)** | Claude SDK, Skills system | Production, simplicity, Claude-native | 🚧 In Development |
+| **[webapp](../../tree/webapp)** | A2UI/AG-UI, Web interface | Web-based UI, collaboration | 📋 Planned |
+
+### Quick Start
+
+```bash
+# Clone the repository
+git clone https://github.com/Kari-Basavaraj/eames-design-agent.git
+cd eames-design-agent
+
+# Choose your implementation:
+git checkout langchain  # Multi-provider, LLM Council
+# OR
+git checkout sdk        # Claude SDK, Skills system
+# OR  
+git checkout webapp     # Web app (coming soon)
+
+# Install and run
+bun install
+bun start
+```
+
+## 🌟 What's New in v2.0.0
+
+### Revolutionary Architecture (All Implementations)
+- **🧠 Intent Understanding**: Analyzes your query before execution
+- **💬 Ask Mode**: Gathers missing context via strategic questions
+- **📋 Plan Mode**: Proposes execution plans with only relevant phases
+- **⚡ Execute Mode**: Adaptive phase routing - not rigid 5-phase pipeline
+- **🔄 Ralph Wiggum Loops**: Continuous validation in EVERY phase
+
+### Implementation-Specific Features
+
+#### LangChain Version
+- 🏛️ **LLM Council**: 6 specialized agents with different models
+- 🔀 **Multi-Provider**: Claude, OpenAI, Google, Ollama
+- 📊 **LangSmith**: Full observability and tracing
+- 🔗 **LangGraph**: Complex workflow orchestration
+
+#### SDK Version
+- 📦 **Skills System**: `.eames/skills/` hierarchical loading
+- 🤖 **Sub-Agents**: Context forking with 5 specialized agents
+- 💻 **Claude Code CLI**: Slash commands, permissions, sessions
+- 🔒 **Native Claude SDK**: Production-ready, simple
+
+#### WebApp Version (Planned)
+- 🎨 **A2UI Protocol**: Structured UI generation
+- 🔄 **AG-UI Events**: Real-time progress streaming
+- 🤝 **A2A Coordination**: Multi-agent workflows
+- 🌐 **Browser-Based**: No CLI required
+
+## Vision
+
+Eames transforms product design from idea to deployed application:
+
+1. **Discovery** 🔍: Research competitors, users, patterns
+2. **Define** 📋: Generate PRDs, user stories, requirements
+3. **Design** 🎨: Create UI/UX, wireframes, components
+4. **Develop** ⚙️: Generate production-ready code
+5. **Deliver** 🚀: Deploy to Netlify/Vercel with live link
+
+**Key Insight**: Not all tasks need all phases! v2.0 routes adaptively based on your query.
 
 ## Prerequisites
 
@@ -123,50 +184,87 @@ Eames will automatically:
 3. Synthesize findings into personas and requirements
 4. Generate a comprehensive deliverable (PRD, code, or analysis)
 
-## Architecture
+## Example Workflows
 
-Eames uses a 5-phase agentic loop:
+### Ask Mode (Vague Query)
+```
+> "Build a fintech app"
 
-1. **Understand**: Extract intent and entities from your design request
-2. **Plan**: Create task list (research → synthesis → execution)
-3. **Execute**: Run tools to gather design research
-4. **Reflect**: Evaluate research completeness
-5. **Answer**: Generate final deliverable
+Eames: I need more context. Let me ask a few questions:
+1. What specific problem does this solve?
+2. Who is your target user?
+3. What's your core feature?
+```
 
-### Agent Roles
+### Plan Mode (Clear Query)
+```
+> "Design a split bill feature for college students"
 
-| Role | Responsibility |
-|------|----------------|
-| Design Ops Lead | Plans and sequences research tasks |
-| UX Researcher | Searches for patterns and competitor analysis |
-| Synthesis Engine | Creates personas and requirements |
-| UI/Product Engineer | Outputs PRDs and React components |
+Eames: Here's my execution plan:
+- Phase 1: Discovery (research Venmo, Splitwise)
+- Phase 3: Design (create UI/UX specs)
+- Phase 4: Develop (generate React components)
+[Skips Phase 2 - you provided clear requirements]
+```
 
-## Tools Available
+### Execute Mode (Technical Query)
+```
+> "Convert this Figma to React code"
 
-| Tool | Description |
-|------|-------------|
-| `search_competitors` | Find competitor features, user flows, UX analysis |
-| `search_ux_patterns` | Research Nielsen Norman patterns, best practices |
-| `search_design_trends` | Current Dribbble/Behance trends |
-| `search_accessibility` | WCAG guidelines, a11y best practices |
-| `search_web` | General web search via Tavily |
+Eames: Analyzing design...
+[Jumps directly to Phase 4: Develop]
+```
 
-## Tech Stack
+## Documentation
 
-- **Runtime**: [Bun](https://bun.sh)
-- **UI Framework**: [React](https://react.dev) + [Ink](https://github.com/vadimdemedes/ink) (terminal UI)
-- **LLM Integration**: [LangChain.js](https://js.langchain.com) with multi-provider support
-- **Schema Validation**: [Zod](https://zod.dev)
-- **Language**: TypeScript
+### Architecture Documents
+- **[EAMES_V2_ARCHITECTURE_LANGCHAIN.md](EAMES_V2_ARCHITECTURE_LANGCHAIN.md)** - LangChain implementation details
+- **[EAMES_V2_ARCHITECTURE_SDK.md](EAMES_V2_ARCHITECTURE_SDK.md)** - Claude SDK implementation details
+- **[EAMES_V2_ARCHITECTURE_WEBAPP.md](EAMES_V2_ARCHITECTURE_WEBAPP.md)** - WebApp implementation details
+- **[WARP.md](WARP.md)** - Development guidelines for AI agents
 
-### Changing Models
+### Project Management
+- **Linear Project**: [Eames Design Agent](https://linear.app/basavaraj-team/project/eames-design-agent-93b410b37929)
+- **LangChain Project**: [LangChain v1.0.0](https://linear.app/basavaraj-team/project/eames-design-agent-langchain-v100-10213d90db52)
 
-Type `/model` in the CLI to switch between:
-- Claude Sonnet 4.5 (Anthropic) - **Recommended**
-- GPT 4.1 (OpenAI)
-- Gemini 3 (Google)
-- Ollama (Local LLMs)
+## Tech Stack (All Implementations)
+
+| Layer | Technology |
+|-------|------------|
+| **Runtime** | Bun |
+| **UI** | Ink (CLI) / React (Web) |
+| **AI Core** | LangChain + Claude SDK |
+| **Protocols** | A2UI, AG-UI, MCP |
+| **Language** | TypeScript (ESM) |
+| **VCS** | Git + GitHub |
+| **Project Mgmt** | Linear |
+| **Deployment** | Netlify/Vercel |
+
+## Contributing
+
+Eames is under active development. Contributions welcome!
+
+1. Choose an implementation branch
+2. Check the Linear project board for issues
+3. Create a feature branch
+4. Submit a PR
+
+## Repository Structure
+
+```
+eames-design-agent/
+├── main (branch)          ← You are here (archive/docs)
+├── langchain (branch)     ← LangChain implementation
+├── sdk (branch)           ← Claude SDK implementation
+└── webapp (branch)        ← Web app implementation (planned)
+```
+
+### Version Tags
+```
+langchain-v1.0.0 → v1.0.1 → v1.0.2 → v1.1.0 → v1.1.1 → v1.2.0 → v2.0.0
+sdk-v1.0.0 → v2.0.0
+v0.9.0-hybrid (main branch archive)
+```
 
 ## Credits
 
