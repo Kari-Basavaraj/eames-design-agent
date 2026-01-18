@@ -70,17 +70,6 @@ export const AgentProgressView = React.memo(function AgentProgressView({
 
   if (!message && activeTaskCount === 0) return null;
 
-  // Phase emoji indicators
-  const phaseEmoji: Record<string, string> = {
-    understand: '🔍',
-    plan: '📋',
-    execute: '⚙️',
-    reflect: '🧐',
-    answer: '✨',
-  };
-
-  const emoji = currentPhase ? phaseEmoji[currentPhase] || '' : '';
-  
   // Show task count when executing
   const showingTaskCount = currentPhase === 'execute' && activeTaskCount > 0;
   const displayMessage = showingTaskCount 
@@ -91,7 +80,6 @@ export const AgentProgressView = React.memo(function AgentProgressView({
     <Box marginTop={spacing.tight}>
       <Text color={colors.primary}>{frames[frame]} </Text>
       {showingTaskCount && <Text color="yellow">⚡ </Text>}
-      {!showingTaskCount && emoji && <Text>{emoji} </Text>}
       <Text color={colors.muted} dimColor>{displayMessage}</Text>
     </Box>
   );
