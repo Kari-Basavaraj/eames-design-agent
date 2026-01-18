@@ -35,7 +35,7 @@ import * as path from 'path';
 
 import { useQueryQueue } from './hooks/useQueryQueue.js';
 import { useAgentExecution } from './hooks/useAgentExecution.js';
-import { useSdkAgentExecution } from './hooks/useSdkAgentExecution.js';
+// NOTE: This is the LangChain version - no SDK
 
 import { getSetting, setSetting } from './utils/config.js';
 import { 
@@ -101,16 +101,13 @@ const SLASH_COMMANDS: Record<string, { description: string; handler: string }> =
   '/help': { description: 'Show available commands', handler: 'help' },
   '/clear': { description: 'Clear conversation history', handler: 'clear' },
   '/model': { description: 'Change AI model', handler: 'model' },
-  '/sdk': { description: 'Toggle SDK mode (Claude Code style)', handler: 'sdk' },
   '/exit': { description: 'Exit Eames', handler: 'exit' },
   '/quit': { description: 'Exit Eames', handler: 'exit' },
   '/q': { description: 'Exit Eames', handler: 'exit' },
-  '/compact': { description: 'Compact conversation (SDK mode only)', handler: 'compact' },
   '/cost': { description: 'Show token usage', handler: 'cost' },
-  '/memory': { description: 'Edit CLAUDE.md memory files', handler: 'memory' },
-  '/config': { description: 'Open settings', handler: 'config' },
   '/status': { description: 'Show status info', handler: 'status' },
   '/version': { description: 'Show version', handler: 'version' },
+  // Note: This is the LangChain version (no /sdk command)
 };
 
 // ============================================================================
@@ -121,7 +118,7 @@ export function CLI({ initialQuery }: CLIProps) {
   const { exit } = useApp();
 
   const [state, setState] = useState<AppState>('idle');
-  const [useSdkMode, setUseSdkMode] = useState(() => getSetting('useSdkMode', true) as boolean);  // Default to SDK mode
+  // LangChain version - no SDK mode toggle
   const [provider, setProvider] = useState(() => getSetting('provider', DEFAULT_PROVIDER));
   const [model, setModel] = useState(() => {
     const savedModel = getSetting('modelId', null) as string | null;
@@ -185,20 +182,7 @@ export function CLI({ initialQuery }: CLIProps) {
     });
   }, []);
 
-  // Standard agent execution (5-phase)
-  const standardAgent = useAgentExecution({
-    model,
-    messageHistory: messageHistoryRef.current,
-  });
-
-  // SDK agent execution (Claude Code style)
-  const sdkAgent = useSdkAgentExecution({
-    model,
-    permissionMode,
-    onPermissionRequest: handlePermissionRequest,
-  });
-
-  // Use the appropriate agent based on SDK mode
+  // LangChain agent execution (5-phase orchestrator)
   const {
     currentTurn,
     answerStream,
@@ -207,7 +191,10 @@ export function CLI({ initialQuery }: CLIProps) {
     handleAnswerComplete: baseHandleAnswerComplete,
     cancelExecution,
     setSessionId,
-  } = useSdkMode ? sdkAgent : standardAgent;
+  } = useAgentExecution({
+    model,
+    messageHistory: messageHistoryRef.current,
+  });
 
   // Capture tasks when answer stream starts
   useEffect(() => {
@@ -280,12 +267,7 @@ export function CLI({ initialQuery }: CLIProps) {
         setState('provider_select');
         return true;
 
-      case '/sdk':
-        const newSdkMode = !useSdkMode;
-        setUseSdkMode(newSdkMode);
-        setSetting('useSdkMode', newSdkMode);
-        setStatusMessage(`SDK mode: ${newSdkMode ? 'ON (Claude Code style)' : 'OFF (5-phase agent)'}`);
-        return true;
+      // /sdk command removed - this is the LangChain version
 
       case '/exit':
       case '/quit':
@@ -295,11 +277,11 @@ export function CLI({ initialQuery }: CLIProps) {
         return true;
 
       case '/status':
-        setStatusMessage(`Model: ${model}\nProvider: ${provider}\nSDK Mode: ${useSdkMode ? 'ON' : 'OFF'}`);
+        setStatusMessage(`Model: ${model}\nProvider: ${provider}\nMode: LangChain (5-phase)`);
         return true;
 
       case '/version':
-        setStatusMessage('Eames v1.0.0 (Claude Agent SDK powered)');
+        setStatusMessage('Eames LangChain v1.0.0 (5-phase orchestrator)');
         return true;
 
       // Cost tracking - shows token usage and costs
@@ -434,7 +416,7 @@ Est. Cost: ${formatCost(sessionUsage.estimatedCost)}`;
 💰 Est. Cost: ${formatCost(usage.estimatedCost)}
 ⏱️ Session: ${uptimeStr}
 🤖 Model: ${model}
-${useSdkMode ? '⚡ SDK Mode: Active' : '📦 Mode: Basic'}`;
+📦 Mode: LangChain (5-phase)`;
         
         setStatusMessage(stats);
         return true;
@@ -455,8 +437,8 @@ ${useSdkMode ? '⚡ SDK Mode: Active' : '📦 Mode: Basic'}`;
         // Check model
         checks.push(`✅ Model: ${model}`);
         
-        // Check SDK mode
-        checks.push(useSdkMode ? '✅ SDK Mode: Enabled' : '⚠️ SDK Mode: Disabled (using basic mode)');
+        // Check mode
+        checks.push('✅ Mode: LangChain (5-phase orchestrator)');
         
         // Check working directory
         checks.push(`✅ Working Directory: ${process.cwd()}`);
@@ -488,20 +470,14 @@ All systems operational!`;
         return true;
 
       default:
-        // Pass custom slash commands to SDK agent (from ~/.claude/commands/ or .claude/commands/)
-        // SDK will handle these as skills/commands
-        if (command.startsWith('/') && useSdkMode) {
-          // Let SDK handle custom commands
-          return false;
-        }
-        // In non-SDK mode, show unknown command
+        // In LangChain mode, show unknown command
         if (command.startsWith('/')) {
           setStatusMessage(`Unknown command: ${command}. Type /help for available commands.`);
           return true;
         }
         return false;
     }
-  }, [useSdkMode, model, provider, exit, setStatusMessage, setSetting, setHistory, setState, setUseSdkMode]);
+  }, [model, provider, exit, setStatusMessage, setSetting, setHistory, setState]);
 
   /**
    * Process next queued query when state becomes idle
@@ -869,11 +845,8 @@ All systems operational!`;
       <Box flexDirection="column">
         <SessionPicker
           onSelect={(sessionId) => {
-            // Set session ID for SDK agent to resume
-            if (useSdkMode && setSessionId) {
-              setSessionId(sessionId);
-            }
-            setStatusMessage(`Resumed session: ${sessionId.slice(0, 12)}...`);
+            // LangChain version - session resume not implemented yet
+            setStatusMessage(`Session resume not yet implemented in LangChain mode`);
             setState('idle');
           }}
           onCancel={() => {
@@ -892,21 +865,13 @@ All systems operational!`;
 
   return (
     <Box flexDirection="column">
-      {/* Status bar - one line at top */}
-      {useSdkMode && (
-        <StatusBar 
-          permissionMode={permissionMode}
-          thinkingMode={thinkingMode}
-          sdkMode={useSdkMode}
-          model={model}
-        />
-      )}
+      {/* LangChain version - no status bar */}
 
       {/* Intro + completed history - COLLAPSED (last 3 only) */}
       <Static items={staticItems}>
         {(item) =>
           item.type === 'intro' ? (
-            <Intro key={item.key} provider={provider} model={model} useSdkMode={useSdkMode} />
+            <Intro key={item.key} provider={provider} model={model} useSdkMode={false} />
           ) : (
             <CompletedTurnView key={item.key} turn={item.turn} />
           )
@@ -938,15 +903,8 @@ All systems operational!`;
           </Box>
           
           {/* Real-time tool calls and progress */}
-          {useSdkMode ? (
-            // SDK mode: ALWAYS show LiveProgress (component handles empty states)
-            <LiveProgress 
-              phase={currentTurn.state.currentPhase}
-              tools={(currentTurn as any).liveToolCalls || []}
-              message={currentTurn.state.progressMessage}
-            />
-          ) : currentTurn.state.progressMessage ? (
-            // Standard mode: show phase progress
+          {currentTurn.state.progressMessage ? (
+            // LangChain mode: show phase progress
             <Box marginLeft={2} marginTop={spacing.tight}>
               <AgentProgressView state={currentTurn.state} />
             </Box>
