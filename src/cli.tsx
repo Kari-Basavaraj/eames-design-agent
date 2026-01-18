@@ -17,6 +17,7 @@ import { ProviderSelector, ModelSelector, getModelsForProvider, getDefaultModelF
 import { ApiKeyConfirm, ApiKeyInput } from './components/ApiKeyPrompt.js';
 import { QueueDisplay } from './components/QueueDisplay.js';
 import { AgentProgressView } from './components/AgentProgressView.js';
+import { TaskListView } from './components/TaskListView.js';
 import { LiveProgress } from './components/LiveProgress.js';
 import { PluginManager } from './components/PluginManager.js';
 import { MCPManager } from './components/MCPManager.js';
