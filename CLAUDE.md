@@ -26,18 +26,23 @@
 ### Current State
 ```
 eames-design-agent/
-├── main (branch)           ← YOU ARE HERE (hybrid/archive)
-├── langchain-v1 (branch)   ← NEXT: Pure LangChain version
-└── sdk-v1 (branch)         ← NEXT: Pure Claude SDK version
+├── main (branch)      ← Archive (hybrid state)
+├── langchain (branch) ← Pure LangChain version  
+└── sdk (branch)       ← Pure Claude SDK version
 ```
+
+### Versioning
+- **Branch names:** `langchain` and `sdk` (stay constant)
+- **Tag names:** `langchain-v1.0.0`, `sdk-v1.0.0`, etc. (track versions)
+- **See:** `VERSIONING_STRATEGY.md` for complete details
 
 ### The Problem
 We tried to merge LangChain + Claude SDK + custom processors. They conflict. After $1000 spent on fixes, we discovered the architecture is fundamentally broken.
 
 ### The Solution
 Split into TWO clean implementations:
-1. **langchain-v1** - Pure LangChain with 5-phase orchestration (multi-provider, flexible)
-2. **sdk-v1** - Pure Claude SDK with Eames Brain hooks (production-ready, simple)
+1. **langchain** - Pure LangChain with 5-phase orchestration (multi-provider, flexible)
+2. **sdk** - Pure Claude SDK with Eames Brain hooks (production-ready, simple)
 
 **Both will have:**
 - ✅ Discovery → Define → Design → Develop → Deliver phases
@@ -45,6 +50,101 @@ Split into TWO clean implementations:
 - ✅ GitHub integration
 - ✅ Netlify/Vercel deployment
 - ✅ Live link sharing
+
+---
+
+## 🔄 HOW TO SWITCH BRANCHES (Simple Guide for Non-Engineers)
+
+### See What Branch You're On
+```bash
+git branch --show-current
+```
+This shows: `main`, `langchain`, or `sdk`
+
+### Switch to LangChain Version
+```bash
+cd /Users/basavarajkm/code/eames-design-agent
+git checkout langchain
+```
+✅ Now you're on LangChain version. All your files changed automatically!
+
+### Switch to SDK Version
+```bash
+git checkout sdk
+```
+✅ Now you're on SDK version. Files changed again!
+
+### Go Back to Main (Archive)
+```bash
+git checkout main
+```
+
+### After Switching Branches
+```bash
+# Always install dependencies after switching
+bun install
+
+# Then you can run
+bun start
+```
+
+### Important Rules
+1. **Save your work first:** Before switching, commit or stash changes
+2. **One branch at a time:** You can only work on one branch at a time
+3. **Files change automatically:** When you switch, your files update automatically
+4. **Don't panic:** You can always switch back
+
+### Quick Reference Card
+```bash
+# Where am I?
+git branch --show-current
+
+# Switch to LangChain
+git checkout langchain
+
+# Switch to SDK
+git checkout sdk
+
+# Install after switching
+bun install
+
+# Run the code
+bun start
+```
+
+### Troubleshooting
+
+**Error: "Your local changes would be overwritten"**
+```bash
+# Save your changes first
+git add .
+git commit -m "WIP: saving progress"
+
+# Now you can switch
+git checkout langchain
+```
+
+**Error: "Branch not found"**
+```bash
+# Get latest branches from GitHub
+git fetch origin
+
+# Try again
+git checkout langchain
+```
+
+**Want to see all branches?**
+```bash
+git branch -a
+```
+
+### What AI Agents Should Do
+
+When user asks to work on a version:
+1. Ask: "Which version? (langchain or sdk)"
+2. Run: `git checkout [branch]`
+3. Run: `bun install`
+4. Confirm: "Now on [branch] branch, ready to work!"
 
 ---
 
