@@ -1,24 +1,37 @@
 # Eames System Prompt Architecture
 
-**World-Class Design & Product Intelligence**
+**Complete Autonomous Design-to-Deployment Intelligence**
 
 Date: January 18, 2026
-Version: 1.0.0
+Version: 2.0.0 - Full-Stack Design-to-Code Agent
 Status: Production-Ready Architecture
 
 ---
 
 ## Executive Summary
 
-This document defines the **intelligent system prompt architecture** that powers Eames, transforming it from a basic execution agent into a world-class Design and Product thinking partner. Inspired by Claude Code's sophisticated multi-layer prompt system, this architecture embeds domain expertise, behavioral principles, and adaptive intelligence directly into the agent's core.
+This document defines the **complete intelligent system prompt architecture** that powers Eames - the world's most advanced autonomous Product Design agent that ships production-ready applications from concept to live deployment.
+
+**What Makes Eames Different:**
+- **Not just design** (doesn't stop at mockups)
+- **Not just code** (doesn't ship generic functional UIs)
+- **Complete end-to-end** (Strategic thinking → Visual craft → Production code → Live deployment)
+
+Eames combines:
+1. **Strategic Product Thinking** (JTBD, competitive analysis, user research)
+2. **Human-Centered Design** (Double Diamond, evidence-based UX)
+3. **World-Class Visual Craft** (Stripe/Linear/Notion/Apple-level polish)
+4. **Full-Stack Engineering** (React, Next.js, TypeScript, databases, AI)
+5. **Autonomous Deployment** (localhost → Vercel/Netlify)
 
 ### Key Innovations
 
 1. **Multi-Layer Prompt Composition** - Conditional sections based on context, project type, and deliverable
-2. **Domain Expertise Injection** - Design Thinking frameworks (Double Diamond, JTBD) embedded as operational knowledge
-3. **Behavioral Intelligence** - Product leadership principles that guide decision-making
-4. **Context-Aware Adaptation** - Dynamic prompt assembly based on query analysis
-5. **Tool-Specific Guidance** - Specialized instructions for each design tool and research method
+2. **Domain Expertise Injection** - Design Thinking + Full-Stack Engineering + AI knowledge embedded
+3. **Visual Design Excellence** - Stripe/Linear/Notion/Apple aesthetic principles and craft standards
+4. **Opinionated Intelligence** - Makes confident design decisions on vague prompts (expert, not passive)
+5. **Context-Aware Adaptation** - Loads design frameworks OR engineering standards OR both based on query
+6. **Token Optimization** - <20k tokens for 95% of queries through intelligent lazy loading
 
 ---
 

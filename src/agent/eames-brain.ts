@@ -1067,7 +1067,20 @@ function estimateTokenUsage(queryType: QueryType, frameworks: Framework[]): numb
  * This is the core function that implements lazy loading and token optimization.
  */
 export function buildContextualPrompt(context: PromptContext): string {
-  let prompt = CORE_SYSTEM_PROMPT; // Always include foundation (~2.5k tokens)
+  let prompt = CORE_SYSTEM_PROMPT; // Always include foundation (~3k tokens)
+
+  // For ANY coding/building work, always include visual design excellence and engineering standards
+  const isCodingWork = context.queryType === 'ui' ||
+                       context.deliverableType === 'component' ||
+                       context.deliverableType === 'prototype' ||
+                       context.queryType === 'execution';
+
+  if (isCodingWork) {
+    prompt += `\n\n${VISUAL_DESIGN_EXCELLENCE}`;
+    prompt += `\n\n${FULL_STACK_ENGINEERING}`;
+    prompt += `\n\n${CODE_QUALITY_STANDARDS}`;
+    prompt += `\n\n${VAGUE_PROMPT_HANDLING}`;
+  }
 
   // Add domain expertise based on design phase and required frameworks
   if (context.requiredFrameworks.includes('doubleD')) {
@@ -1131,13 +1144,26 @@ export function buildIntelligentSystemPrompt(query?: string, conversationHistory
 // ============================================================================
 
 export {
+  // Core prompts
   CORE_SYSTEM_PROMPT,
+  CORE_IDENTITY,
+  BEHAVIORAL_PRINCIPLES,
+
+  // Visual design and engineering
+  VISUAL_DESIGN_EXCELLENCE,
+  FULL_STACK_ENGINEERING,
+  CODE_QUALITY_STANDARDS,
+  VAGUE_PROMPT_HANDLING,
+
+  // Design thinking frameworks
   DOUBLE_DIAMOND_FRAMEWORK,
   JTBD_FRAMEWORK,
   UX_RESEARCH_METHODS,
   COMPETITIVE_ANALYSIS_PROTOCOL,
   PRODUCT_STRATEGY,
   DESIGN_SYSTEM_KNOWLEDGE,
+
+  // Tool-specific prompts
   UI_COMPONENT_GENERATION,
   PRD_GENERATION,
 };
