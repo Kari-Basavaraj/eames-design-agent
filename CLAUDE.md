@@ -1,13 +1,15 @@
-# Updated: 2026-01-18 03:50:00
-# EAMES DESIGN AGENT - MASTER CONTEXT FOR AI AGENTS
+# Updated: 2026-01-18 16:55:00
+# EAMES DESIGN AGENT - SDK BRANCH
 
-> **⚠️ READ THIS FIRST when starting ANY new session with coding agents (Claude, Cursor, Warp, etc.)**
+> **⚠️ READ THIS FIRST when starting ANY new session with coding agents**
 
 ## 🚨 CURRENT STATUS (2026-01-18)
 
-**WE ARE CURRENTLY:** About to commit current state and split into two clean branches
-**BRANCH:** main (hybrid state - will be archived)
-**NEXT STEPS:** See "IMMEDIATE ACTIONS" section below
+**STATUS:** 📋 Planned - SDK implementation pending
+**ACTIVE DEVELOPMENT:** `langchain` branch (DeepAgents + LangGraph)
+**THIS BRANCH:** `sdk` - Claude SDK implementation (coming after langchain)
+
+> **Note:** Check out the `langchain` branch for active V1.1.0 development.
 
 ---
 
@@ -15,7 +17,7 @@
 
 **Eames** is an end-to-end Autonomous Product Design Agent: **Discovery → Delivery**.
 - Outputs production-ready, tested code deployed to Netlify/Vercel
-- Two implementations: LangChain (flexible) + Claude SDK (production-ready)
+- Two implementations: **LangChain (active)** + Claude SDK (planned)
 - GitHub-first workflow with automated deployment
 - Full product design lifecycle: Research → PRD → UI/UX → Code → Live Link
 
@@ -36,20 +38,25 @@ eames-design-agent/
 - **Tag names:** `langchain-v1.0.0`, `sdk-v1.0.0`, etc. (track versions)
 - **See:** `VERSIONING_STRATEGY.md` for complete details
 
-### The Problem
-We tried to merge LangChain + Claude SDK + custom processors. They conflict. After $1000 spent on fixes, we discovered the architecture is fundamentally broken.
+### Repository Strategy
 
-### The Solution
-Split into TWO clean implementations:
-1. **langchain** - Pure LangChain with 5-phase orchestration (multi-provider, flexible)
-2. **sdk** - Pure Claude SDK with Eames Brain hooks (production-ready, simple)
+```
+eames-design-agent/
+├── main (branch)      ← Archive
+├── langchain (branch) ← Active Development (DeepAgents + LangGraph)
+└── sdk (branch)       ← Planned (You are here)
+```
 
-**Both will have:**
+### SDK Branch Goals (When Implemented)
+1. **Pure Claude SDK** - Native Agent SDK integration
+2. **Simpler Architecture** - Less infrastructure, more direct
+3. **Production-Ready** - Battle-tested Claude Code patterns
+
+**Both branches will have:**
 - ✅ Discovery → Define → Design → Develop → Deliver phases
-- ✅ Localhost preview
-- ✅ GitHub integration
-- ✅ Netlify/Vercel deployment
-- ✅ Live link sharing
+- ✅ <$1 per app with prompt caching
+- ✅ GitHub + Vercel/Netlify deployment
+- ✅ Human approval checkpoints
 
 ---
 

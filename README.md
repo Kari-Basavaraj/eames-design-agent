@@ -1,15 +1,18 @@
 # Eames 🎨 - Claude SDK Edition
 
-**Last Updated:** 2026-01-18 12:15:00
-**Version:** 2.0.0 (Claude SDK)
+**Version:** 2.1.0 (Claude SDK - Planned)
 **Branch:** `sdk`
+**Status:** 📋 Planned (See `langchain` branch for active development)
+**Last Updated:** 2026-01-18
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Bun](https://img.shields.io/badge/Bun-%23000000.svg?style=flat&logo=bun&logoColor=white)](https://bun.sh)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Claude](https://img.shields.io/badge/Claude-Agent_SDK-CC6B4C?style=flat&logo=anthropic&logoColor=white)](https://docs.anthropic.com/en/docs/agents)
 
-**Eames** is an end-to-end Autonomous Product Design Agent: **Discovery → Delivery**. This is the **Claude SDK implementation** featuring native Claude Agent SDK integration, hierarchical Skills system, and Claude Code CLI features.
+> **⚠️ NOTE:** Active development is happening on the `langchain` branch. This SDK branch will be implemented after the LangChain version is complete.
+
+**Eames** is an end-to-end Autonomous Product Design Agent: **Discovery → Delivery**. This is the **Claude SDK implementation** featuring native Claude Agent SDK integration for production-ready simplicity.
 
 > Named after Charles & Ray Eames, pioneers of design who believed "Design is a plan for arranging elements in such a way as best to accomplish a particular purpose."
 
