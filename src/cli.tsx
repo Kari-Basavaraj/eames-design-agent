@@ -23,6 +23,7 @@ import { ToolActivityView } from './components/ToolActivityView.js';
 import { PluginManager } from './components/PluginManager.js';
 import { MCPManager } from './components/MCPManager.js';
 import { SessionPicker } from './components/SessionPicker.js';
+import { StatusBar } from './components/StatusBar.js';
 import type { Task } from './agent/state.js';
 import type { AgentProgressState } from './components/AgentProgressView.js';
 
@@ -897,15 +898,24 @@ All systems operational!`;
     );
   }
 
-  // Combine intro and history into a single static stream with stable keys
+  // Combine intro and history - LIMIT to last 3 turns for clean UI
   const staticItems: Array<{ type: 'intro'; key: string } | { type: 'turn'; turn: CompletedTurn; key: string }> = [
     { type: 'intro', key: 'intro' },
-    ...history.map(h => ({ type: 'turn' as const, turn: h, key: h.id })),
+    ...history.slice(-3).map(h => ({ type: 'turn' as const, turn: h, key: h.id })),
   ];
 
   return (
     <Box flexDirection="column">
-      {/* Intro + completed history - each item rendered once, never re-rendered */}
+      {/* Status bar - one line at top */}
+      {useSdkMode && (
+        <StatusBar 
+          permissionMode={permissionMode}
+          thinkingMode={thinkingMode}
+          model={model}
+        />
+      )}
+
+      {/* Intro + completed history - COLLAPSED (last 3 only) */}
       <Static items={staticItems}>
         {(item) =>
           item.type === 'intro' ? (
@@ -924,15 +934,14 @@ All systems operational!`;
             <Text color={colors.primary} bold>{'❯ '}</Text>
             <Text color={colors.white} backgroundColor={colors.queryBg}>{` ${interruptedQuery} `}</Text>
           </Box>
-          
           {/* Interrupted message */}
-          <Box marginLeft={2}>
-            <Text color={colors.muted}>⎿  Interrupted · What should Eames do instead?</Text>
+          <Box marginTop={1}>
+            <Text color="red">⚠️  Interrupted</Text>
           </Box>
         </Box>
       )}
 
-      {/* Render current in-progress conversation */}
+      {/* Current turn - clean and minimal */}
       {currentTurn && (
         <Box flexDirection="column">
           {/* Query + minimal progress */}
@@ -941,12 +950,14 @@ All systems operational!`;
             state={currentTurn.state}
           />
 
-          {/* Streaming answer (appears below progress) */}
+          {/* Streaming answer - indented */}
           {answerStream && (
-            <AnswerBox
-              stream={answerStream}
-              onComplete={handleAnswerComplete}
-            />
+            <Box marginLeft={2}>
+              <AnswerBox
+                stream={answerStream}
+                onComplete={handleAnswerComplete}
+              />
+            </Box>
           )}
         </Box>
       )}
@@ -954,55 +965,50 @@ All systems operational!`;
       {/* Queued queries */}
       <QueueDisplay queries={queryQueue} />
 
-      {/* Status message */}
-      <StatusMessage message={statusMessage} />
+      {/* Status message - temporary, minimal */}
+      {statusMessage && (
+        <Box marginTop={1}>
+          <Text color="gray">ℹ️  {statusMessage}</Text>
+        </Box>
+      )}
 
       {/* Permission prompt */}
       {permissionRequest && (
-        <Box
-          flexDirection="column"
-          borderStyle="round"
-          borderColor="yellow"
-          paddingX={2}
-          paddingY={1}
-          marginY={1}
-        >
-          <Box marginBottom={1}>
-            <Text color="yellow" bold>⚠️  Permission Required</Text>
+        <Box flexDirection="column" marginTop={2}>
+          {/* Header - simple */}
+          <Box>
+            <Text color="yellow">⚠️  </Text>
+            <Text color="yellow" bold>Permission required: </Text>
+            <Text color="white">{permissionRequest.tool}</Text>
           </Box>
 
-          <Box marginBottom={1} flexDirection="column">
-            <Text color="white">
-              Tool: <Text bold>{permissionRequest.tool}</Text>
-            </Text>
-            <Text color="gray" dimColor>
-              Type: {permissionRequest.type}
-            </Text>
-          </Box>
-
+          {/* Preview - indented, no border */}
           {permissionRequest.preview && (
-            <Box marginBottom={1} flexDirection="column">
-              <Text color="gray">Preview:</Text>
-              <Box borderStyle="single" borderColor="gray" paddingX={1}>
+            <Box marginTop={1} marginLeft={2}>
+              <Box flexDirection="column">
+                <Text color="gray" dimColor>Preview:</Text>
                 <Text color="cyan" dimColor>
-                  {permissionRequest.preview.slice(0, 300)}
-                  {permissionRequest.preview.length > 300 ? '\n...' : ''}
+                  {permissionRequest.preview.slice(0, 200)}
+                  {permissionRequest.preview.length > 200 ? '...' : ''}
                 </Text>
               </Box>
             </Box>
           )}
 
+          {/* Actions - simple */}
           <Box marginTop={1}>
             <Text color="green">Y</Text>
-            <Text color="gray"> = Approve | </Text>
+            <Text color="gray"> = approve  </Text>
             <Text color="red">N</Text>
-            <Text color="gray"> = Deny</Text>
+            <Text color="gray"> = deny</Text>
           </Box>
         </Box>
       )}
 
       {/* Input bar - always visible and interactive */}
-      <Input onSubmit={handleSubmit} commandHistory={commandHistory} />
+      <Box marginTop={2}>
+        <Input onSubmit={handleSubmit} commandHistory={commandHistory} />
+      </Box>
     </Box>
   );
 }

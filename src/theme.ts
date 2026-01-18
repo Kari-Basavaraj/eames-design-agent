@@ -33,3 +33,15 @@ export const dimensions = {
   introWidth: 50,
 } as const;
 
+export const spacing = {
+  none: 0,
+  tight: 1,     // Between related items
+  normal: 2,    // Between sections
+  loose: 3,     // Between major sections
+} as const;
+
+export const indent = {
+  level1: 2,    // First indent
+  level2: 4,    // Nested indent
+  level3: 6,    // Deep nested
+} as const;
