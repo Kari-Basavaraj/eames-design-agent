@@ -1,13 +1,23 @@
-# Updated: 2026-01-18 03:50:00
-# EAMES DESIGN AGENT - MASTER CONTEXT FOR AI AGENTS
+# Updated: 2026-01-18 04:07:00
+# EAMES DESIGN AGENT - MASTER CONTEXT FOR AI CODING AGENTS
 
-> **⚠️ READ THIS FIRST when starting ANY new session with coding agents (Claude, Cursor, Warp, etc.)**
+> **⚠️ READ THIS FIRST when starting ANY new session with ANY coding agent**
+> 
+> **Supported agents:** Claude Code, Cursor, Windsurf, Aider, Continue, Warp AI, GitHub Copilot, etc.
+
+## 📝 Which File To Read?
+
+- **AGENTS.md** (this file) - Universal context for ANY coding agent
+- **CLAUDE.md** - Same content, kept for Claude Code compatibility
+- **WARP.md** - Warp-specific development instructions
+
+**TL;DR:** Read THIS file (AGENTS.md) first, regardless of which agent you're using.
 
 ## 🚨 CURRENT STATUS (2026-01-18)
 
-**WE ARE CURRENTLY:** About to commit current state and split into two clean branches
-**BRANCH:** main (hybrid state - will be archived)
-**NEXT STEPS:** See "IMMEDIATE ACTIONS" section below
+**✅ BRANCHES CREATED:** Both langchain and sdk branches are ready!
+**📍 YOU ARE ON:** `langchain` branch (LangChain implementation)
+**🎯 NEXT STEPS:** Test and develop features on this branch
 
 ---
 
