@@ -20,8 +20,16 @@ cd /Users/basavarajkm/code/eames-design-agent
 
 ---
 
-## The Complete Workflow
+## Two Workflows Available
 
+### Option 1: Full Automation (Recommended)
+```
+/eames:process-idea <URL>
+  → Auto-captures, analyzes, asks about Linear
+  → One command, 2-3 minutes, done!
+```
+
+### Option 2: Manual Step-by-Step
 ```
 ┌─────────────────┐
 │  1. CAPTURE     │  /eames:idea-capture
@@ -40,6 +48,52 @@ cd /Users/basavarajkm/code/eames-design-agent
 │  (BACKLOG)      │  Deep analysis → FI-XXX
 └─────────────────┘
 ```
+
+---
+
+## 🚀 Quick Start: Full Automation
+
+### Command
+```
+/eames:process-idea <URL>
+```
+
+### What It Does
+Orchestrates the entire workflow with subagents:
+1. **Capture** → Adds to IDEA_INBOX.md (30 seconds)
+2. **Validate** → Confirms capture (5 seconds)
+3. **Analyze** → Deep analysis, creates FI-XXX (2-3 minutes)
+4. **Linear** → Asks if you want to create issue
+5. **Report** → Shows summary
+
+### When to Use
+- You have a URL ready to process
+- Want end-to-end automation
+- Don't need to batch multiple ideas
+
+### Example
+```
+You: /eames:process-idea https://ollama.com/blog/claude
+
+[Subagents work autonomously...]
+
+Create Linear issue? (y/n)
+You: y
+
+✅ Done! FI-004 created, BAS-62 in Linear
+```
+
+**Total Time:** ~3 minutes  
+**Your Input:** URL + Linear decision (y/n)
+
+---
+
+## 📝 Manual Workflow (Step-by-Step)
+
+### When to Use Manual Steps
+- Capturing multiple ideas in batch
+- Want to review inbox before analyzing
+- Prefer more control over each phase
 
 ---
 
@@ -236,11 +290,12 @@ cd ~/code/eames-design-agent
 ```
 
 ### All Commands
-| Command | Purpose | Location |
-|---------|---------|----------|
-| `/eames:idea-capture` | Save idea to inbox | Anywhere |
-| `/eames:idea-triage` | Review inbox status | eames-design-agent |
-| `/eames:analyze-reference <URL>` | Deep analysis | eames-design-agent |
+| Command | Purpose | Location | Time |
+|---------|---------|----------|------|
+| `/eames:process-idea <URL>` | **Full automation** | eames-design-agent | 3min |
+| `/eames:idea-capture` | Save idea to inbox | Anywhere | 30s |
+| `/eames:idea-triage` | Review inbox status | eames-design-agent | 10s |
+| `/eames:analyze-reference <URL>` | Deep analysis | eames-design-agent | 2-3min |
 
 ---
 

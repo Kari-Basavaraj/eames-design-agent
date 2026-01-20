@@ -1,4 +1,4 @@
-# Updated: 2026-01-20 15:30:00
+# Updated: 2026-01-20 21:40:00
 # IDEA INBOX
 
 > **Purpose:** Quick capture of ideas with minimal friction. This is the "inbox" - ideas come here first, then get processed into FEATURE_IDEAS_BACKLOG.md after analysis.
@@ -18,6 +18,7 @@
 
 || ID | Source | Tags | Date Added | Status | Project |
 ||----|--------|------|------------|--------|---------|
+|| IN-003 | nibzard/agentic-handbook | ai-agents, patterns, architecture | 2026-01-20 | 📥 Unprocessed | eames |
 || IN-002 | ollama-blog | local-models, cost-reduction | 2026-01-20 | ✅ Processed → FI-003 | eames |
 || IN-001 | Example | ai-agent | 2026-01-20 | 📥 Template | eames |
 
@@ -32,6 +33,20 @@
 ---
 
 ## 📥 Unprocessed Ideas
+
+### IN-003: The Agentic AI Handbook: Production-Ready Patterns
+|| Field | Value |
+||-------|-------|
+|| **URL** | https://www.nibzard.com/agentic-handbook |
+|| **Type** | Article |
+|| **Tags** | ai-agents, patterns, architecture |
+|| **Project Relevance** | eames |
+|| **Date Added** | 2026-01-20 |
+|| **Added By** | User |
+|| **Quick Note** | Comprehensive guide to 113 battle-tested architectural patterns for building production AI agents |
+|| **Status** | 📥 Unprocessed |
+
+---
 
 ### IN-002: Ollama v0.14.0 Anthropic Messages API
 || Field | Value |
@@ -83,7 +98,7 @@
 
 | URL | Source App | Tags | Date Saved | Status |
 |-----|------------|------|------------|--------|
-| (none yet) | | | | |
+| https://www.nibzard.com/agentic-handbook | Direct capture | ai-agents, patterns, architecture | 2026-01-20 | 📥 Unprocessed |
 
 ### Sources to Check
 - [ ] Browser bookmarks
@@ -160,9 +175,9 @@
 
 || Metric | Count |
 ||--------|-------|
-|| **Total Unprocessed** | 1 (template) |
+|| **Total Unprocessed** | 2 |
 || **GitHub Stars Pending** | 0 |
-|| **Saved Links Pending** | 0 |
+|| **Saved Links Pending** | 1 |
 || **Quick Ideas Pending** | 0 |
 || **Processed This Week** | 1 |
 || **Skipped This Week** | 0 |
@@ -201,4 +216,4 @@ Items unprocessed for 60+ days are automatically moved to archive with note:
 
 ---
 
-*Last Updated: 2026-01-20 13:20:00*
+*Last Updated: 2026-01-20 21:40:00*
