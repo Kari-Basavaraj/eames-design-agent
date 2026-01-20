@@ -1,8 +1,8 @@
 # Eames 🎨 - Autonomous Product Design Agent
 
 **Version:** 2.1.0 (LangChain/DeepAgents)
-**Branch:** `langchain`
-**Last Updated:** 2026-01-18
+**Branch:** `main`
+**Last Updated:** 2026-01-20
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Bun](https://img.shields.io/badge/Bun-%23000000.svg?style=flat&logo=bun&logoColor=white)](https://bun.sh)
@@ -111,7 +111,7 @@ This implementation uses the **Hybrid Architecture** combining:
 # Clone the repository
 git clone https://github.com/Kari-Basavaraj/eames-design-agent.git
 cd eames-design-agent
-git checkout langchain
+# Main branch is now the default (previously langchain)
 
 # Install dependencies
 bun install

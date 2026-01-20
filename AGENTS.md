@@ -41,15 +41,16 @@
 ### Current State
 ```
 eames-design-agent/
-├── main (branch)      ← Archive (hybrid state)
-├── langchain (branch) ← Pure LangChain version  
-└── sdk (branch)       ← Pure Claude SDK version
+├── main (branch)                    ← Active LangChain implementation (v1.1.0)
+├── archive/original-hybrid (branch) ← Archived (original exploration)
+└── sdk (branch)                     ← Future: Pure Claude SDK version
 ```
 
-### Versioning
-- **Branch names:** `langchain` and `sdk` (stay constant)
-- **Tag names:** `langchain-v1.0.0`, `sdk-v1.0.0`, etc. (track versions)
-- **See:** `VERSIONING_STRATEGY.md` for complete details
+### Branch History (2026-01-20 Migration)
+- **Previous:** `langchain` branch was active development
+- **Now:** `langchain` renamed to `main` (standard Git semantics)
+- **Archive:** Old `main` preserved as `archive/original-hybrid`
+- **Recovery tags:** `backup/langchain-20260120`, `backup/main-20260120`
 
 ### V1.1.0 Architecture (Current)
 
@@ -186,7 +187,7 @@ See `MASTER_IMPLEMENTATION_PLAN_V1.1.0.md` for complete details.
 **Quick Start:**
 ```bash
 cd /Users/basavarajkm/code/eames-design-agent
-git checkout langchain
+# Main branch is now active (no checkout needed)
 
 # Install dependencies
 bun install
