@@ -71,8 +71,20 @@ Spawn an **analysis subagent** with these instructions:
 - L: 1-2 weeks
 - XL: 2+ weeks
 
-### Phase 4: Linear Integration
-After analysis completes:
+### Phase 4: Linear Integration (Autonomous Decision)
+
+After analysis completes, **automatically decide** whether to create Linear issue based on vision score:
+
+**Decision Logic:**
+```
+Score ≥20  → Auto-create (Critical alignment)
+Score 15-19 → Auto-create (Strong alignment)
+Score 10-14 → Skip (Medium - manual if needed)
+Score <10   → Skip (Low alignment - not recommended)
+```
+
+**Implementation:**
+
 1. Display summary table:
 ```
 ┌─────────────┬──────────────────────────────────┐
@@ -83,19 +95,26 @@ After analysis completes:
 │ Vision      │ XX/25 (Alignment level)          │
 │ Priority    │ 🔴/🟡/🟢/⚪                        │
 │ Effort      │ S/M/L/XL                         │
+│ Linear      │ [Decision]                       │
 └─────────────┴──────────────────────────────────┘
 ```
 
-2. Ask: "Create Linear issue? (y/n)"
-3. If yes:
+2. **If score ≥15:** Auto-create Linear issue
    - Use Linear MCP to create issue
    - Title: `[FI-XXX] [Title from backlog]`
-   - Description: Link to analysis + key insights
+   - Description: Link to analysis + key insights + vision score
    - Labels: Add priority and effort labels
    - Project: "Eames Design Agent - LangChain V1.0.0"
    - Return: Linear issue URL (BAS-XXX)
+   - Report: "✅ Auto-created Linear issue (score ≥15)"
 
-4. If no: Skip Linear creation
+3. **If score 10-14:** Skip with note
+   - Report: "⚪ Medium alignment (10-14) - Not auto-added to Linear"
+   - Report: "💡 Add manually if implementing soon"
+
+4. **If score <10:** Skip with warning
+   - Report: "⚠️ Low alignment (<10) - Not recommended for Linear"
+   - Report: "💭 Consider if this fits Eames vision"
 
 ### Phase 5: Final Report
 Output concise summary:
@@ -128,7 +147,7 @@ model: haiku  # Fast for simple capture
 ```yaml
 name: eames-analysis-subagent
 tools: [Read, Write, Edit, Glob, Grep, WebFetch, WebSearch]
-model: sonnet  # Deeper reasoning for analysis
+model: opus  # Highest quality for deep analysis (matches FI-003 depth)
 ```
 
 ## Error Handling
@@ -141,10 +160,9 @@ If any phase fails:
 
 ## User Input Required
 
-- **Start:** URL or idea text
-- **Phase 4 only:** Linear issue creation (y/n)
+- **Start only:** URL or idea text
 
-All other steps execute autonomously without interruption.
+All other steps execute **fully autonomously** without interruption, including Linear decision.
 
 ## Real Example (FI-003 Quality Level)
 
@@ -166,9 +184,9 @@ User: /eames:process-idea https://ollama.com/blog/claude
 ✅ Confirmed in /Users/basavarajkm/code/eames-design-agent/IDEA_INBOX.md
 ```
 
-**Phase 3: Analysis (2-3 minutes)**
+**Phase 3: Analysis (3-5 minutes)**
 ```
-🔄 Spawning analysis subagent (Sonnet)...
+🔄 Spawning analysis subagent (Opus)...
 🌐 Fetching https://ollama.com/blog/claude...
 📖 Reading content (1,247 words)...
 
@@ -195,7 +213,7 @@ User: /eames:process-idea https://ollama.com/blog/claude
 ✅ Created: FI-004 - Ollama v0.14.0 Anthropic Messages API Support
 ```
 
-**Phase 4: Linear Integration**
+**Phase 4: Linear Integration (Autonomous)**
 ```
 ┌─────────────┬──────────────────────────────────────────────┐
 │ Field       │ Value                                        │
@@ -206,15 +224,9 @@ User: /eames:process-idea https://ollama.com/blog/claude
 │ Priority    │ 🟡 High                                     │
 │ Effort      │ S (2-8 hours)                               │
 │ Jackpot     │ ✅ Hybrid Cloud/Local Strategy              │
+│ Linear      │ ✅ Auto-creating (score ≥15)                │
 └─────────────┴──────────────────────────────────────────────┘
 
-Create Linear issue? (y/n)
-```
-
-**User:** `y`
-
-**Linear Creation:**
-```
 🔗 Using Linear MCP...
 📋 Creating issue in "Eames Design Agent - LangChain V1.0.0"...
 ✅ Created: BAS-62
@@ -244,16 +256,32 @@ Next Steps:
   • IDEA_PATTERNS.md (PAT-006 validated)
 ```
 
-## Quick Example (No Linear)
+## Example: Medium Score (No Linear)
 
 ```
 User: /eames:process-idea https://example.com/article
 
 [30s capture] ✅ IN-005
 [5s validate] ✅ Confirmed
-[2min analyze] ✅ FI-005 (Score: 14/25, Medium, M effort)
+[3-5min analyze] ✅ FI-005 (Score: 12/25, Medium, M effort)
 
-Create Linear issue? n
+⚪ Medium alignment (12/25) - Not auto-added to Linear
+💡 Add manually if implementing soon
+
+✅ Complete - Review FEATURE_IDEAS_BACKLOG.md
+```
+
+## Example: Low Score (Not Recommended)
+
+```
+User: /eames:process-idea https://example.com/unrelated-tool
+
+[30s capture] ✅ IN-006
+[5s validate] ✅ Confirmed
+[3-5min analyze] ✅ FI-006 (Score: 8/25, Low, S effort)
+
+⚠️ Low alignment (8/25) - Not recommended for Linear
+💭 Consider if this fits Eames vision
 
 ✅ Complete - Review FEATURE_IDEAS_BACKLOG.md
 ```

@@ -2,7 +2,7 @@
 name: eames-analysis-subagent
 description: Deep analysis of references against Eames vision. Spawned by /eames:process-idea for Phase 3 (Analyze). Scores ideas, extracts insights, creates FI-XXX entries.
 tools: [Read, Write, Edit, Glob, Grep, WebFetch, WebSearch]
-model: sonnet
+model: opus
 ---
 
 # Eames Analysis Subagent
