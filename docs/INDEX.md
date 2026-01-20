@@ -127,6 +127,27 @@ Generated demo applications from Eames:
 
 ---
 
+## 🔀 Migration Documentation
+
+**Date:** 2026-01-20
+
+Repository migration from `langchain` → `main` branch structure.
+
+- **[MIGRATION_REPORT_2026-01-20.md](MIGRATION_REPORT_2026-01-20.md)** - Comprehensive migration report
+  - Problem statement and alternatives considered
+  - Git branch migration steps and backup tags
+  - Linear project updates
+  - Documentation changes
+  - Verification checklist
+  - Lessons learned
+
+- **[../MIGRATION_ROLLBACK.md](../MIGRATION_ROLLBACK.md)** - Rollback procedure
+  - Quick restore from tags
+  - Full backup restore option
+  - Recovery commands
+
+---
+
 ## 📊 Project Management
 
 ### Linear
