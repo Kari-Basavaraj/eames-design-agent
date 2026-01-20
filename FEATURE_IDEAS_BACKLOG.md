@@ -556,8 +556,8 @@ In real design practice:
 | 2026-01-20 | ✅ Adopt hybrid cloud/local strategy | Directly enables <$1 target, low risk | User + Claude |
 
 ### Linear Tracking
-- **Linear Issue:** Pending (offer to create)
-- **Status:** Analyzed, ready for planning
+- **Linear Issue:** BAS-59
+- **Status:** Analyzed, tracked in Linear
 
 ### Related Entries
 - **Existing Ollama code:** `src/utils/ollama.ts`, `src/components/ModelSelector.tsx`
@@ -578,8 +578,8 @@ In real design practice:
 || **Last Reviewed** | 2026-01-20 |
 || **Stale After** | 2026-04-20 (90 days) |
 || **Project Tags** | eames |
-|| **Related Patterns** | PAT-006 (Local Model Fallback - emerging) |
-|| **Linear Issue** | Pending |
+|| **Related Patterns** | PAT-006 (Local Model Fallback - validated) |
+|| **Linear Issue** | BAS-59 |
 
 ### Source
 - **URL:** https://ollama.com/blog/claude
