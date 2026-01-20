@@ -1,4 +1,4 @@
-# Updated: 2026-01-20 16:37:05
+# Updated: 2026-01-20 22:30:00
 # FEATURE IDEAS BACKLOG
 
 > **Purpose:** Complete lifecycle management of ideas from discovery to implementation. Every idea is tracked, analyzed, decided upon, and either implemented or explicitly rejected with reasoning.
@@ -52,9 +52,10 @@ Key Metrics:
 
 || ID | Source | Status | Priority | Effort | Patterns | Last Reviewed | Project Tags |
 ||----|--------|--------|----------|--------|----------|---------------|--------------|
-|| FI-001 | get-shit-done | ✅ Analyzed | High | M | PAT-001, PAT-002 | 2026-01-20 | eames |
-|| FI-002 | claude-build-workflow | ✅ Analyzed | High | M | PAT-001 | 2026-01-19 | eames |
+|| FI-004 | agentic-ai-handbook | ✅ Analyzed | High | M | PAT-002, PAT-003, PAT-007 | 2026-01-20 | eames |
 || FI-003 | ollama-anthropic-api | ✅ Analyzed | High | S | PAT-006 | 2026-01-20 | eames |
+|| FI-002 | claude-build-workflow | ✅ Analyzed | High | M | PAT-001 | 2026-01-19 | eames |
+|| FI-001 | get-shit-done | ✅ Analyzed | High | M | PAT-001, PAT-002 | 2026-01-20 | eames |
 
 ### Status Legend
 | Status | Meaning |
@@ -565,6 +566,176 @@ In real design practice:
 
 ---
 
+## FI-004: The Agentic AI Handbook - Production-Ready Patterns
+
+### Metadata
+| Field | Value |
+|-------|-------|
+| **Status** | ✅ Analyzed |
+| **Priority** | High |
+| **Effort** | M (1-3 days to review & adopt key patterns) |
+| **Confidence** | High |
+| **Last Reviewed** | 2026-01-20 |
+| **Stale After** | 2026-04-20 (90 days) |
+| **Project Tags** | eames |
+| **Related Patterns** | PAT-002, PAT-003, PAT-007 (new) |
+| **Linear Issue** | BAS-60 |
+
+### Source
+- **URL:** https://www.nibzard.com/agentic-handbook
+- **Type:** Article/Pattern Library
+- **Published:** 2026-01 (recent)
+- **License:** N/A (educational content)
+- **Description:** Comprehensive guide to 113 battle-tested architectural patterns for building production AI agents, organized into 8 categories
+
+### Source Health Assessment
+| Metric | Status | Notes |
+|--------|--------|-------|
+| Active Development | ✅ Good | Recently published (2026-01) |
+| Community | 🟡 Medium | New resource, growing adoption |
+| Documentation | ✅ Good | Well-organized, 8 clear categories |
+| License | ✅ N/A | Educational content, freely accessible |
+| Breaking Change Risk | Low | Patterns, not dependencies |
+
+### 🎯 Vision Alignment
+**Score:** 17/25 ✅ Strongly Aligned
+**Confidence:** High (detailed pattern analysis)
+
+| Pillar | Score | Evidence |
+|--------|-------|----------|
+| **Autonomous** | 4/5 | Plan-Then-Execute, Inversion of Control, Swarm Migration enable autonomous operation |
+| **End-to-End** | 3/5 | Orchestration & Control patterns, but focuses on agent patterns not full product lifecycle |
+| **Production-Ready** | 4/5 | Reliability & Eval category, Security & Safety patterns, Lethal Trifecta threat model |
+| **Designer-Like** | 3/5 | UX & Collaboration patterns, Spectrum of Control aligns with approval gates |
+| **Cost-Efficient** | 3/5 | Oracle/Worker pattern for cost optimization, context management strategies |
+
+**Red Flags:** None
+**Key Strength:** Pattern library approach enables selective adoption without dependencies
+
+### Agent-Native Principles (/5)
+| Principle | Aligned | Evidence |
+|-----------|---------|----------|
+| Parity | ✅ | Patterns describe agent-first design |
+| Granularity | ✅ | Atomic patterns, composable by design |
+| Composability | ✅ | Explicitly designed for composition |
+| Emergent Capability | ✅ | Pattern combinations unlock new capabilities |
+| Improvement Over Time | ✅ | Learning & Adaptation category addresses this directly |
+
+**Score:** 5/5 ✅ Fully Agent-Native
+
+### 🎯 JACKPOT INSIGHTS
+
+> **1. Pattern Validation for PAT-002 (Approval Gates)**
+> "Spectrum of Control" and "Chain-of-Thought Monitoring & Interruption" validate the approval gates pattern - industry consensus on human checkpoints.
+
+> **2. Pattern Validation for PAT-003 (Parallel Research Agents)**
+> "Swarm Migration Pattern" confirms parallel subagent approach: "10+ parallel subagents" achieving "10x+ speedup vs sequential."
+
+> **3. NEW PATTERN: Reflection Loop (PAT-007)**
+> "Draft-evaluate-refine cycles until quality thresholds met" - critical for autonomous quality assurance.
+
+> **4. Oracle/Worker Pattern = Hybrid Model Strategy**
+> "Expensive high-capability models for planning/review, cheaper models for execution" - validates FI-003's hybrid cloud/local strategy.
+
+### Feature Mapping: Agentic AI Handbook → Eames
+
+| Source Pattern | Category | Eames Current | Gap? | Priority | Effort |
+|----------------|----------|---------------|------|----------|--------|
+| **Plan-Then-Execute** | Orchestration | ⚠️ Partial | Add separation | 🔴 Critical | S |
+| **Inversion of Control** | Orchestration | ⚠️ Partial | Improve tooling | 🟡 High | M |
+| **Swarm Migration** | Orchestration | ❌ Missing | Parallel subagents | 🟡 High | L |
+| **Reflection Loop** | Feedback | ❌ Missing | Add draft-refine cycle | 🔴 Critical | M |
+| **Spectrum of Control** | UX | ⚠️ Partial (PAT-002) | Expand gates | 🔴 Critical | S |
+| **Oracle/Worker** | Cost | ⚠️ Partial (FI-003) | Hybrid routing | 🟡 High | S |
+| **Lethal Trifecta** | Security | ❌ Missing | Threat model | 🟢 Medium | S |
+| **Skill Library Evolution** | Learning | ❌ Missing | Pattern memory | 🟢 Medium | M |
+
+### Tech Stack Alignment
+| Integration Point | Compatibility | Notes |
+|-------------------|---------------|-------|
+| LangGraph StateGraph | ✅ Native | Orchestration patterns map directly |
+| DeepAgents v0.3.2+ | ✅ Native | Swarm Migration aligns with subagent model |
+| CompositeBackend | ✅ Native | Context management patterns fit |
+| Middleware Stack | ✅ Native | Reflection Loop can be middleware |
+| Eames Brain 2.0 | ✅ Native | Patterns inform prompt engineering |
+
+**Tech Verdict:** ✅ Native fit - patterns, not code dependencies
+
+### Risk Assessment
+| Risk | Likelihood | Impact | Mitigation |
+|------|------------|--------|------------|
+| Scope creep (113 patterns) | High | Medium | Prioritize top 10-15 relevant patterns |
+| Over-abstraction | Medium | Medium | Start with concrete implementations |
+| Pattern mismatch | Low | Low | Test each pattern against Eames phases |
+
+**Reversibility:** ✅ Easy - patterns are additive, no breaking changes
+
+### Alternatives Considered
+| Alternative | Why Not Chosen |
+|-------------|----------------|
+| Ignore pattern libraries | Would miss industry best practices |
+| Adopt all 113 patterns | Too broad, many not relevant to Eames |
+| Build from scratch | Reinventing wheels unnecessarily |
+
+### What to Adopt (Prioritized)
+
+#### 🔴 Critical (V1.1.0 Scope)
+1. **Reflection Loop** - Add draft-evaluate-refine to Design and Develop phases
+2. **Plan-Then-Execute** - Separate planning from execution in orchestrator
+3. **Spectrum of Control** - Implement configurable human checkpoint levels
+
+#### 🟡 High (V1.1.0-V1.2.0)
+4. **Swarm Migration** - Parallel subagents for Discovery research
+5. **Oracle/Worker** - Reinforce hybrid model routing (complements FI-003)
+6. **Inversion of Control** - Better tool definitions for autonomous operation
+
+#### 🟢 Medium (Future)
+7. **Lethal Trifecta Threat Model** - Security hardening
+8. **Skill Library Evolution** - Pattern memory across sessions
+9. **Context Window Anxiety Management** - Better context handling
+
+### What NOT to Adopt
+| Feature | Reason | Pillar Violated |
+|---------|--------|-----------------|
+| All 113 patterns | Too broad, many not relevant | Focus (not a pillar but practical) |
+| Agent RFT (Reinforcement Fine-Tuning) | Requires training infrastructure | Cost-Efficient |
+| Language Agent Tree Search (LATS) | Complex, premature optimization | End-to-End (complexity) |
+
+### Implementation Scope
+| Area | Changes |
+|------|---------|
+| **Files Modified** | `src/agent/orchestrator.ts`, phase agents |
+| **New Modules** | `src/utils/reflection-loop.ts`, `src/utils/swarm-coordinator.ts` |
+| **API Changes** | Additive (new orchestration options) |
+| **Tests Required** | Unit (reflection logic), Integration (parallel agents), E2E |
+| **Rollout Strategy** | Feature flags per pattern, gradual enable |
+
+### Success Metrics
+| Metric | Target | How to Measure |
+|--------|--------|----------------|
+| Reflection loop catch rate | 80%+ | Issues caught before delivery |
+| Parallel speedup | 5x+ | Discovery phase benchmark |
+| Human intervention reduction | 50%+ | Approval gate pass rate |
+
+### Decision Log
+| Date | Decision | Reason | By |
+|------|----------|--------|-----|
+| 2026-01-20 | ✅ Adopt top patterns | Validates PAT-002, PAT-003; adds Reflection Loop | User + Claude |
+
+### Linear Tracking
+- **Linear Issue:** BAS-60
+- **URL:** https://linear.app/basavaraj-team/issue/BAS-60
+- **Status:** Analyzed, tracked in Linear
+
+### Related Entries
+- **FI-001 (GSD):** Validates parallel research approach
+- **FI-002 (claude-build-workflow):** Validates spectrum of control
+- **FI-003 (Ollama):** Oracle/Worker validates hybrid strategy
+- **Patterns validated:** PAT-002, PAT-003
+- **New pattern:** PAT-007 (Reflection Loop)
+
+---
+
 <!--
 ## [BACKUP - Warp Analysis 2026-01-20] FI-003: Ollama v0.14.0 Anthropic Messages API Support
 
@@ -862,20 +1033,22 @@ In real design practice:
 
 || Metric | Count |
 ||--------|-------|
-|| **Total Ideas** | 3 |
-|| **✅ Analyzed** | 3 |
+|| **Total Ideas** | 4 |
+|| **✅ Analyzed** | 4 |
 || **📋 Triaged** | 0 |
 || **📅 Planned** | 0 |
 || **🚧 In Progress** | 0 |
 || **✔️ Implemented** | 0 |
 || **❌ Rejected** | 0 |
-|| **Promoted to Linear** | 0 |
+|| **Promoted to Linear** | 1 |
 
 || Pattern | Occurrences | Priority |
 ||---------|-------------|----------|
 || PAT-001 (User Interviewing) | 2 | 🔴 Critical |
-|| PAT-002 (Approval Gates) | 1 | 🔴 Critical |
+|| PAT-002 (Approval Gates) | 2 | 🔴 Critical (Validated) |
+|| PAT-003 (Parallel Research) | 2 | 🟡 High (Validated) |
 || PAT-006 (Local Model Fallback) | 1 | 🟡 High (emerging) |
+|| PAT-007 (Reflection Loop) | 1 | 🔴 Critical (emerging) |
 
 ---
 
@@ -887,4 +1060,4 @@ In real design practice:
 
 ---
 
-*Last Updated: 2026-01-20 13:15:00*
+*Last Updated: 2026-01-20 22:30:00*

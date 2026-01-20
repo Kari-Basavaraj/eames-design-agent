@@ -1,4 +1,4 @@
-# Updated: 2026-01-20 15:55:00
+# Updated: 2026-01-20 22:30:00
 # IDEA PATTERNS
 
 > **Purpose:** Track cross-cutting themes that appear across multiple ideas/sources. When the same concept appears in 2+ places, it's a PATTERN worth prioritizing.
@@ -20,7 +20,9 @@ Patterns get **higher priority** than isolated ideas because they're independent
 | ID | Pattern | Occurrences | Sources | Priority | Status |
 |----|---------|-------------|---------|----------|--------|
 | PAT-001 | User Interviewing Before Execution | 2 | FI-001, FI-002 | 🔴 Critical | Validated |
-| PAT-002 | Approval Gates | 1 | FI-001 | 🔴 Critical | Emerging |
+| PAT-002 | Approval Gates | 2 | FI-001, FI-004 | 🔴 Critical | Validated |
+| PAT-003 | Parallel Research Agents | 2 | FI-001, FI-004 | 🟡 High | Validated |
+| PAT-007 | Reflection Loop | 1 | FI-004 | 🔴 Critical | Emerging |
 
 ### Status Legend
 | Status | Meaning |
@@ -68,11 +70,12 @@ Patterns get **higher priority** than isolated ideas because they're independent
 
 ### PAT-002: Approval Gates
 
-**Occurrences:** 1 (Emerging - watching for validation)
+**Occurrences:** 2 (Validated)
 
 | Source | How It Appears |
 |--------|----------------|
 | FI-001 (GSD) | User approves roadmap BEFORE execution begins |
+| FI-004 (Agentic AI Handbook) | "Spectrum of Control" and "Chain-of-Thought Monitoring & Interruption" patterns |
 
 **Core Insight:**
 > Autonomous ≠ Uncontrolled. Strategic checkpoints ensure alignment.
@@ -86,7 +89,7 @@ Patterns get **higher priority** than isolated ideas because they're independent
 2. Post-Define: "Does this roadmap match your vision?"
 3. Pre-Deploy: "Ready to go live?"
 
-**Status:** 🔴 Critical - Implement with PAT-001
+**Status:** 🔴 Critical - VALIDATED by 2 sources - Must implement in V1.1.0
 
 ---
 
@@ -94,16 +97,26 @@ Patterns get **higher priority** than isolated ideas because they're independent
 
 ### PAT-003: Parallel Research Agents
 
-**Occurrences:** 1 (Emerging)
+**Occurrences:** 2 (Validated)
 
 | Source | How It Appears |
 |--------|----------------|
 | FI-001 (GSD) | 4 parallel researchers: competitor, technology, architecture, pitfalls |
+| FI-004 (Agentic AI Handbook) | "Swarm Migration" pattern - 10+ parallel subagents, 10x speedup |
 
 **Core Insight:**
 > Orchestrator coordinates, never does heavy lifting. Specialized agents work in parallel.
 
-**Status:** 🟡 High - Implement in V1.1.0 Phase 2+
+**Maps to Eames:**
+- **Phase:** Discovery (parallel research agents)
+- **Why Important:** 10x speedup for research-heavy phases
+
+**Implementation:**
+- Spawn 4+ specialized research subagents in Discovery
+- Orchestrator coordinates but doesn't do heavy work
+- Aggregate results after parallel completion
+
+**Status:** 🟡 High - VALIDATED by 2 sources - Implement in V1.1.0 Phase 2+
 
 ---
 
@@ -161,6 +174,36 @@ Patterns get **higher priority** than isolated ideas because they're independent
 - Feature flag for user control
 
 **Status:** 🟡 High (emerging) - Watch for validation from other local model sources
+
+---
+
+### PAT-007: Reflection Loop
+
+**Occurrences:** 1 (Emerging)
+
+| Source | How It Appears |
+|--------|----------------|
+| FI-004 (Agentic AI Handbook) | "Reflection Loop" - draft-evaluate-refine cycles until quality thresholds met |
+
+**Core Insight:**
+> Single-pass generation is insufficient for quality. Draft → Evaluate → Refine cycles catch issues before delivery.
+
+**Maps to Eames:**
+- **Phases:** Design, Develop (anywhere output quality matters)
+- **Why Critical:** Autonomous quality assurance without human review
+
+**Implementation:**
+- After initial generation, evaluate against quality criteria
+- If below threshold, refine and re-evaluate
+- Loop until quality met or max iterations reached
+- Configurable thresholds per phase
+
+**Real Design Practice Equivalent:**
+- Design critique and iteration
+- Code review and refactoring
+- QA testing and bug fixes
+
+**Status:** 🔴 Critical (emerging) - Core to autonomous quality
 
 ---
 
@@ -247,12 +290,12 @@ Patterns get **higher priority** than isolated ideas because they're independent
 
 || Metric | Count |
 ||--------|-------|
-|| **Total Patterns** | 6 |
-|| **🔴 Critical** | 2 |
+|| **Total Patterns** | 7 |
+|| **🔴 Critical** | 3 |
 || **🟡 High** | 3 |
 || **🟢 Medium** | 1 |
-|| **Validated (2+ sources)** | 1 |
-|| **Emerging (1 source)** | 5 |
+|| **Validated (2+ sources)** | 3 |
+|| **Emerging (1 source)** | 4 |
 || **Adopted** | 0 |
 || **Rejected** | 0 |
 
@@ -268,4 +311,4 @@ Patterns get **higher priority** than isolated ideas because they're independent
 
 ---
 
-*Last Updated: 2026-01-20 13:25:00*
+*Last Updated: 2026-01-20 22:30:00*

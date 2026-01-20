@@ -1,7 +1,7 @@
 ---
 name: eames-process-idea
 description: End-to-end idea processing - Captures, analyzes, creates FI-XXX, auto-creates Linear if score ≥15. Fully autonomous with Opus analysis.
-argument-hint: <url>
+argument-hint: <url or idea>
 allowed-tools:
   - Read
   - Write
@@ -10,9 +10,15 @@ allowed-tools:
   - Grep
   - WebFetch
   - WebSearch
-  - Bash
-tags: [eames, automation, workflow, orchestration, subagents]
+  - Bash(curl -s:*)
+  - Bash(date:*)
+  - Bash(printf:*)
+  - Task
+  - AskUserQuestion
+  - mcp__linear__create_issue
+  - mcp__linear__list_issues
 ---
+<!-- Updated: 2026-01-20 22:00:00 -->
 
 # Eames: Process Idea (Full Automation)
 
