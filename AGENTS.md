@@ -1,4 +1,4 @@
-# Updated: 2026-01-18 16:50:00
+# Updated: 2026-01-20 17:30:00
 # EAMES DESIGN AGENT - MASTER CONTEXT FOR AI CODING AGENTS
 
 > **⚠️ READ THIS FIRST when starting ANY new session with ANY coding agent**
@@ -9,12 +9,20 @@
 
 - **AGENTS.md** / **CLAUDE.md** / **WARP.md** - Same content, synced
 - **MASTER_IMPLEMENTATION_PLAN_V1.1.0.md** - Complete implementation blueprint
+- **FEATURE_IDEAS_BACKLOG.md** - Analyzed feature ideas with Linear tracking
 
-## 🚨 CURRENT STATUS (2026-01-18)
+## 🚨 CURRENT STATUS (2026-01-20)
 
 **✅ V1.1.0 PLAN COMPLETE:** Unified DeepAgents + LangGraph architecture defined
 **📍 YOU ARE ON:** `langchain` branch
 **🎯 NEXT STEPS:** Execute Phase 0 (Foundation, Days 1-10)
+
+### Linear Tracking (Active)
+| Issue | Title | Status |
+|-------|-------|--------|
+| BAS-56 | [FI-001] User Interviewing & Approval Gates | Backlog |
+| BAS-57 | [FI-002] BMAD Interview & Story Validation | Backlog |
+| BAS-32-55 | LangChain V1.0.0 Implementation | Backlog |
 
 ---
 

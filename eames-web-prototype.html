@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eames AI - Autonomous Product Design Agent</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .phase-card {
+            transition: all 0.3s ease;
+        }
+
+        .phase-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        .pulse-animation {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .typing-cursor {
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // Main App Component
+        function App() {
+            const [activeTab, setActiveTab] = useState('demo');
+            const [currentPhase, setCurrentPhase] = useState(null);
+            const [projectInput, setProjectInput] = useState('');
+            const [showClarification, setShowClarification] = useState(false);
+            const [clarificationAnswers, setClarificationAnswers] = useState({});
+            const [isProcessing, setIsProcessing] = useState(false);
+            const [phaseProgress, setPhaseProgress] = useState([]);
+
+            const phases = [
+                {
+                    id: 'discovery',
+                    name: 'Discovery',
+                    icon: '🔍',
+                    color: 'bg-blue-500',
+                    description: 'Research competitors, market trends, and user needs',
+                    tools: ['Tavily Search', 'Web Scraper', 'Analysis'],
+                    output: 'Market research synthesis with citations'
+                },
+                {
+                    id: 'define',
+                    name: 'Define',
+                    icon: '📋',
+                    color: 'bg-purple-500',
+                    description: 'Create PRD with user stories and acceptance criteria',
+                    tools: ['PRD Generator', 'User Stories', 'JTBD Framework'],
+                    output: 'Complete Product Requirements Document'
+                },
+                {
+                    id: 'design',
+                    name: 'Design',
+                    icon: '🎨',
+                    color: 'bg-pink-500',
+                    description: 'Generate design system with Stripe/Linear-level quality',
+                    tools: ['Design System', 'Components', 'Accessibility Check'],
+                    output: 'Design system + component specifications'
+                },
+                {
+                    id: 'develop',
+                    name: 'Develop',
+                    icon: '⚡',
+                    color: 'bg-green-500',
+                    description: 'Build production-ready code with quality gates',
+                    tools: ['React/Next.js', 'TypeScript', 'Testing'],
+                    output: 'Working application with tests'
+                },
+                {
+                    id: 'deliver',
+                    name: 'Deliver',
+                    icon: '🚀',
+                    color: 'bg-orange-500',
+                    description: 'Deploy to Vercel/Netlify with GitHub integration',
+                    tools: ['GitHub', 'Vercel', 'Deployment'],
+                    output: 'Live URL + GitHub repository'
+                }
+            ];
+
+            const clarificationQuestions = [
+                {
+                    id: 'target_user',
+                    text: 'Who is the primary user?',
+                    options: ['Developers', 'Designers', 'Teams', 'Individuals', 'Business users']
+                },
+                {
+                    id: 'differentiator',
+                    text: 'What makes this different from existing solutions?',
+                    placeholder: 'e.g., AI-powered, real-time collaboration, mobile-first...'
+                },
+                {
+                    id: 'integrations',
+                    text: 'Any specific integrations needed?',
+                    options: ['GitHub', 'Slack', 'Notion', 'Linear', 'None', 'Other']
+                }
+            ];
+
+            const handleStartProject = () => {
+                if (!projectInput.trim()) return;
+
+                // Simulate clarity assessment
+                const isVague = projectInput.split(' ').length < 8;
+
+                if (isVague) {
+                    setShowClarification(true);
+                } else {
+                    startPhaseExecution();
+                }
+            };
+
+            const handleClarificationSubmit = () => {
+                setShowClarification(false);
+                startPhaseExecution();
+            };
+
+            const startPhaseExecution = () => {
+                setIsProcessing(true);
+                setPhaseProgress([]);
+
+                // Simulate phase execution
+                phases.forEach((phase, index) => {
+                    setTimeout(() => {
+                        setCurrentPhase(phase.id);
+                        setPhaseProgress(prev => [...prev, {
+                            phase: phase.id,
+                            status: 'in_progress',
+                            timestamp: new Date().toLocaleTimeString()
+                        }]);
+
+                        setTimeout(() => {
+                            setPhaseProgress(prev => prev.map(p =>
+                                p.phase === phase.id
+                                    ? { ...p, status: 'completed' }
+                                    : p
+                            ));
+
+                            if (index === phases.length - 1) {
+                                setIsProcessing(false);
+                                setCurrentPhase(null);
+                            }
+                        }, 2000);
+                    }, index * 2500);
+                });
+            };
+
+            return (
+                <div className="min-h-screen">
+                    {/* Header */}
+                    <header className="gradient-bg text-white">
+                        <div className="container mx-auto px-6 py-8">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h1 className="text-4xl font-bold mb-2">Eames AI</h1>
+                                    <p className="text-xl opacity-90">Autonomous Product Design Agent</p>
+                                    <p className="text-sm opacity-75 mt-2">From idea to deployed app in &lt;15 minutes</p>
+                                </div>
+                                <div className="text-right">
+                                    <div className="text-sm opacity-75 mb-1">Target Performance</div>
+                                    <div className="text-3xl font-bold">&lt;$1</div>
+                                    <div className="text-xs opacity-75">per app with caching</div>
+                                </div>
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* Navigation */}
+                    <nav className="bg-white border-b border-gray-200">
+                        <div className="container mx-auto px-6">
+                            <div className="flex space-x-8">
+                                {['demo', 'architecture', 'capabilities'].map(tab => (
+                                    <button
+                                        key={tab}
+                                        onClick={() => setActiveTab(tab)}
+                                        className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+                                            activeTab === tab
+                                                ? 'border-purple-500 text-purple-600'
+                                                : 'border-transparent text-gray-500 hover:text-gray-700'
+                                        }`}
+                                    >
+                                        {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </nav>
+
+                    <div className="container mx-auto px-6 py-12">
+                        {activeTab === 'demo' && (
+                            <DemoTab
+                                projectInput={projectInput}
+                                setProjectInput={setProjectInput}
+                                handleStartProject={handleStartProject}
+                                showClarification={showClarification}
+                                clarificationQuestions={clarificationQuestions}
+                                clarificationAnswers={clarificationAnswers}
+                                setClarificationAnswers={setClarificationAnswers}
+                                handleClarificationSubmit={handleClarificationSubmit}
+                                isProcessing={isProcessing}
+                                phases={phases}
+                                currentPhase={currentPhase}
+                                phaseProgress={phaseProgress}
+                            />
+                        )}
+
+                        {activeTab === 'architecture' && (
+                            <ArchitectureTab phases={phases} />
+                        )}
+
+                        {activeTab === 'capabilities' && (
+                            <CapabilitiesTab />
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        // Demo Tab Component
+        function DemoTab({
+            projectInput,
+            setProjectInput,
+            handleStartProject,
+            showClarification,
+            clarificationQuestions,
+            clarificationAnswers,
+            setClarificationAnswers,
+            handleClarificationSubmit,
+            isProcessing,
+            phases,
+            currentPhase,
+            phaseProgress
+        }) {
+            return (
+                <div className="space-y-8">
+                    {/* Input Section */}
+                    {!isProcessing && phaseProgress.length === 0 && (
+                        <div className="bg-white rounded-lg shadow-lg p-8">
+                            <h2 className="text-2xl font-bold mb-4">Start a New Project</h2>
+                            <p className="text-gray-600 mb-6">
+                                Describe your app idea. Be as specific or as vague as you like - Eames will ask clarifying questions if needed.
+                            </p>
+
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Project Description
+                                    </label>
+                                    <textarea
+                                        value={projectInput}
+                                        onChange={(e) => setProjectInput(e.target.value)}
+                                        placeholder="e.g., 'Build a modern expense tracker for freelancers' or simply 'Build a todo app'"
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                                        rows="4"
+                                    />
+                                </div>
+
+                                <button
+                                    onClick={handleStartProject}
+                                    disabled={!projectInput.trim()}
+                                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white font-medium py-3 px-6 rounded-lg hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                >
+                                    Start Building with Eames →
+                                </button>
+                            </div>
+
+                            <div className="mt-6 pt-6 border-t border-gray-200">
+                                <h3 className="text-sm font-medium text-gray-700 mb-3">Example Prompts:</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                    {[
+                                        'Build a productivity app',
+                                        'Create a modern dashboard for analytics',
+                                        'Build a todo app inspired by Linear with keyboard shortcuts',
+                                        'Make an expense tracker for freelancers with invoice generation'
+                                    ].map((example, i) => (
+                                        <button
+                                            key={i}
+                                            onClick={() => setProjectInput(example)}
+                                            className="text-left text-sm text-gray-600 hover:text-purple-600 hover:bg-purple-50 p-2 rounded transition-colors"
+                                        >
+                                            "{example}"
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Clarification Loop */}
+                    {showClarification && (
+                        <div className="bg-white rounded-lg shadow-lg p-8 border-2 border-purple-500">
+                            <div className="flex items-start space-x-3 mb-6">
+                                <div className="flex-shrink-0 w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                                    <span className="text-xl">🤔</span>
+                                </div>
+                                <div>
+                                    <h3 className="text-xl font-bold text-gray-900">Clarification Needed</h3>
+                                    <p className="text-gray-600 mt-1">
+                                        To build the best product, I need a bit more information:
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-6">
+                                {clarificationQuestions.map((q, index) => (
+                                    <div key={q.id} className="space-y-2">
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            {index + 1}. {q.text}
+                                        </label>
+                                        {q.options ? (
+                                            <div className="flex flex-wrap gap-2">
+                                                {q.options.map(option => (
+                                                    <button
+                                                        key={option}
+                                                        onClick={() => setClarificationAnswers({
+                                                            ...clarificationAnswers,
+                                                            [q.id]: option
+                                                        })}
+                                                        className={`px-4 py-2 rounded-lg border-2 transition-all ${
+                                                            clarificationAnswers[q.id] === option
+                                                                ? 'border-purple-500 bg-purple-50 text-purple-700'
+                                                                : 'border-gray-200 hover:border-purple-300'
+                                                        }`}
+                                                    >
+                                                        {option}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <input
+                                                type="text"
+                                                placeholder={q.placeholder}
+                                                value={clarificationAnswers[q.id] || ''}
+                                                onChange={(e) => setClarificationAnswers({
+                                                    ...clarificationAnswers,
+                                                    [q.id]: e.target.value
+                                                })}
+                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                            />
+                                        )}
+                                    </div>
+                                ))}
+
+                                <button
+                                    onClick={handleClarificationSubmit}
+                                    className="w-full bg-purple-600 text-white font-medium py-3 px-6 rounded-lg hover:bg-purple-700 transition-colors"
+                                >
+                                    Continue with These Answers →
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Phase Execution */}
+                    {(isProcessing || phaseProgress.length > 0) && (
+                        <PhaseExecution
+                            phases={phases}
+                            currentPhase={currentPhase}
+                            phaseProgress={phaseProgress}
+                            isProcessing={isProcessing}
+                        />
+                    )}
+                </div>
+            );
+        }
+
+        // Phase Execution Component
+        function PhaseExecution({ phases, currentPhase, phaseProgress, isProcessing }) {
+            return (
+                <div className="space-y-6">
+                    <div className="bg-white rounded-lg shadow-lg p-6">
+                        <h2 className="text-2xl font-bold mb-6">Building Your Application</h2>
+
+                        <div className="space-y-4">
+                            {phases.map((phase, index) => {
+                                const progress = phaseProgress.find(p => p.phase === phase.id);
+                                const isActive = currentPhase === phase.id;
+                                const isCompleted = progress?.status === 'completed';
+                                const isPending = !progress;
+
+                                return (
+                                    <div
+                                        key={phase.id}
+                                        className={`border-2 rounded-lg p-6 transition-all ${
+                                            isActive ? 'border-purple-500 bg-purple-50' :
+                                            isCompleted ? 'border-green-500 bg-green-50' :
+                                            'border-gray-200'
+                                        }`}
+                                    >
+                                        <div className="flex items-start justify-between">
+                                            <div className="flex items-start space-x-4 flex-1">
+                                                <div className={`text-3xl ${isActive ? 'pulse-animation' : ''}`}>
+                                                    {phase.icon}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <div className="flex items-center space-x-3">
+                                                        <h3 className="text-lg font-bold">{phase.name}</h3>
+                                                        {isActive && (
+                                                            <span className="text-xs bg-purple-600 text-white px-2 py-1 rounded">
+                                                                In Progress
+                                                            </span>
+                                                        )}
+                                                        {isCompleted && (
+                                                            <span className="text-xs bg-green-600 text-white px-2 py-1 rounded">
+                                                                ✓ Completed
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <p className="text-gray-600 text-sm mt-1">{phase.description}</p>
+
+                                                    {isActive && (
+                                                        <div className="mt-3 space-y-2">
+                                                            <div className="text-xs text-gray-500">
+                                                                Using: {phase.tools.join(', ')}
+                                                            </div>
+                                                            <div className="w-full bg-gray-200 rounded-full h-2">
+                                                                <div className="bg-purple-600 h-2 rounded-full animate-pulse" style={{ width: '60%' }}></div>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {isCompleted && (
+                                                        <div className="mt-2 text-sm text-green-700">
+                                                            ✓ {phase.output}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            <div className="text-right text-sm text-gray-500">
+                                                {progress?.timestamp}
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        {!isProcessing && phaseProgress.length === 5 && (
+                            <div className="mt-8 p-6 bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-lg">
+                                <h3 className="text-2xl font-bold mb-2">🎉 Deployment Complete!</h3>
+                                <p className="mb-4">Your application has been built and deployed successfully.</p>
+                                <div className="space-y-2">
+                                    <div className="flex items-center space-x-2">
+                                        <span className="font-medium">Live URL:</span>
+                                        <a href="#" className="underline hover:text-green-100">
+                                            https://your-app-xyz123.vercel.app
+                                        </a>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <span className="font-medium">GitHub:</span>
+                                        <a href="#" className="underline hover:text-green-100">
+                                            github.com/username/your-app
+                                        </a>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <span className="font-medium">Total Time:</span>
+                                        <span>12.5 minutes</span>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <span className="font-medium">Total Cost:</span>
+                                        <span>$0.28 (with caching)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        // Architecture Tab Component
+        function ArchitectureTab({ phases }) {
+            return (
+                <div className="space-y-8">
+                    <div className="bg-white rounded-lg shadow-lg p-8">
+                        <h2 className="text-3xl font-bold mb-4">System Architecture</h2>
+                        <p className="text-gray-600 mb-8">
+                            Eames uses a hybrid architecture combining custom LangGraph orchestration with DeepAgents-powered phase agents.
+                        </p>
+
+                        {/* Architecture Diagram */}
+                        <div className="bg-gray-50 rounded-lg p-6 mb-8">
+                            <div className="text-center mb-6">
+                                <div className="inline-block bg-purple-600 text-white px-6 py-3 rounded-lg font-bold">
+                                    Eames Orchestrator (LangGraph)
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                                {phases.map(phase => (
+                                    <div key={phase.id} className="bg-white rounded-lg p-4 border-2 border-gray-200">
+                                        <div className="text-2xl mb-2 text-center">{phase.icon}</div>
+                                        <div className="text-sm font-bold text-center">{phase.name}</div>
+                                        <div className={`text-xs text-center mt-2 ${phase.color} text-white px-2 py-1 rounded`}>
+                                            DeepAgent
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="mt-6 text-center">
+                                <div className="inline-block bg-gray-700 text-white px-6 py-3 rounded-lg">
+                                    <div className="font-bold mb-2">Shared Infrastructure</div>
+                                    <div className="text-xs space-x-4">
+                                        <span>CompositeBackend</span>
+                                        <span>•</span>
+                                        <span>Eames Brain 2.0</span>
+                                        <span>•</span>
+                                        <span>PostgreSQL</span>
+                                        <span>•</span>
+                                        <span>LangSmith</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Key Features */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <FeatureCard
+                                title="CompositeBackend"
+                                description="Intelligent routing between ephemeral state, persistent memory, and real filesystem"
+                                items={[
+                                    '/workspace/ → StateBackend (ephemeral)',
+                                    '/memories/ → StoreBackend (PostgreSQL)',
+                                    '/deliverables/ → FilesystemBackend (real disk)'
+                                ]}
+                            />
+
+                            <FeatureCard
+                                title="Eames Brain 2.0"
+                                description="Domain intelligence embedded in every agent's system prompt"
+                                items={[
+                                    'Core Identity (~800 tokens)',
+                                    'Visual Design Excellence (~1200 tokens)',
+                                    'Full-Stack Engineering (~1500 tokens)',
+                                    'Clarification Loop (competitive moat)'
+                                ]}
+                            />
+
+                            <FeatureCard
+                                title="Quality Gates"
+                                description="Automated checks ensure production-ready code"
+                                items={[
+                                    'ESLint (must pass)',
+                                    'TypeScript (must pass)',
+                                    'Vitest tests (must pass)',
+                                    'Self-healing loop (max 3 retries)'
+                                ]}
+                            />
+
+                            <FeatureCard
+                                title="Cost Optimization"
+                                description="Advanced caching and routing keep costs low"
+                                items={[
+                                    'Prompt caching (90% savings)',
+                                    'Model routing (Sonnet/Haiku)',
+                                    'Context eviction (>20k tokens)',
+                                    'Target: <$1 per app'
+                                ]}
+                            />
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // Capabilities Tab Component
+        function CapabilitiesTab() {
+            const capabilities = [
+                {
+                    category: 'Design Excellence',
+                    icon: '🎨',
+                    color: 'bg-pink-500',
+                    items: [
+                        'Stripe/Linear/Notion-level visual quality',
+                        'Systematic design tokens (8pt grid, Inter typography)',
+                        'WCAG 2.1 AA compliance (4.5:1 contrast minimum)',
+                        'Dark mode support by default',
+                        'Responsive design (mobile-first)'
+                    ]
+                },
+                {
+                    category: 'Engineering Mastery',
+                    icon: '⚡',
+                    color: 'bg-blue-500',
+                    items: [
+                        'React + TypeScript production patterns',
+                        'Next.js 14+ App Router',
+                        'Tailwind CSS with custom config',
+                        'Server Actions & API routes',
+                        'Comprehensive testing (unit + integration)'
+                    ]
+                },
+                {
+                    category: 'AI Features',
+                    icon: '🤖',
+                    color: 'bg-purple-500',
+                    items: [
+                        'OpenAI/Anthropic SDK integration',
+                        'Streaming responses',
+                        'Vector search (Pinecone/Weaviate)',
+                        'RAG pipelines',
+                        'Embeddings & semantic search'
+                    ]
+                },
+                {
+                    category: 'Autonomous Execution',
+                    icon: '🚀',
+                    color: 'bg-green-500',
+                    items: [
+                        'End-to-end automation (no manual steps)',
+                        'GitHub repo creation & push',
+                        'Vercel/Netlify deployment',
+                        'Resume capability (checkpoints)',
+                        'Error recovery with retry logic'
+                    ]
+                },
+                {
+                    category: 'Clarification Loop',
+                    icon: '🤔',
+                    color: 'bg-orange-500',
+                    items: [
+                        'Asks strategic questions for vague requests',
+                        'Validates understanding before building',
+                        'Surfaces contradictions proactively',
+                        'Design partner, not just code generator',
+                        'Ensures alignment with user goals'
+                    ]
+                },
+                {
+                    category: 'Multi-Project Support',
+                    icon: '📁',
+                    color: 'bg-indigo-500',
+                    items: [
+                        'Context isolation per project',
+                        'Seamless project switching',
+                        'Session history per project',
+                        'Eames Brain versioning',
+                        'Cross-project learnings (opt-in)'
+                    ]
+                }
+            ];
+
+            return (
+                <div className="space-y-8">
+                    <div className="bg-white rounded-lg shadow-lg p-8">
+                        <h2 className="text-3xl font-bold mb-4">What Makes Eames Unique</h2>
+                        <p className="text-gray-600 mb-8">
+                            Unlike other AI coding assistants, Eames is a complete design-to-deployment agent that combines strategic thinking, world-class design, and full-stack engineering.
+                        </p>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {capabilities.map((cap, index) => (
+                                <div key={index} className="bg-white border-2 border-gray-200 rounded-lg p-6 hover:border-purple-300 transition-colors">
+                                    <div className={`w-12 h-12 ${cap.color} rounded-lg flex items-center justify-center text-2xl mb-4`}>
+                                        {cap.icon}
+                                    </div>
+                                    <h3 className="text-lg font-bold mb-3">{cap.category}</h3>
+                                    <ul className="space-y-2">
+                                        {cap.items.map((item, i) => (
+                                            <li key={i} className="text-sm text-gray-600 flex items-start">
+                                                <span className="text-green-500 mr-2 flex-shrink-0">✓</span>
+                                                <span>{item}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Performance Metrics */}
+                    <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg shadow-lg p-8">
+                        <h2 className="text-2xl font-bold mb-6">Performance Targets</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                            <MetricCard
+                                value="<15 min"
+                                label="Total Execution Time"
+                                sublabel="Target: <10 min stretch"
+                            />
+                            <MetricCard
+                                value="<$1"
+                                label="Cost Per App"
+                                sublabel="$0.30 with caching"
+                            />
+                            <MetricCard
+                                value=">90%"
+                                label="Success Rate"
+                                sublabel="Deployable apps"
+                            />
+                            <MetricCard
+                                value="100%"
+                                label="Quality Gates"
+                                sublabel="Lint + Types + Tests"
+                            />
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // Helper Components
+        function FeatureCard({ title, description, items }) {
+            return (
+                <div className="bg-gray-50 rounded-lg p-6">
+                    <h3 className="text-lg font-bold mb-2">{title}</h3>
+                    <p className="text-sm text-gray-600 mb-4">{description}</p>
+                    <ul className="space-y-2">
+                        {items.map((item, i) => (
+                            <li key={i} className="text-sm text-gray-700 flex items-start">
+                                <span className="text-purple-500 mr-2">•</span>
+                                <span>{item}</span>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            );
+        }
+
+        function MetricCard({ value, label, sublabel }) {
+            return (
+                <div className="text-center">
+                    <div className="text-4xl font-bold mb-2">{value}</div>
+                    <div className="text-sm font-medium opacity-90">{label}</div>
+                    <div className="text-xs opacity-75 mt-1">{sublabel}</div>
+                </div>
+            );
+        }
+
+        // Render App
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>

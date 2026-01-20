@@ -1,0 +1,189 @@
+# Updated: 2026-01-20 15:30:00
+# IDEA INBOX
+
+> **Purpose:** Quick capture of ideas with minimal friction. This is the "inbox" - ideas come here first, then get processed into FEATURE_IDEAS_BACKLOG.md after analysis.
+
+---
+
+## 📥 How to Use This File
+
+1. **Quick Capture** - Drop links, notes, GitHub stars here with minimal info
+2. **Process Later** - Run `/eames-analyze-reference` on items to fully analyze
+3. **Move to Backlog** - After analysis, entry moves to FEATURE_IDEAS_BACKLOG.md
+4. **Keep Inbox Clean** - Regularly triage, don't let items rot
+
+---
+
+## 📊 Inbox Dashboard
+
+| ID | Source | Tags | Date Added | Status | Project |
+|----|--------|------|------------|--------|---------|
+| IN-001 | Example | ai-agent | 2026-01-20 | 📥 Unprocessed | eames |
+
+### Status Legend
+| Status | Meaning |
+|--------|---------|
+| 📥 Unprocessed | Just captured, needs analysis |
+| 🔍 Processing | Currently being analyzed |
+| ✅ Processed | Moved to backlog |
+| ❌ Skipped | Decided not to analyze (with reason) |
+
+---
+
+## 📥 Unprocessed Ideas
+
+### IN-001: [Template - Delete This]
+| Field | Value |
+|-------|-------|
+| **URL** | https://example.com |
+| **Type** | GitHub / Article / Video / Tool / Concept |
+| **Tags** | ai-agent, workflow, design |
+| **Project Relevance** | eames, general-ai |
+| **Date Added** | 2026-01-20 |
+| **Added By** | User |
+| **Quick Note** | One-line description of why this is interesting |
+| **Status** | 📥 Unprocessed |
+
+---
+
+## 🌟 GitHub Stars Queue
+
+> **Sync your GitHub stars here for processing**
+> Use `/eames-backlog-sync` to pull recent stars
+
+| Repo | Stars | Why Starred | Date Starred | Status |
+|------|-------|-------------|--------------|--------|
+| (none yet) | | | | |
+
+### How to Add GitHub Stars
+1. Star a repo on GitHub with note about why
+2. Add here with quick note
+3. Process with `/eames-analyze-reference <repo>`
+
+---
+
+## 🔗 Saved Links Queue
+
+> **Dump saved links from bookmarks, notes apps, etc.**
+
+| URL | Source App | Tags | Date Saved | Status |
+|-----|------------|------|------------|--------|
+| (none yet) | | | | |
+
+### Sources to Check
+- [ ] Browser bookmarks
+- [ ] Notion saved pages
+- [ ] Twitter/X bookmarks
+- [ ] LinkedIn saved posts
+- [ ] Pocket/Instapaper
+- [ ] Email "to read" folder
+
+---
+
+## 💭 Quick Ideas Queue
+
+> **Rough ideas that popped up - not from external sources**
+
+| Idea | Context | Date | Status |
+|------|---------|------|--------|
+| (none yet) | | | |
+
+---
+
+## ✅ Recently Processed
+
+> **Ideas that have been analyzed and moved to backlog**
+> Keep last 10 for reference, then delete
+
+| ID | Source | Processed Date | Backlog ID | Outcome |
+|----|--------|----------------|------------|---------|
+| (none yet) | | | | |
+
+---
+
+## ❌ Skipped Ideas
+
+> **Ideas decided NOT to analyze - with reason (so we don't revisit)**
+
+| ID | Source | Skip Date | Reason |
+|----|--------|-----------|--------|
+| (none yet) | | | |
+
+---
+
+## 🗑️ Auto-Archived (Stale)
+
+> **Items unprocessed for 60+ days - auto-archived to keep inbox clean**
+
+| ID | Source | Added Date | Archived Date | Reason |
+|----|--------|------------|---------------|--------|
+| (none yet) | | | | |
+
+**To revive:** Move back to "📥 Unprocessed Ideas" section, update date.
+
+---
+
+## 📋 Inbox Template
+
+```markdown
+### IN-XXX: [Name]
+| Field | Value |
+|-------|-------|
+| **URL** | [link] |
+| **Type** | GitHub / Article / Video / Tool / Concept |
+| **Tags** | [comma-separated] |
+| **Project Relevance** | eames / general-ai / [other] |
+| **Date Added** | YYYY-MM-DD |
+| **Added By** | User / Auto-sync |
+| **Quick Note** | [one line - why interesting?] |
+| **Status** | 📥 Unprocessed |
+```
+
+---
+
+## 📊 Inbox Stats
+
+| Metric | Count |
+|--------|-------|
+| **Total Unprocessed** | 1 (template) |
+| **GitHub Stars Pending** | 0 |
+| **Saved Links Pending** | 0 |
+| **Quick Ideas Pending** | 0 |
+| **Processed This Week** | 0 |
+| **Skipped This Week** | 0 |
+
+---
+
+## ⏰ Triage Schedule & Staleness Rules
+
+### Intended Cadence
+| Activity | Frequency |
+|----------|-----------|
+| Quick capture (`/eames-idea-capture`) | Daily (as ideas arise) |
+| Process inbox (`/eames-idea-triage inbox`) | Weekly (3-5 items) |
+| Stale check (`/eames-idea-triage stale`) | Monthly |
+
+### Staleness Rules
+| Age | Status | Action |
+|-----|--------|--------|
+| **0-14 days** | ✅ Fresh | Normal |
+| **14-30 days** | 🟡 Warning | `/eames-idea-triage stats` shows yellow warning |
+| **30-60 days** | 🔴 Critical | Strong suggestion to process or skip |
+| **60+ days** | 🗑️ Auto-Archive | Moved to "🗑️ Auto-Archived" section |
+
+### Auto-Archive Policy
+Items unprocessed for 60+ days are automatically moved to archive with note:
+```
+| IN-XXX | [Source] | 2026-XX-XX | Auto-Archived | Unprocessed for 60+ days |
+```
+
+**To revive:** Manually move back to Unprocessed, reset date.
+
+### Schedule Tracking
+**Recommended:** Review inbox weekly
+**Last Triaged:** Never
+**Next Triage Due:** 2026-01-27
+
+---
+
+*Last Updated: 2026-01-20 13:20:00*

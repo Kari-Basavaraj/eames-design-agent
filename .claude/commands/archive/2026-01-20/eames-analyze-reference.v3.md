@@ -296,61 +296,21 @@ If no $ARGUMENTS provided, ask user for a URL, repo name, or search term before 
     Ask user: "Create Linear issue for tracking? (y/n)"
 
     If yes, use mcp__linear__create_issue:
-    - title: "[Feature Idea] FI-XXX: {Name}"
+    - title: "[Feature Idea] {Name}"
     - team: "Basavaraj Team"
-    - description: **FULL backlog entry content** (copy entire FI-XXX section from FEATURE_IDEAS_BACKLOG.md)
+    - description: Include source URL, vision score, agent-native score, effort, brief summary, backlog reference
+    - labels: [
+        "feature-idea",
+        "source:external",
+        appropriate phase label (discovery/define/design/develop/deliver),
+        vision alignment label (vision:aligned/vision:partial/vision:low),
+        effort label (effort:xs/effort:s/effort:m/effort:l/effort:xl),
+        tech-fit label (tech:native/tech:wrapper/tech:conflict)
+      ]
     - project: "Eames Design Agent LangChain v1.0.0"
     - priority: Based on adoption priority (Critical=1, High=2, Medium=3)
 
-    **⚠️ IMPORTANT: Full Sync Rule**
-    The Linear issue description MUST contain the COMPLETE backlog entry:
-    - All metadata fields
-    - Source and Source Health Assessment
-    - Vision Alignment (with evidence table)
-    - Agent-Native Principles (with evidence table)
-    - JACKPOT INSIGHT (if any)
-    - Feature Mapping table
-    - Tech Stack Alignment table
-    - Risk Assessment table
-    - Alternatives Considered table
-    - What to Adopt (prioritized)
-    - What NOT to Adopt
-    - Implementation Scope table
-    - Success Metrics table
-    - Decision Log
-    - Related Entries
-
-    This ensures backlog ↔ Linear stay in sync. When updating one, update the other.
-
-    **Labels (14 total - create once in Linear):**
-
-    | Category | Labels | When to Apply |
-    |----------|--------|---------------|
-    | **Identifier** | `feature-idea` | Always (identifies idea source) |
-    | **Priority** | `priority:critical` | 🔴 Blocks core function |
-    | | `priority:high` | 🟡 Significant improvement |
-    | | `priority:medium` | 🟢 Nice to have |
-    | **Effort** | `effort:small` | XS or S (< 1 day) |
-    | | `effort:large` | M, L, or XL (> 1 day) |
-    | **Phase** | `phase:discovery` | Affects Discovery |
-    | | `phase:define` | Affects Define |
-    | | `phase:design` | Affects Design |
-    | | `phase:develop` | Affects Develop |
-    | | `phase:deliver` | Affects Deliver |
-    | **Vision** | `vision:aligned` | Score 20-25 |
-    | | `vision:partial` | Score 15-19 |
-    | | `vision:low` | Score <15 |
-
-    **Example label set:** `feature-idea`, `priority:high`, `effort:large`, `phase:discovery`, `vision:aligned`
-
-    **After Linear issue created, update backlog:**
-    1. In FI-XXX Metadata section:
-       - Change `**Linear Issue** | Pending` to `**Linear Issue** | BAS-XXX` (actual issue ID)
-    2. In FI-XXX Linear Tracking section:
-       - Change `**Linear Issue:** Pending (offer to create)` to `**Linear Issue:** BAS-XXX`
-       - Change `**Status:** Analyzed, ready for planning` to `**Status:** Analyzed, tracked in Linear`
-    3. In Backlog Summary (bottom of file):
-       - Increment `**Promoted to Linear** | X` count by 1
+    Update backlog entry with Linear issue ID.
 
 20. **Update Inbox**
     If source was from IDEA_INBOX.md:
@@ -376,14 +336,8 @@ Before completing, verify:
 - Success metrics are measurable
 - Decision log has initial entry
 - IDEA_PATTERNS.md updated if applicable
-- Linear issue (if created) contains FULL backlog entry content (not summary)
-- Linear issue labels match spec criteria (vision score range, effort size, phases)
-- Backlog updated after Linear creation:
-  - Metadata `Linear Issue` field has issue ID (not "Pending")
-  - Linear Tracking section has issue ID and status "tracked in Linear"
-  - Backlog Summary `Promoted to Linear` count incremented
+- Linear issue (if created) links correctly
 - IDEA_INBOX.md updated if source was from inbox
-- IDEA_INBOX.md dashboard row updated (not just entry section)
 - Backlog Summary stats updated
 </verification>
 
@@ -407,9 +361,7 @@ Do NOT commit. User reviews changes first.
 </output>
 
 <rules>
-DO: Validate input first, check inbox/dedup (all sources), assess source health, fetch before analyzing, score with EVIDENCE, evaluate agent-native principles, detect patterns, map to all 5 phases with subagent fit AND effort, assess tech stack, estimate effort, consider alternatives, assess reversibility, use FULL template, update patterns file, offer Linear integration with FULL CONTENT SYNC
+DO: Validate input first, check inbox/dedup (all sources), assess source health, fetch before analyzing, score with EVIDENCE, evaluate agent-native principles, detect patterns, map to all 5 phases with subagent fit AND effort, assess tech stack, estimate effort, consider alternatives, assess reversibility, use FULL template, update patterns file, offer Linear integration
 
-DO NOT: Commit without user confirmation, skip vision evidence, skip agent-native evaluation, forget effort estimates, adopt features that break architecture, proceed with empty arguments, create Linear issue without asking, forget to update patterns, leave template sections empty, use summary instead of full content in Linear issue
-
-**SYNC RULE:** Backlog entry content = Linear issue description (full sync, not summary)
+DO NOT: Commit without user confirmation, skip vision evidence, skip agent-native evaluation, forget effort estimates, adopt features that break architecture, proceed with empty arguments, create Linear issue without asking, forget to update patterns, leave template sections empty
 </rules>

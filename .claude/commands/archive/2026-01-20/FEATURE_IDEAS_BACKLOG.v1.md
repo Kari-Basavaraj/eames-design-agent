@@ -1,4 +1,4 @@
-# Updated: 2026-01-20 16:37:05
+# Updated: 2026-01-20 13:15:00
 # FEATURE IDEAS BACKLOG
 
 > **Purpose:** Complete lifecycle management of ideas from discovery to implementation. Every idea is tracked, analyzed, decided upon, and either implemented or explicitly rejected with reasoning.
@@ -50,11 +50,10 @@ Key Metrics:
 
 ## 📊 Quick Reference Dashboard
 
-|| ID | Source | Status | Priority | Effort | Patterns | Last Reviewed | Project Tags |
-||----|--------|--------|----------|--------|----------|---------------|--------------|
-|| FI-001 | get-shit-done | ✅ Analyzed | High | M | PAT-001, PAT-002 | 2026-01-20 | eames |
-|| FI-002 | claude-build-workflow | ✅ Analyzed | High | M | PAT-001 | 2026-01-19 | eames |
-|| FI-003 | ollama-anthropic-api | ✅ Analyzed | High | S | PAT-006 | 2026-01-20 | eames |
+| ID | Source | Status | Priority | Effort | Patterns | Last Reviewed | Project Tags |
+|----|--------|--------|----------|--------|----------|---------------|--------------|
+| FI-001 | get-shit-done | ✅ Analyzed | High | M | PAT-001, PAT-002 | 2026-01-20 | eames |
+| FI-002 | claude-build-workflow | ✅ Analyzed | High | M | PAT-001 | 2026-01-19 | eames |
 
 ### Status Legend
 | Status | Meaning |
@@ -111,7 +110,7 @@ Key Metrics:
 | **Stale After** | 2026-04-20 (90 days) |
 | **Project Tags** | eames, general-ai |
 | **Related Patterns** | PAT-001 (User Interviewing), PAT-002 (Approval Gates) |
-|| **Linear Issue** | BAS-56 |
+| **Linear Issue** | Pending |
 
 ### Source
 - **Repository:** https://github.com/glittercowboy/get-shit-done
@@ -259,8 +258,8 @@ In real design practice:
 | 2026-01-20 | Prioritize INTAKE + UAT | These mirror real design practice (THE MOAT) | User + Claude |
 
 ### Linear Tracking
-- **Linear Issue:** BAS-56
-- **Status:** Analyzed, tracked in Linear
+- **Linear Issue:** Pending
+- **Status:** Analyzed, ready for planning
 
 ---
 
@@ -277,7 +276,7 @@ In real design practice:
 | **Stale After** | 2026-04-19 (90 days) |
 | **Project Tags** | eames |
 | **Related Patterns** | PAT-001 (User Interviewing) |
-|| **Linear Issue** | BAS-57 |
+| **Linear Issue** | Pending |
 
 ### Source
 - **Repository:** https://github.com/rohunj/claude-build-workflow
@@ -394,350 +393,7 @@ In real design practice:
 
 ---
 
-## FI-003: Ollama v0.14.0 Anthropic Messages API Support
-
-### Metadata
-| Field | Value |
-|-------|-------|
-| **Status** | ✅ Analyzed |
-| **Priority** | High |
-| **Effort** | S (2-8 hours) |
-| **Confidence** | High |
-| **Last Reviewed** | 2026-01-20 |
-| **Stale After** | 2026-04-20 (90 days) |
-| **Project Tags** | eames |
-| **Related Patterns** | PAT-006 (Local Model Fallback - validated) |
-| **Linear Issue** | Pending |
-
-### Source
-- **URL:** https://ollama.com/blog/claude
-- **Type:** Official Blog Post
-- **Published:** 2026-01 (recent)
-- **License:** MIT (Ollama)
-- **Description:** Ollama v0.14.0 adds Anthropic Messages API support, enabling local models as Claude drop-in replacements
-
-### Source Health Assessment
-| Metric | Status | Notes |
-|--------|--------|-------|
-| Source Authority | ✅ Good | Official Ollama blog |
-| Recency | ✅ Good | v0.14.0 release (2026-01) |
-| Documentation Quality | ✅ Good | Code examples, clear API docs |
-| Trustworthiness | ✅ Good | First-party announcement |
-
-### 🎯 Vision Alignment
-**Score:** 19/25 (Partially Aligned)
-**Confidence:** High (direct feature documentation)
-
-| Pillar | Score | Evidence |
-|--------|-------|----------|
-| **Autonomous** | 4/5 | Local models run without API rate limits or network dependency; 24/7 operation |
-| **End-to-End** | 3/5 | Supports all phases via tool calling, streaming, vision - quality varies by model |
-| **Production-Ready** | 4/5 | Tool calling, streaming, vision all supported; production viable |
-| **Designer-Like** | 3/5 | Quality depends on local model; may not match Claude's design reasoning |
-| **Cost-Efficient** | 5/5 | ⭐ ZERO API cost after hardware - directly enables <$1 target |
-
-**Red Flags:** None
-**Key Strength:** Directly supports Cost-Efficient pillar - <$1 per app becomes trivially achievable
-
-### Agent-Native Principles (/5)
-| Principle | Aligned | Evidence |
-|-----------|---------|----------|
-| **Parity** | ✅ | Anthropic Messages API = same interface; `ANTHROPIC_BASE_URL` swap |
-| **Granularity** | ✅ | Tool calling with defined schemas; atomic operations |
-| **Composability** | ✅ | Mix local/cloud via base URL; per-phase routing possible |
-| **Emergent Capability** | ✅ | Enables offline workflows, privacy-sensitive use cases |
-| **Improvement Over Time** | ✅ | Local context stays on machine; no external API logging |
-
-**Score:** 5/5 ✅ Fully Agent-Native
-
-### 🎯 JACKPOT INSIGHT: Hybrid Cloud/Local Model Strategy
-
-> **The insight:** Use Claude (cloud) for high-stakes phases where reasoning quality matters (Discovery, Define), use local models (Ollama) for high-volume phases where cost dominates (Develop, Deliver).
-
-**Hybrid Strategy:**
-| Phase | Model Strategy | Rationale |
-|-------|----------------|-----------|
-| Discovery | Claude (cloud) | Best reasoning for user understanding |
-| Define | Claude (cloud) | PRD quality is critical |
-| Design | Hybrid | Claude for decisions, local for iterations |
-| Develop | Local (Ollama) | High token volume, lower reasoning bar |
-| Deliver | Local (Ollama) | Deployment scripts are formulaic |
-
-**Cost Impact:**
-- Current: ~$0.50-$2 per app (all Claude)
-- With hybrid: ~$0.10-$0.30 per app (70%+ reduction)
-- With full local: $0 API cost (hardware only)
-
-### Feature Mapping: Ollama v0.14.0 → Eames
-
-| Source Feature | Eames Current | V1.1.0 Plan | Gap? | Phase | Subagent Fit | Priority | Effort |
-|----------------|---------------|-------------|------|-------|--------------|----------|--------|
-| Anthropic Messages API | Native Ollama API | Not planned | Yes | All | All subagents | 🔴 Critical | S |
-| Tool Calling | ❌ Not via Ollama | Not planned | Yes | Develop | Code/Test agents | 🔴 Critical | S |
-| Streaming | ⚠️ Partial | Planned | Partial | All | All subagents | 🟡 High | XS |
-| Extended Thinking | ❌ Not supported | Not planned | Yes | Define/Design | Strategy agents | 🟢 Medium | S |
-| Vision Support | ❌ Not via Ollama | Not planned | Yes | Design | Component agents | 🟢 Medium | S |
-| 64k+ Context Models | ✅ Supported | N/A | No | All | All | - | - |
-
-### Tech Stack Alignment
-| Integration Point | Compatibility | Notes |
-|-------------------|---------------|-------|
-| LangGraph StateGraph | ✅ Native | LangChain supports Ollama via ChatOllama |
-| DeepAgents v0.3.2+ | ✅ Native | Can configure base_url for Anthropic SDK |
-| CompositeBackend | ✅ Native | No changes needed - storage agnostic |
-| PostgreSQL checkpointing | ✅ Native | Unaffected by LLM provider |
-| Middleware stack | ⚠️ Minor | Need model router for phase-based selection |
-| Eames Brain 2.0 prompts | ✅ Native | Prompts work with any Claude-compatible API |
-| MCP tools | ✅ Native | Tool calling supported via Messages API |
-
-**Tech Verdict:** ✅ Native fit - Ollama v0.14.0 designed as drop-in replacement
-
-### Risk Assessment
-| Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
-| Local model quality < Claude | High | Medium | Hybrid strategy: Claude for critical phases |
-| Tool calling reliability varies | Medium | High | Test matrix per model, graceful fallback |
-| Extended thinking not universal | Medium | Low | Feature flag, graceful degradation |
-| Hardware requirements | Medium | Medium | Document min specs, cloud fallback |
-
-**Reversibility:** ✅ Easy - Feature flag, always fall back to cloud
-**Cost/Benefit Verdict:** ✅ Worth it - High ROI for cost reduction
-
-### Alternatives Considered
-| Alternative | Why Not Chosen |
-|-------------|----------------|
-| Continue cloud-only | Doesn't achieve <$1 target reliably |
-| OpenAI local | OpenAI doesn't offer local execution |
-| Wait for Claude local | Anthropic has no announced local offering |
-| LM Studio | Less mature API, smaller community |
-| vLLM | More complex setup, less Claude-compatible |
-
-### What to Adopt (Prioritized)
-
-#### 🔴 Critical (V1.1.0 Scope)
-1. **Upgrade Ollama integration to Messages API** - Replace `/api/chat` with Anthropic-compatible endpoint
-2. **Enable tool calling via local models** - Critical for Develop phase local execution
-3. **Hybrid model router** - Route phases to cloud/local based on config
-
-#### 🟡 High (V1.2.0 Scope)
-4. **Streaming support for local models** - Improve UX during local execution
-5. **Model quality benchmarking** - Test local models against Claude for each phase
-
-#### 🟢 Medium (Future)
-6. **Extended thinking for local models** - When model support matures
-7. **Vision support for Design phase** - Screenshot analysis locally
-
-### What NOT to Adopt
-| Feature | Reason | Pillar Violated |
-|---------|--------|-----------------|
-| Full local-only mode | Quality tradeoff too high for Discovery/Define | Designer-Like |
-| Auto model selection | User should control cost/quality tradeoff | Autonomous (user agency) |
-
-### Implementation Scope
-| Area | Changes |
-|------|---------|
-| **Files Modified** | `src/utils/ollama.ts`, `src/model/llm.ts`, `src/components/ModelSelector.tsx` |
-| **New Modules** | `src/utils/model-router.ts` (hybrid routing logic) |
-| **API Changes** | Additive (new provider config options) |
-| **Tests Required** | Unit (API compatibility), Integration (tool calling), E2E (full workflow) |
-| **Rollout Strategy** | Feature flag `useLocalModels`, gradual enable per phase |
-
-### Success Metrics
-| Metric | Target | How to Measure |
-|--------|--------|----------------|
-| Cost per app (hybrid) | <$0.30 | Track API spend per session |
-| Local tool call success | >90% | Test suite pass rate |
-| Latency increase | <2x | Benchmark Develop phase |
-| User adoption | >30% | Feature flag analytics |
-
-### Decision Log
-| Date | Decision | Reason | By |
-|------|----------|--------|-----|
-| 2026-01-20 | ✅ Adopt hybrid cloud/local strategy | Directly enables <$1 target, low risk | User + Claude |
-
-### Linear Tracking
-- **Linear Issue:** Pending (offer to create)
-- **Status:** Analyzed, ready for planning
-
-### Related Entries
-- **Existing Ollama code:** `src/utils/ollama.ts`, `src/components/ModelSelector.tsx`
-- **Pattern validated:** PAT-006 (Local Model Fallback) - now 2 sources
-
----
-
-<!--
-## [BACKUP - Warp Analysis 2026-01-20] FI-003: Ollama v0.14.0 Anthropic Messages API Support
-
-### Metadata
-|| Field | Value |
-||-------|-------|
-|| **Status** | ✅ Analyzed |
-|| **Priority** | High |
-|| **Effort** | S (2-8 hours) |
-|| **Confidence** | High |
-|| **Last Reviewed** | 2026-01-20 |
-|| **Stale After** | 2026-04-20 (90 days) |
-|| **Project Tags** | eames |
-|| **Related Patterns** | PAT-006 (Local Model Fallback - emerging) |
-|| **Linear Issue** | Pending |
-
-### Source
-- **URL:** https://ollama.com/blog/claude
-- **Type:** Official Blog Post
-- **Published:** 2026-01 (recent)
-- **License:** N/A (feature announcement)
-- **Description:** Ollama v0.14.0 adds Anthropic Messages API support, enabling local models to serve as Claude drop-in replacements
-
-### Source Health Assessment
-|| Metric | Status | Notes |
-||--------|--------|-------|
-|| Active Development | ✅ Good | Ollama is actively maintained, major release |
-|| Community | ✅ Good | Ollama has strong community, wide adoption |
-|| Documentation | ✅ Good | Clear API docs, usage examples |
-|| License | ✅ MIT | Ollama is MIT licensed |
-|| Breaking Change Risk | 🟡 Medium | API additions are stable, but young feature |
-
-### 🎯 Vision Alignment
-**Score:** 19/25 ✅ Strongly Aligned
-**Confidence:** High (direct feature analysis)
-
-|| Pillar | Score | Evidence |
-||--------|-------|----------|
-|| **Autonomous** | 4/5 | Local models can run 24/7 without API limits or rate limiting |
-|| **End-to-End** | 3/5 | Supports all phases but may have quality tradeoffs vs Claude |
-|| **Production-Ready** | 4/5 | Tool calling, streaming, vision all supported; production viable for cost-sensitive deploys |
-|| **Designer-Like** | 3/5 | Quality depends on local model; may not match Claude's design reasoning |
-|| **Cost-Efficient** | 5/5 | ⭐ ZERO API cost after hardware - directly enables <$1 target |
-
-**Red Flags:** None
-**Key Strength:** Directly supports Cost-Efficient pillar - the <$1 per app target becomes trivially achievable with local execution.
-
-### Agent-Native Principles (/5)
-|| Principle | Aligned | Evidence |
-||-----------|---------|----------|
-|| Parity | ✅ | Anthropic Messages API = same interface as Claude |
-|| Granularity | ✅ | Works with existing tool calling primitives |
-|| Composability | ✅ | Can mix local/cloud models per phase |
-|| Emergent Capability | ✅ | Enables offline workflows, privacy-sensitive use cases |
-|| Improvement Over Time | ✅ | Local context stays on machine, no API logging |
-
-**Score:** 5/5 ✅ Fully Agent-Native
-
-### 🎯 JACKPOT INSIGHT: Hybrid Cloud/Local Model Strategy
-
-> **The insight:** Use Claude for high-stakes phases (Discovery, Define) where reasoning quality matters most, but use local models for high-volume phases (Develop, iterations) where cost dominates.
-
-**Hybrid Strategy:**
-|| Phase | Model Strategy | Rationale |
-||-------|----------------|----------|
-|| Discovery | Claude (cloud) | Needs best reasoning for user understanding |
-|| Define | Claude (cloud) | PRD quality is critical |
-|| Design | Hybrid | Claude for decisions, local for iterations |
-|| Develop | Local (Ollama) | High token volume, lower reasoning bar |
-|| Deliver | Local (Ollama) | Deployment scripts are formulaic |
-
-**Cost Impact:**
-- Current: ~$0.50-$2 per app (all Claude)
-- With hybrid: ~$0.10-$0.30 per app (70%+ reduction)
-- With full local: $0 API cost (hardware only)
-
-### Feature Mapping: Ollama v0.14.0 → Eames
-
-|| Source Feature | Eames Current | V1.1.0 Plan | Gap? | Phase | Subagent Fit | Priority | Effort |
-||----------------|---------------|-------------|------|-------|--------------|----------|--------|
-|| Anthropic Messages API | Uses native Ollama API | Not planned | Yes | All | All subagents | 🔴 Critical | S |
-|| Tool Calling | ❌ Not via Ollama | Not planned | Yes | Develop | Code/Test agents | 🔴 Critical | S |
-|| Streaming | ⚠️ Partial | Planned | Partial | All | All subagents | 🟡 High | XS |
-|| Extended Thinking | ❌ Not supported | Not planned | Yes | Define/Design | Strategy agents | 🟢 Medium | S |
-|| Vision Support | ❌ Not via Ollama | Not planned | Yes | Design | Component agents | 🟢 Medium | S |
-|| Model Switching | ✅ UI exists | N/A | No | - | - | - | - |
-
-### Tech Stack Alignment
-|| Integration Point | Compatibility | Notes |
-||-------------------|---------------|-------|
-|| LangGraph StateGraph | ✅ Native | LangChain supports Ollama via ChatOllama |
-|| DeepAgents v0.3.2+ | ✅ Native | Can configure base_url for Anthropic SDK |
-|| CompositeBackend | ✅ Native | No changes needed |
-|| Middleware Stack | ⚠️ Minor change | Need to route model selection |
-|| Eames Brain 2.0 | ✅ Native | Prompts work with any Claude-compatible model |
-|| MCP tools | ✅ Native | Tool calling now supported via Messages API |
-
-**Tech Verdict:** ✅ Native fit - Ollama v0.14.0 is designed as drop-in replacement
-
-### Risk Assessment
-|| Risk | Likelihood | Impact | Mitigation |
-||------|------------|--------|------------|
-|| Local model quality lower than Claude | High | Medium | Use hybrid strategy, Claude for critical phases |
-|| Tool calling reliability varies by model | Medium | High | Test each model, maintain compatibility matrix |
-|| Extended thinking not all models support | Medium | Low | Feature flag, graceful degradation |
-|| Hardware requirements for local models | Medium | Medium | Document minimum specs, offer cloud fallback |
-
-**Reversibility:** ✅ Easy - Feature flag, can always fall back to cloud
-**Cost/Benefit Verdict:** ✅ Worth it - High ROI for cost reduction
-
-### Alternatives Considered
-|| Alternative | Why Not Chosen |
-||-------------|----------------|
-|| Continue cloud-only | Doesn't achieve <$1 target reliably |
-|| Use OpenAI local (no such thing) | OpenAI doesn't offer local execution |
-|| Wait for Claude local | Anthropic has no announced local offering |
-|| Use LM Studio | Less mature API, smaller community |
-
-### What to Adopt (Prioritized)
-
-#### 🔴 Critical (V1.1.0 Scope)
-1. **Upgrade Ollama integration to Messages API** - Replace `/api/chat` with Anthropic-compatible endpoint
-2. **Enable tool calling via local models** - Critical for Develop phase local execution
-3. **Hybrid model router** - Route phases to cloud/local based on config
-
-#### 🟡 High (V1.2.0 Scope)
-4. **Streaming support for local models** - Improve UX during local execution
-5. **Model quality benchmarking** - Test local models against Claude for each phase
-
-#### 🟢 Medium (Future)
-6. **Extended thinking for local models** - When model support matures
-7. **Vision support for Design phase** - Screenshot analysis locally
-
-### What NOT to Adopt
-|| Feature | Reason | Pillar Violated |
-||---------|--------|-----------------|
-|| Full local-only mode | Quality tradeoff too high for Discovery/Define | Designer-Like |
-|| Auto model selection | User should control cost/quality tradeoff | Autonomous (user agency) |
-
-### Implementation Scope
-|| Area | Changes |
-||------|---------|
-|| **Files Modified** | `src/utils/ollama.ts`, `src/model/llm.ts`, `src/components/ModelSelector.tsx` |
-|| **New Modules** | `src/utils/model-router.ts` (hybrid routing logic) |
-|| **API Changes** | Additive (new provider config options) |
-|| **Tests Required** | Unit (API compatibility), Integration (tool calling), E2E (full workflow with local) |
-|| **Rollout Strategy** | Feature flag `useLocalModels`, gradual enable per phase |
-
-### Success Metrics
-|| Metric | Target | How to Measure |
-||--------|--------|----------------|
-|| Cost per app (hybrid mode) | <$0.30 | Track API spend per session |
-|| Local model tool call success rate | >90% | Test suite pass rate |
-|| Latency increase (local vs cloud) | <2x | Benchmark Develop phase |
-|| User adoption of local mode | >30% | Feature flag analytics |
-
-### Decision Log
-|| Date | Decision | Reason | By |
-||------|----------|--------|-----|
-|| 2026-01-20 | ✅ Adopt hybrid cloud/local strategy | Directly enables <$1 target, low risk | User + Warp |
-
-### Linear Tracking
-- **Linear Issue:** Pending (offer to create)
-- **Status:** Analyzed, ready for planning
-
-### Related Entries
-- **Existing Ollama code:** `src/utils/ollama.ts`, `src/components/ModelSelector.tsx`
-- **New pattern emerging:** PAT-006 (Local Model Fallback)
--->
-
----
-
-## 📝 Entry Template
+## 📋 Entry Template
 
 ```markdown
 ## FI-XXX: [Name]
@@ -860,22 +516,21 @@ In real design practice:
 
 ## 📊 Backlog Summary
 
-|| Metric | Count |
-||--------|-------|
-|| **Total Ideas** | 3 |
-|| **✅ Analyzed** | 3 |
-|| **📋 Triaged** | 0 |
-|| **📅 Planned** | 0 |
-|| **🚧 In Progress** | 0 |
-|| **✔️ Implemented** | 0 |
-|| **❌ Rejected** | 0 |
-|| **Promoted to Linear** | 0 |
+| Metric | Count |
+|--------|-------|
+| **Total Ideas** | 2 |
+| **✅ Analyzed** | 2 |
+| **📋 Triaged** | 0 |
+| **📅 Planned** | 0 |
+| **🚧 In Progress** | 0 |
+| **✔️ Implemented** | 0 |
+| **❌ Rejected** | 0 |
+| **Promoted to Linear** | 0 |
 
-|| Pattern | Occurrences | Priority |
-||---------|-------------|----------|
-|| PAT-001 (User Interviewing) | 2 | 🔴 Critical |
-|| PAT-002 (Approval Gates) | 1 | 🔴 Critical |
-|| PAT-006 (Local Model Fallback) | 1 | 🟡 High (emerging) |
+| Pattern | Occurrences | Priority |
+|---------|-------------|----------|
+| PAT-001 (User Interviewing) | 2 | 🔴 Critical |
+| PAT-002 (Approval Gates) | 1 | 🔴 Critical |
 
 ---
 
