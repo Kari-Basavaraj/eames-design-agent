@@ -1,11 +1,11 @@
-# Updated: 2026-01-18 12:50:00
-# Eames Progress Tracker - v2.0 Multi-Branch
+# Updated: 2026-01-20 18:55:00
+# Eames Progress Tracker - V1.1.0
 
 > **Purpose:** Single source of truth for all branches, tasks, features, and progress.
 > **Update Frequency:** After every significant milestone.
 > **Project Management:** [Linear](https://linear.app/basavaraj-team)
-> **Architecture:** Three parallel implementations (LangChain, SDK, WebApp)
-> **Current Focus:** LangChain v2.0.0 implementation
+> **Architecture:** Hybrid (DeepAgents + LangGraph on main branch)
+> **Current Focus:** V1.1.0 implementation on main branch
 
 ---
 
@@ -26,14 +26,13 @@
 
 | Branch | Status | Version | Focus | Linear Project |
 |--------|--------|---------|-------|----------------|
-| **main** | 📦 Archive | v0.9.0-hybrid | Documentation hub | [Main Project](https://linear.app/basavaraj-team/project/eames-design-agent-93b410b37929) |
-| **langchain** | 🚀 Active | v2.0.0 | LLM Council, multi-provider | [LangChain v1.0.0](https://linear.app/basavaraj-team/project/eames-design-agent-langchain-v100-10213d90db52) |
-| **sdk** | 📋 Planned | v2.0.0 | Claude SDK, Skills system | TBD |
-| **webapp** | 📋 Planned | v2.0.0 | A2UI/AG-UI, Web interface | TBD |
+| **main** | 🚀 Active | v1.1.0 | DeepAgents + LangGraph | [Eames V1.1.0](https://linear.app/basavaraj-team/project/eames-design-agent-v110-10213d90db52) |
+| **sdk** | 📋 Planned | - | Claude SDK, Skills system | [Eames SDK](https://linear.app/basavaraj-team/project/eames-design-agent-sdk-93b410b37929) |
+| **archive/original-hybrid** | 📦 Archive | v0.9.0 | Original exploration | - |
 
 ---
 
-## 📊 LangChain Branch Progress (v2.0.0)
+## 📊 Main Branch Progress (V1.1.0)
 
 **Current Sprint:** Week 1-2 (Intent Understanding Foundation)
 

@@ -1,7 +1,7 @@
 # Eames Documentation Index
 
-**Last Updated:** 2026-01-18  
-**Branch:** langchain
+**Last Updated:** 2026-01-20
+**Branch:** main
 
 ## 📚 Quick Navigation
 
@@ -130,12 +130,12 @@ Generated demo applications from Eames:
 ## 📊 Project Management
 
 ### Linear
-- **Main Project**: [Eames Design Agent](https://linear.app/basavaraj-team/project/eames-design-agent-93b410b37929)
-- **LangChain v1.0.0**: [Issues Board](https://linear.app/basavaraj-team/project/eames-design-agent-langchain-v100-10213d90db52)
+- **Main Project (V1.1.0)**: [Eames Design Agent V1.1.0](https://linear.app/basavaraj-team/project/eames-design-agent-v110-10213d90db52)
+- **SDK Project**: [Eames Design Agent SDK](https://linear.app/basavaraj-team/project/eames-design-agent-sdk-93b410b37929)
 
 ### GitHub
 - **Repository**: https://github.com/Kari-Basavaraj/eames-design-agent
-- **Branches**: `main`, `langchain`, `sdk`, `webapp`
+- **Branches**: `main` (active), `sdk` (future), `archive/original-hybrid`
 
 ---
 
@@ -144,13 +144,12 @@ Generated demo applications from Eames:
 Start here:
 1. Read [../WARP.md](../WARP.md) for complete context
 2. Review [v2.0-architecture/EAMES_V2_ARCHITECTURE_LANGCHAIN.md](v2.0-architecture/EAMES_V2_ARCHITECTURE_LANGCHAIN.md) for architecture
-3. Check [Linear project](https://linear.app/basavaraj-team/project/eames-design-agent-langchain-v100-10213d90db52) for current issues
+3. Check [Linear project](https://linear.app/basavaraj-team/project/eames-design-agent-v110-10213d90db52) for current issues
 4. See [ROADMAP.md](ROADMAP.md) for current sprint
 
 ---
 
-**Note**: This is the LangChain branch. For SDK or WebApp versions, switch branches:
+**Note**: This is the `main` branch (active development). For SDK version, switch branches:
 ```bash
-git checkout sdk      # Claude SDK version
-git checkout webapp   # Web app version
+git checkout sdk      # Claude SDK version (future)
 ```

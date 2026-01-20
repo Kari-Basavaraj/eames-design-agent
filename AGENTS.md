@@ -1,4 +1,4 @@
-# Updated: 2026-01-20 17:30:00
+# Updated: 2026-01-20 19:00:00
 # EAMES DESIGN AGENT - MASTER CONTEXT FOR AI CODING AGENTS
 
 > **⚠️ READ THIS FIRST when starting ANY new session with ANY coding agent**
@@ -14,7 +14,7 @@
 ## 🚨 CURRENT STATUS (2026-01-20)
 
 **✅ V1.1.0 PLAN COMPLETE:** Unified DeepAgents + LangGraph architecture defined
-**📍 YOU ARE ON:** `langchain` branch
+**📍 YOU ARE ON:** `main` branch
 **🎯 NEXT STEPS:** Execute Phase 0 (Foundation, Days 1-10)
 
 ### Linear Tracking (Active)
@@ -76,25 +76,24 @@ The unified plan combines the best of all research into a **Hybrid Architecture*
 ```bash
 git branch --show-current
 ```
-This shows: `main`, `langchain`, or `sdk`
+This shows: `main` or `sdk`
 
-### Switch to LangChain Version
-```bash
-cd /Users/basavarajkm/code/eames-design-agent
-git checkout langchain
-```
-✅ Now you're on LangChain version. All your files changed automatically!
+### Current Branch Structure
+- **`main`** - Active development (DeepAgents + LangGraph)
+- **`sdk`** - Future Claude SDK implementation (planned)
+- **`archive/original-hybrid`** - Archived original exploration
 
-### Switch to SDK Version
+### Switch to SDK Version (Future)
 ```bash
 git checkout sdk
 ```
-✅ Now you're on SDK version. Files changed again!
+✅ Now you're on SDK version. Files changed automatically!
 
-### Go Back to Main (Archive)
+### Switch Back to Main (Active)
 ```bash
 git checkout main
 ```
+✅ Now you're on main branch with active development!
 
 ### After Switching Branches
 ```bash
@@ -116,10 +115,10 @@ bun start
 # Where am I?
 git branch --show-current
 
-# Switch to LangChain
-git checkout langchain
+# Switch to Main (active development)
+git checkout main
 
-# Switch to SDK
+# Switch to SDK (future)
 git checkout sdk
 
 # Install after switching
@@ -138,7 +137,7 @@ git add .
 git commit -m "WIP: saving progress"
 
 # Now you can switch
-git checkout langchain
+git checkout main
 ```
 
 **Error: "Branch not found"**
@@ -147,7 +146,7 @@ git checkout langchain
 git fetch origin
 
 # Try again
-git checkout langchain
+git checkout main
 ```
 
 **Want to see all branches?**
@@ -158,7 +157,7 @@ git branch -a
 ### What AI Agents Should Do
 
 When user asks to work on a version:
-1. Ask: "Which version? (langchain or sdk)"
+1. Ask: "Which version? (main or sdk)"
 2. Run: `git checkout [branch]`
 3. Run: `bun install`
 4. Confirm: "Now on [branch] branch, ready to work!"
@@ -174,7 +173,6 @@ When user asks to work on a version:
 
 ### Reference (As Needed)
 - `docs/research/` - Research findings and analysis
-- `WARP.md` - Warp-specific development instructions
 
 ---
 
@@ -210,6 +208,110 @@ bun start
 - [ ] CompositeBackend routing verified
 - [ ] LangSmith traces appearing
 - [ ] Basic Ink CLI shell
+
+---
+
+## 🔬 ANALYZE REFERENCE WORKFLOW
+
+**Trigger:** When user shares a URL, repo, article, video, or any external reference for analysis.
+
+**Purpose:** Systematically extract insights and map them to Eames features.
+
+### Step 1: Fetch & Understand
+```
+1. Fetch the content (README, description, key files)
+2. Identify: What is this? What problem does it solve?
+3. Extract core concepts and patterns
+```
+
+### Step 2: Map to Eames Features
+```
+For EACH concept found, determine:
+- Does Eames have this? (Current feature)
+- Is this planned? (Check MASTER_IMPLEMENTATION_PLAN_V1.1.0.md)
+- Is this a gap? (Missing from both)
+
+Create a mapping table:
+| Source Feature | Eames Current | Eames Planned | Gap? | Priority |
+```
+
+### Step 3: Analyze Alignment with Eames Vision
+```
+Eames Vision: Autonomous Product Design Agent (Discovery → Delivery)
+
+For each concept, ask:
+- Does this help Discovery? (research, user intent)
+- Does this help Define? (PRD, requirements)
+- Does this help Design? (UI/UX, components)
+- Does this help Develop? (code generation)
+- Does this help Deliver? (deployment, validation)
+```
+
+### Step 4: Extract Actionable Insights
+```
+What to Adopt:
+- List specific ideas aligned with Eames vision
+- Prioritize: 🔴 Critical | 🟡 High | 🟢 Medium
+- Include implementation notes
+
+What NOT to Adopt:
+- List ideas that don't fit and explain WHY
+- Prevent future confusion
+```
+
+### Step 5: Update Feature Ideas Backlog
+```
+Add entry to FEATURE_IDEAS_BACKLOG.md with:
+- Source details (URL, stars, description)
+- Core concepts extracted
+- Feature mapping table
+- What to Adopt (prioritized)
+- What NOT to Adopt (with reasons)
+- Implementation ideas (tied to V1.1.0 phases)
+```
+
+### Step 6: Identify Jackpot Insights
+```
+Look for patterns that map to REAL DESIGN PRACTICE:
+- User research/interviewing
+- Requirements gathering
+- Scope definition
+- Approval gates
+- Validation/UAT
+
+These are HIGH PRIORITY because they mirror what designers actually do.
+```
+
+### Output Format
+```markdown
+## FI-XXX: [Name]
+
+### Source
+- URL, stars, description
+
+### 🎯 JACKPOT INSIGHT (if any)
+> Key insight that maps to real design practice
+
+### Feature Mapping: [Source] → Eames
+| Feature | Eames Current | Gap | Priority |
+
+### What to Adopt (Prioritized)
+#### 🔴 Critical
+#### 🟡 High  
+#### 🟢 Medium
+
+### What NOT to Adopt
+- Reason for each
+
+### Implementation Ideas
+- Tied to V1.1.0 phases
+```
+
+### DO NOT:
+- Commit until user confirms analysis is complete
+- Skip the feature mapping step
+- Forget to check against MASTER_IMPLEMENTATION_PLAN_V1.1.0.md
+- Miss connections to real design practice
 
 ---
 

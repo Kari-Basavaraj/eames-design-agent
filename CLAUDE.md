@@ -1,4 +1,4 @@
-# Updated: 2026-01-20 17:30:00
+# Updated: 2026-01-20 19:00:00
 # EAMES DESIGN AGENT - MASTER CONTEXT FOR AI CODING AGENTS
 
 > **⚠️ READ THIS FIRST when starting ANY new session with ANY coding agent**
@@ -14,7 +14,7 @@
 ## 🚨 CURRENT STATUS (2026-01-20)
 
 **✅ V1.1.0 PLAN COMPLETE:** Unified DeepAgents + LangGraph architecture defined
-**📍 YOU ARE ON:** `langchain` branch
+**📍 YOU ARE ON:** `main` branch
 **🎯 NEXT STEPS:** Execute Phase 0 (Foundation, Days 1-10)
 
 ### Linear Tracking (Active)
@@ -76,25 +76,24 @@ The unified plan combines the best of all research into a **Hybrid Architecture*
 ```bash
 git branch --show-current
 ```
-This shows: `main`, `langchain`, or `sdk`
+This shows: `main` or `sdk`
 
-### Switch to LangChain Version
-```bash
-cd /Users/basavarajkm/code/eames-design-agent
-git checkout langchain
-```
-✅ Now you're on LangChain version. All your files changed automatically!
+### Current Branch Structure
+- **`main`** - Active development (DeepAgents + LangGraph)
+- **`sdk`** - Future Claude SDK implementation (planned)
+- **`archive/original-hybrid`** - Archived original exploration
 
-### Switch to SDK Version
+### Switch to SDK Version (Future)
 ```bash
 git checkout sdk
 ```
-✅ Now you're on SDK version. Files changed again!
+✅ Now you're on SDK version. Files changed automatically!
 
-### Go Back to Main (Archive)
+### Switch Back to Main (Active)
 ```bash
 git checkout main
 ```
+✅ Now you're on main branch with active development!
 
 ### After Switching Branches
 ```bash
@@ -116,10 +115,10 @@ bun start
 # Where am I?
 git branch --show-current
 
-# Switch to LangChain
-git checkout langchain
+# Switch to Main (active development)
+git checkout main
 
-# Switch to SDK
+# Switch to SDK (future)
 git checkout sdk
 
 # Install after switching
@@ -138,7 +137,7 @@ git add .
 git commit -m "WIP: saving progress"
 
 # Now you can switch
-git checkout langchain
+git checkout main
 ```
 
 **Error: "Branch not found"**
@@ -147,7 +146,7 @@ git checkout langchain
 git fetch origin
 
 # Try again
-git checkout langchain
+git checkout main
 ```
 
 **Want to see all branches?**
@@ -158,7 +157,7 @@ git branch -a
 ### What AI Agents Should Do
 
 When user asks to work on a version:
-1. Ask: "Which version? (langchain or sdk)"
+1. Ask: "Which version? (main or sdk)"
 2. Run: `git checkout [branch]`
 3. Run: `bun install`
 4. Confirm: "Now on [branch] branch, ready to work!"

@@ -8,7 +8,7 @@
 [![Bun](https://img.shields.io/badge/Bun-%23000000.svg?style=flat&logo=bun&logoColor=white)](https://bun.sh)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![LangChain](https://img.shields.io/badge/LangChain-1C3C3C?style=flat&logo=langchain&logoColor=white)](https://js.langchain.com)
-[![Linear](https://img.shields.io/badge/Linear-5E6AD2?style=flat&logo=linear&logoColor=white)](https://linear.app/basavaraj-team/project/eames-design-agent-langchain-v100-10213d90db52)
+[![Linear](https://img.shields.io/badge/Linear-5E6AD2?style=flat&logo=linear&logoColor=white)](https://linear.app/basavaraj-team/project/eames-design-agent-v110-10213d90db52)
 
 **Eames** is an end-to-end Autonomous Product Design Agent: **Discovery → Delivery**. Transform ideas into production-ready, visually stunning applications deployed to Vercel or Netlify.
 
@@ -278,14 +278,14 @@ Eames has parallel implementations:
 
 | Branch | Architecture | Status |
 |--------|--------------|--------|
-| **langchain** | DeepAgents + LangGraph | 🚧 Active Development |
+| **main** | DeepAgents + LangGraph | 🚧 Active Development |
 | **sdk** | Pure Claude SDK | 📋 Planned |
-| **main** | Archive | 📦 Archived |
+| **archive/original-hybrid** | Original exploration | 📦 Archived |
 
 ```bash
 # Switch branches
-git checkout langchain  # DeepAgents version (you are here)
-git checkout sdk        # Claude SDK version
+git checkout main  # DeepAgents version (you are here)
+git checkout sdk   # Claude SDK version (future)
 ```
 
 ---
@@ -303,7 +303,7 @@ git checkout sdk        # Claude SDK version
 ## 🤝 Contributing
 
 1. Read `CLAUDE.md` for development context
-2. Check [Linear project](https://linear.app/basavaraj-team/project/eames-design-agent-langchain-v100-10213d90db52) for open issues
+2. Check [Linear project](https://linear.app/basavaraj-team/project/eames-design-agent-v110-10213d90db52) for open issues
 3. Follow TDD (write tests first)
 4. Use conventional commits
 
