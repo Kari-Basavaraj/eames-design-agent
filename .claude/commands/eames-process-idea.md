@@ -1,6 +1,17 @@
 ---
-description: End-to-end idea processing - Captures, analyzes, creates FI-XXX, and optionally creates Linear issue. Orchestrates multiple subagents for autonomous execution.
-tags: [eames, automation, workflow, orchestration]
+name: eames-process-idea
+description: End-to-end idea processing - Captures, analyzes, creates FI-XXX, auto-creates Linear if score ≥15. Fully autonomous with Opus analysis.
+argument-hint: <url>
+allowed-tools:
+  - Read
+  - Write
+  - Edit
+  - Glob
+  - Grep
+  - WebFetch
+  - WebSearch
+  - Bash
+tags: [eames, automation, workflow, orchestration, subagents]
 ---
 
 # Eames: Process Idea (Full Automation)
