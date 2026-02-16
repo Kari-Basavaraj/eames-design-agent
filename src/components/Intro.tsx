@@ -1,9 +1,10 @@
-// Updated: 2026-01-11 22:35:00
+// Updated: 2026-02-16 00:00:00
 // Eames Design Agent - Intro Component
+// Claude Code-inspired layout with Eames branding and blue theme
 
 import React from 'react';
 import { Box, Text } from 'ink';
-import { colors, dimensions } from '../theme.js';
+import { colors } from '../theme.js';
 import packageJson from '../../package.json';
 
 interface IntroProps {
@@ -13,44 +14,37 @@ interface IntroProps {
 }
 
 export function Intro({ provider, model, useSdkMode = false }: IntroProps) {
-  const { introWidth } = dimensions;
-  const welcomeText = 'Welcome to Eames';
-  const versionText = ` v${packageJson.version}`;
-  const fullText = welcomeText + versionText;
-  const padding = Math.floor((introWidth - fullText.length - 2) / 2);
+  const version = packageJson.version;
+  const modeLabel = useSdkMode ? 'SDK' : 'LangChain';
 
   return (
-    <Box flexDirection="column" marginTop={2}>
-      <Text color={colors.primary}>{'═'.repeat(introWidth)}</Text>
-      <Text color={colors.primary}>
-        ║{' '.repeat(padding)}
-        <Text bold>{welcomeText}</Text>
-        <Text color={colors.muted}>{versionText}</Text>
-        {' '.repeat(introWidth - fullText.length - padding - 2)}║
+    <Box flexDirection="column" marginTop={1} marginBottom={1}>
+      {/* Eames ASCII Art - compact and clean */}
+      <Text color={colors.primary} bold>
+{`  ███████╗ █████╗ ███╗   ███╗███████╗███████╗
+  ██╔════╝██╔══██╗████╗ ████║██╔════╝██╔════╝
+  █████╗  ███████║██╔████╔██║█████╗  ███████╗
+  ██╔══╝  ██╔══██║██║╚██╔╝██║██╔══╝  ╚════██║
+  ███████╗██║  ██║██║ ╚═╝ ██║███████╗███████║
+  ╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝╚══════╝`}
       </Text>
-      <Text color={colors.primary}>{'═'.repeat(introWidth)}</Text>
 
-      <Box marginTop={1}>
-        <Text color={colors.primary} bold>
-          {`
-███████╗ █████╗ ███╗   ███╗███████╗███████╗
-██╔════╝██╔══██╗████╗ ████║██╔════╝██╔════╝
-█████╗  ███████║██╔████╔██║█████╗  ███████╗
-██╔══╝  ██╔══██║██║╚██╔╝██║██╔══╝  ╚════██║
-███████╗██║  ██║██║ ╚═╝ ██║███████╗███████║
-╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝╚══════╝`}
+      <Box marginTop={1} flexDirection="column">
+        <Text>
+          <Text color={colors.primary} bold>✦ Eames</Text>
+          <Text color={colors.muted}> v{version}</Text>
+          <Text color={colors.muted}> — Autonomous Design Agent</Text>
         </Text>
       </Box>
 
-      <Box marginY={1} flexDirection="column">
-        <Text color={colors.muted}>Developed by <Text color={colors.primary}>Basavaraj Km</Text></Text>
-        <Text>Your personal Autonomous Agentic AI Product Design Agent.</Text>
-        <Text color={colors.muted}>Named after Charles & Ray Eames.</Text>
-        <Text color={colors.muted}>Current model: <Text color={colors.primary}>{model}</Text></Text>
-        <Text color={colors.muted}>
-          Mode: <Text color={useSdkMode ? colors.primary : colors.muted}>{useSdkMode ? 'SDK (Claude Code)' : 'Standard (5-phase)'}</Text>
-        </Text>
-        <Text color={colors.muted}>Type /model to change provider, /sdk to toggle SDK mode.</Text>
+      <Box marginTop={1} flexDirection="column">
+        <Text color={colors.muted}>  model: <Text color={colors.white}>{model}</Text></Text>
+        <Text color={colors.muted}>  mode:  <Text color={colors.white}>{modeLabel}</Text></Text>
+        <Text color={colors.muted}>  cwd:   <Text color={colors.white}>{process.cwd()}</Text></Text>
+      </Box>
+
+      <Box marginTop={1}>
+        <Text color={colors.muted}>  Type <Text color={colors.primary}>/help</Text> for commands, <Text color={colors.primary}>Esc</Text> to cancel</Text>
       </Box>
     </Box>
   );

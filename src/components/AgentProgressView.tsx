@@ -2,8 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { Box, Text } from 'ink';
 import { colors, spacing } from '../theme.js';
 import { TaskListView } from './TaskListView.js';
-import { getPhaseMessage } from '../utils/progress-messages.js';
-import type { Phase, Task } from '../agent/state.js';
+import type { Phase, Task } from '../types/state.js';
+
+// Inline phase messages (previously in utils/progress-messages.ts)
+const PHASE_MESSAGES: Record<string, string[]> = {
+  understand: ['Analyzing your request...', 'Understanding the problem...', 'Gathering context...'],
+  plan: ['Creating a plan...', 'Breaking down tasks...', 'Thinking through approach...'],
+  execute: ['Working on it...', 'Executing tasks...', 'Making progress...'],
+  reflect: ['Reviewing results...', 'Checking quality...', 'Verifying work...'],
+  answer: ['Preparing response...', 'Composing answer...', 'Almost done...'],
+};
+
+function getPhaseMessage(phase: Phase): string {
+  const messages = PHASE_MESSAGES[phase] || ['Working...'];
+  return messages[Math.floor(Math.random() * messages.length)];
+}
 
 // ============================================================================
 // Types
@@ -43,7 +56,7 @@ export const AgentProgressView = React.memo(function AgentProgressView({
   const [frame, setFrame] = useState(0);
   const [message, setMessage] = useState(progressMessage || '');
   const frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
-  
+
   // Count active tasks
   const activeTaskCount = taskCount || tasks?.length || 0;
 
@@ -72,7 +85,7 @@ export const AgentProgressView = React.memo(function AgentProgressView({
 
   // Show task count when executing
   const showingTaskCount = currentPhase === 'execute' && activeTaskCount > 0;
-  const displayMessage = showingTaskCount 
+  const displayMessage = showingTaskCount
     ? `Executing ${activeTaskCount} task${activeTaskCount !== 1 ? 's' : ''}...`
     : message;
 
@@ -98,9 +111,9 @@ interface CurrentTurnViewProps {
  * Full current turn view - Claude Code style.
  * CLEAN and MINIMAL: Query + progress only, no clutter
  */
-export const CurrentTurnView = React.memo(function CurrentTurnView({ 
-  query, 
-  state 
+export const CurrentTurnView = React.memo(function CurrentTurnView({
+  query,
+  state
 }: CurrentTurnViewProps) {
   return (
     <Box flexDirection="column" marginTop={spacing.normal}>

@@ -10,22 +10,22 @@ interface Provider {
 
 const PROVIDERS: Provider[] = [
   {
-    displayName: 'OpenAI',
-    providerId: 'openai',
-    models: ['gpt-5.2', 'gpt-4.1'],
-  },
-  {
     displayName: 'Anthropic',
     providerId: 'anthropic',
-    models: ['claude-sonnet-4-5', 'claude-opus-4-5'],
+    models: ['claude-sonnet-4-5-20250929', 'claude-haiku-3-5-20241022'],
+  },
+  {
+    displayName: 'OpenAI',
+    providerId: 'openai',
+    models: ['gpt-4o', 'gpt-4o-mini'],
   },
   {
     displayName: 'Google',
     providerId: 'google',
-    models: ['gemini-3-flash-preview', 'gemini-3-pro-preview'],
+    models: ['gemini-2.0-flash', 'gemini-2.0-pro'],
   },
   {
-    displayName: 'Ollama',
+    displayName: 'Ollama (local)',
     providerId: 'ollama',
     models: [], // Populated dynamically from local Ollama API
   },
@@ -97,7 +97,7 @@ export function ProviderSelector({ provider, onSelect }: ProviderSelectorProps) 
           return (
             <Text
               key={p.providerId}
-              color={isSelected ? colors.primaryLight : colors.primary}
+              color={isSelected ? colors.primaryBold : colors.primary}
               bold={isSelected}
             >
               {prefix}
@@ -187,7 +187,7 @@ export function ModelSelector({ providerId, models, currentModel, onSelect }: Mo
           return (
             <Text
               key={model}
-              color={isSelected ? colors.primaryLight : colors.primary}
+              color={isSelected ? colors.primaryBold : colors.primary}
               bold={isSelected}
             >
               {prefix}

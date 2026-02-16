@@ -17,8 +17,7 @@ const PRICING: Record<string, { input: number; output: number }> = {
   'claude-sonnet-4-20250514': { input: 3.0, output: 15.0 },
   'claude-sonnet-4-5-20250929': { input: 3.0, output: 15.0 },
   'claude-3-5-haiku-20241022': { input: 0.25, output: 1.25 },
-  'gpt-5.2': { input: 2.5, output: 10.0 },
-  'gpt-4.1': { input: 2.5, output: 10.0 },
+  // Fallback for unknown models
   'default': { input: 3.0, output: 15.0 },
 };
 
@@ -68,7 +67,7 @@ let currentSession: SessionUsage = {
   apiCalls: 0,
   estimatedCost: 0,
   startTime: Date.now(),
-  model: 'gpt-5.2',
+  model: 'claude-sonnet-4-5-20250929',
 };
 
 /**

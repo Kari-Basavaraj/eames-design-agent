@@ -30,8 +30,8 @@ export function Input({ onSubmit, commandHistory = [] }: InputProps) {
   // Check if we should show the slash command menu
   const isSlashMode = value.startsWith('/') && !value.includes(' ');
   const slashFilter = isSlashMode ? value : '';
-  const filteredCommands = useMemo(() => 
-    isSlashMode ? getFilteredCommands(slashFilter) : [], 
+  const filteredCommands = useMemo(() =>
+    isSlashMode ? getFilteredCommands(slashFilter) : [],
     [isSlashMode, slashFilter]
   );
 
@@ -48,7 +48,7 @@ export function Input({ onSubmit, commandHistory = [] }: InputProps) {
   const atMention = findAtMention();
   const isFileMode = atMention !== null;
   const fileFilter = atMention || '';
-  const filteredFiles = useMemo(() => 
+  const filteredFiles = useMemo(() =>
     isFileMode ? getFilesForAutocomplete(fileFilter) : [],
     [isFileMode, fileFilter]
   );
@@ -168,10 +168,10 @@ export function Input({ onSubmit, commandHistory = [] }: InputProps) {
           else if (menuMode === 'file') selectFile(menuIndex);
           return;
         }
-        
+
         // Check if line ends with backslash for multiline continuation
         const endsWithBackslash = value.trimEnd().endsWith('\\');
-        
+
         if (endsWithBackslash) {
           // Enter multiline mode - remove trailing \ and add to buffer
           const lineWithoutBackslash = value.trimEnd().slice(0, -1);
@@ -181,7 +181,7 @@ export function Input({ onSubmit, commandHistory = [] }: InputProps) {
           setCursorPosition(0);
           return;
         }
-        
+
         // In multiline mode and doesn't end with \, submit all lines
         if (multilineMode) {
           const fullInput = [...multilineBuffer, value].join('\n');
@@ -193,7 +193,7 @@ export function Input({ onSubmit, commandHistory = [] }: InputProps) {
           setMenuMode('none');
           return;
         }
-        
+
         // Normal single-line submit
         if (value.trim()) {
           onSubmit(value);
@@ -286,7 +286,7 @@ export function Input({ onSubmit, commandHistory = [] }: InputProps) {
       if (str === '\x12') {
         if (commandHistory.length > 0 && value.trim()) {
           // Find first matching command in history
-          const matches = commandHistory.filter(cmd => 
+          const matches = commandHistory.filter(cmd =>
             cmd.toLowerCase().includes(value.toLowerCase())
           );
           if (matches.length > 0) {
@@ -386,7 +386,7 @@ export function Input({ onSubmit, commandHistory = [] }: InputProps) {
           visible={true}
         />
       )}
-      
+
       {/* File autocomplete menu */}
       {menuMode === 'file' && (
         <FileAutocomplete
@@ -396,7 +396,7 @@ export function Input({ onSubmit, commandHistory = [] }: InputProps) {
           visible={true}
         />
       )}
-      
+
       {/* Multiline buffer display */}
       {multilineMode && multilineBuffer.length > 0 && (
         <Box flexDirection="column">
@@ -408,10 +408,10 @@ export function Input({ onSubmit, commandHistory = [] }: InputProps) {
           ))}
         </Box>
       )}
-      
+
       {/* Input line */}
       <Box minHeight={1}>
-        <Text color={colors.primary} bold>{multilineMode ? '… ' : '> '}</Text>
+        <Text color={colors.primary} bold>{multilineMode ? '… ' : '❯ '}</Text>
         <Text>{beforeCursor}</Text>
         <Text inverse>{atCursor}</Text>
         <Text>{afterCursor}</Text>

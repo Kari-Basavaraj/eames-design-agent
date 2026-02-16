@@ -1,92 +1,73 @@
+// Updated: 2026-02-16 12:00:00
+// Eames Design Agent - Settings Management
+// Settings saved globally in ~/.eames/settings.json
+
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
-import { dirname } from 'path';
+import { join, dirname } from 'path';
+import { homedir } from 'os';
 
-const SETTINGS_FILE = '.eames/settings.json';
+const EAMES_DIR = join(homedir(), '.eames');
+const SETTINGS_FILE = join(EAMES_DIR, 'settings.json');
 
-// Map legacy model IDs to provider IDs for migration
-const MODEL_TO_PROVIDER_MAP: Record<string, string> = {
-  'gpt-5.2': 'openai',
-  'claude-sonnet-4-5': 'anthropic',
-  'gemini-3': 'google',
-};
+// Also check legacy CWD-relative path for migration
+const LEGACY_SETTINGS_FILE = '.eames/settings.json';
 
 interface Config {
   provider?: string;
-  modelId?: string;  // Selected model ID (e.g., "gpt-5.2", "ollama:llama3.1")
-  model?: string;    // Legacy key, kept for migration
-  useSdkMode?: boolean;  // Enable Claude Agent SDK mode
+  modelId?: string;
+  useSdkMode?: boolean;
+  sdkPermissionMode?: string;
   [key: string]: unknown;
 }
 
+function ensureDir(): void {
+  if (!existsSync(EAMES_DIR)) {
+    mkdirSync(EAMES_DIR, { recursive: true });
+  }
+}
+
 export function loadConfig(): Config {
-  if (!existsSync(SETTINGS_FILE)) {
-    return {};
+  // Try global settings first
+  try {
+    if (existsSync(SETTINGS_FILE)) {
+      return JSON.parse(readFileSync(SETTINGS_FILE, 'utf-8'));
+    }
+  } catch {
+    // Fall through
   }
 
+  // Try legacy CWD-relative path (migration)
   try {
-    const content = readFileSync(SETTINGS_FILE, 'utf-8');
-    return JSON.parse(content);
+    if (existsSync(LEGACY_SETTINGS_FILE)) {
+      const config = JSON.parse(readFileSync(LEGACY_SETTINGS_FILE, 'utf-8'));
+      // Migrate to global location
+      saveConfig(config);
+      return config;
+    }
   } catch {
-    return {};
+    // Fall through
   }
+
+  return {};
 }
 
 export function saveConfig(config: Config): boolean {
   try {
-    const dir = dirname(SETTINGS_FILE);
-    if (!existsSync(dir)) {
-      mkdirSync(dir, { recursive: true });
-    }
-    writeFileSync(SETTINGS_FILE, JSON.stringify(config, null, 2));
+    ensureDir();
+    writeFileSync(SETTINGS_FILE, JSON.stringify(config, null, 2) + '\n');
     return true;
   } catch {
     return false;
   }
 }
 
-/**
- * Migrates legacy `model` setting to `provider` setting.
- * Called once on config load to ensure backwards compatibility.
- */
-function migrateModelToProvider(config: Config): Config {
-  // If already has provider, no migration needed
-  if (config.provider) {
-    return config;
-  }
-
-  // If has legacy model setting, convert to provider
-  if (config.model) {
-    const providerId = MODEL_TO_PROVIDER_MAP[config.model];
-    if (providerId) {
-      config.provider = providerId;
-      delete config.model;
-      // Save the migrated config
-      saveConfig(config);
-    }
-  }
-
-  return config;
-}
-
 export function getSetting<T>(key: string, defaultValue: T): T {
-  let config = loadConfig();
-  
-  // Run migration if accessing provider setting
-  if (key === 'provider') {
-    config = migrateModelToProvider(config);
-  }
-  
+  const config = loadConfig();
   return (config[key] as T) ?? defaultValue;
 }
 
 export function setSetting(key: string, value: unknown): boolean {
   const config = loadConfig();
   config[key] = value;
-  
-  // If setting provider, remove legacy model key
-  if (key === 'provider' && config.model) {
-    delete config.model;
-  }
-  
   return saveConfig(config);
 }

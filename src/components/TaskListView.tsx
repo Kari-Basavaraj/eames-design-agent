@@ -2,7 +2,7 @@ import React from 'react';
 import { Box, Text } from 'ink';
 import InkSpinner from 'ink-spinner';
 import { colors } from '../theme.js';
-import type { Task, TaskStatus, ToolCallStatus } from '../agent/state.js';
+import type { Task, TaskStatus, ToolCallStatus } from '../types/state.js';
 
 // ============================================================================
 // Status Icon Component

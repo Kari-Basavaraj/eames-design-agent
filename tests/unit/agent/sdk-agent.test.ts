@@ -2,8 +2,7 @@
 // SDK Agent Unit Tests
 
 import { describe, it, expect, beforeEach, mock, spyOn } from 'bun:test';
-import { SdkAgent, createSdkAgent } from '../../../src/agent/sdk-agent.js';
-import type { AgentCallbacks } from '../../../src/agent/orchestrator.js';
+import { SdkAgent, createSdkAgent } from '../../../src/sdk/agent.js';
 
 describe('SdkAgent', () => {
   describe('constructor', () => {
@@ -13,10 +12,9 @@ describe('SdkAgent', () => {
     });
 
     it('should accept optional callbacks', () => {
-      const callbacks: AgentCallbacks = {
-        onPhaseStart: () => {},
-        onPhaseComplete: () => {},
+      const callbacks = {
         onProgressMessage: () => {},
+        onText: () => {},
       };
 
       const agent = new SdkAgent({

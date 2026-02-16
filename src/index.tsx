@@ -1,18 +1,29 @@
 #!/usr/bin/env bun
-// Updated: 2026-01-12 22:45:00
+// Updated: 2026-02-16 12:00:00
+// Eames Design Agent - Entry Point
 import React from 'react';
 import { render } from 'ink';
 import { config } from 'dotenv';
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
-import { spawn } from 'bun';
 import { CLI } from './cli.js';
+import { loadGlobalApiKeys } from './utils/env.js';
 
-// Load environment variables from .env
+// 1. Load project-level .env (if present)
 config({ quiet: true });
 
-// Load Eames-specific settings (separate from Claude Code)
+// 2. Load global API keys from ~/.eames/config.json
+//    Keys saved via the TUI are stored globally so they work in any directory.
+loadGlobalApiKeys();
+
+// 3. Disable LangSmith tracing when key is missing/placeholder
+const smithKey = process.env.LANGSMITH_API_KEY;
+if (!smithKey || smithKey === 'your-api-key') {
+  process.env.LANGSMITH_TRACING = 'false';
+}
+
+// 4. Load Eames global settings (legacy path)
 const eamesConfigPath = join(homedir(), '.eames/config.json');
 if (existsSync(eamesConfigPath)) {
   try {
@@ -29,20 +40,11 @@ if (existsSync(eamesConfigPath)) {
   }
 }
 
-// Clean up any stale ngrok/callme processes from previous sessions
-// This ensures fresh connections when SDK starts the MCP server
-try {
-  spawn(['pkill', '-9', '-f', 'ngrok'], { stdout: 'ignore', stderr: 'ignore' });
-  spawn(['pkill', '-9', '-f', 'bun.*callme'], { stdout: 'ignore', stderr: 'ignore' });
-} catch {
-  // Ignore cleanup errors
-}
-
-// Get initial query from command line arguments
+// 5. Parse CLI arguments
 const args = process.argv.slice(2);
 const initialQuery = args.join(' ') || undefined;
 
-// Render the CLI app with optional initial query
+// 6. Render the Ink app
 render(<CLI initialQuery={initialQuery} />, {
   stdin: process.stdin.isTTY ? process.stdin : undefined,
 });

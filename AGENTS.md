@@ -682,14 +682,7 @@ export function Component({ value }: Props) {
 
 | Flag | Key | Description |
 |------|-----|-------------|
-| SDK Mode | `useSdkMode` | **Default: true.** Claude Agent SDK execution. Use `EAMES_USE_LANGCHAIN=1` for LangChain. |
-| Provider | `provider` | **Default: openai.** Model provider (openai, anthropic, google). |
-| Model | `modelId` | **Default: gpt-5.2.** Mapped via OpenRouter for SDK (openai/gpt-5.2). |
-
-### SDK Default + OpenAI (Rule)
-- **SDK is default mode.** LangChain only when `EAMES_USE_LANGCHAIN=1`.
-- OpenAI models via **OpenRouter**: set `OPENROUTER_API_KEY` or `OPENAI_API_KEY`, add key at openrouter.ai/settings.
-- Key files: `src/utils/sdk-env.ts`, `src/hooks/useSdkAgentExecution.ts`, `.cursor/rules/sdk-openai-default.mdc`.
+| SDK Mode | `useSdkMode` | Claude Agent SDK execution |
 
 ### Adding Flags
 1. Add to `Config` interface in `src/utils/config.ts`

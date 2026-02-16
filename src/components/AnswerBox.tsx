@@ -24,7 +24,7 @@ export const AnswerBox = React.memo(function AnswerBox({ stream, text, onStart, 
 
     let collected = text || '';
     let started = false;
-    
+
     (async () => {
       try {
         for await (const chunk of stream) {

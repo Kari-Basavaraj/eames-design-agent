@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-// Updated: 2026-01-18 03:09:30
+// Updated: 2026-02-16 00:00:00
 /**
  * CLI - Multi-phase Agent Interface
  * 
@@ -11,37 +11,52 @@ import { Box, Text, Static, useApp, useInput } from 'ink';
 import { config } from 'dotenv';
 
 import { Intro } from './components/Intro.js';
-import { SdkIntro } from './components/SdkIntro.js';
 import { Input } from './components/Input.js';
 import { AnswerBox } from './components/AnswerBox.js';
 import { ProviderSelector, ModelSelector, getModelsForProvider, getDefaultModelForProvider } from './components/ModelSelector.js';
 import { ApiKeyConfirm, ApiKeyInput } from './components/ApiKeyPrompt.js';
 import { QueueDisplay } from './components/QueueDisplay.js';
 import { AgentProgressView } from './components/AgentProgressView.js';
-import { SdkTUI } from './components/SdkTUI.js';
 import { TaskListView } from './components/TaskListView.js';
 import { PluginManager } from './components/PluginManager.js';
 import { MCPManager } from './components/MCPManager.js';
 import { SessionPicker } from './components/SessionPicker.js';
-import { StatusBar } from './components/StatusBar.js';
 import { ClarificationPrompt } from './components/ClarificationPrompt.js';
 import { ProceedPrompt } from './components/ProceedPrompt.js';
 import { AskUserQuestionPrompt } from './components/AskUserQuestionPrompt.js';
 import { SdkToolPermissionPrompt } from './components/SdkToolPermissionPrompt.js';
-import type { Task } from './agent/state.js';
+import { ToolCallsView } from './components/ToolCallsView.js';
+import { ThinkingView } from './components/ThinkingView.js';
+import { CostView } from './components/CostView.js';
+import { SetupWizard, hasAnthropicKey } from './components/SetupWizard.js';
+import { SkillsManager } from './components/SkillsManager.js';
+import { HooksManager } from './components/HooksManager.js';
+import { AgentsManager } from './components/AgentsManager.js';
+import type { Task } from './types/state.js';
 import type { AgentProgressState } from './components/AgentProgressView.js';
+import type { SdkCurrentTurn } from './sdk/useSdkExecution.js';
 
 // Cost & context tracking utilities
 import { getDetailedUsage, getSessionUsage, formatTokens, formatCost } from './utils/cost-tracking.js';
 import { getContextUsage, getContextLimit } from './utils/context-manager.js';
 
+// Feature discovery loaders (Claude Code parity)
+import { getSkillsSummary } from './sdk/skills-loader.js';
+import { discoverAllUserCommands, loadCommandPrompt, getUserCommandsSummary } from './sdk/commands-loader.js';
+import { getHooksSummary } from './sdk/hooks-loader.js';
+import { getAgentsSummary } from './sdk/agents-loader.js';
+import { getMemorySummary } from './sdk/memory-loader.js';
+import { installPlugin, uninstallPlugin, getPluginsSummary } from './sdk/plugin-manager.js';
+import { searchTools, getToolRegistrySummary, registerBuiltinTools } from './sdk/tool-search.js';
+
 // Node.js built-ins for file operations
 import * as fs from 'fs';
 import * as path from 'path';
+import { execSync } from 'child_process';
 
 import { useQueryQueue } from './hooks/useQueryQueue.js';
-import { useAgentExecution } from './hooks/useAgentExecution.js';
-import { useSdkAgentExecution } from './hooks/useSdkAgentExecution.js';
+import { useAgentExecution } from './langchain/useAgentExecution.js';
+import { useSdkAgentExecution } from './sdk/useSdkExecution.js';
 
 import { getSetting, setSetting } from './utils/config.js';
 import { 
@@ -51,7 +66,7 @@ import {
   saveApiKeyForProvider 
 } from './utils/env.js';
 import { getOllamaModels } from './utils/ollama.js';
-import { MessageHistory } from './utils/message-history.js';
+import { MessageHistory } from './langchain/message-history.js';
 
 import { DEFAULT_PROVIDER } from './model/llm.js';
 import { colors, spacing } from './theme.js';
@@ -106,18 +121,26 @@ interface CLIProps {
 const SLASH_COMMANDS: Record<string, { description: string; handler: string }> = {
   '/help': { description: 'Show available commands', handler: 'help' },
   '/clear': { description: 'Clear conversation history', handler: 'clear' },
+  '/compact': { description: 'Compact conversation, keep context', handler: 'compact' },
   '/model': { description: 'Change AI model', handler: 'model' },
-  '/exit': { description: 'Exit Eames', handler: 'exit' },
-  '/quit': { description: 'Exit Eames', handler: 'exit' },
-  '/q': { description: 'Exit Eames', handler: 'exit' },
-  '/cost': { description: 'Show token usage', handler: 'cost' },
-  '/status': { description: 'Show status info', handler: 'status' },
-  '/version': { description: 'Show version', handler: 'version' },
   '/mode': { description: 'Switch agent mode (sdk | langchain)', handler: 'mode' },
-  '/sdk': { description: 'Switch to SDK mode (Claude Agent)', handler: 'sdk' },
-  '/langchain': { description: 'Switch to LangChain mode (5-phase)', handler: 'langchain' },
-  '/lc': { description: 'Switch to LangChain mode (5-phase)', handler: 'langchain' },
-  '/permission': { description: 'SDK: Set permission mode (default|acceptEdits|plan|bypass)', handler: 'permission' },
+  '/cost': { description: 'Show token usage and cost', handler: 'cost' },
+  '/context': { description: 'Show context window usage', handler: 'context' },
+  '/status': { description: 'Show session status', handler: 'status' },
+  '/resume': { description: 'Resume a previous SDK session', handler: 'resume' },
+  '/permission': { description: 'Set SDK permission mode', handler: 'permission' },
+  '/init': { description: 'Create CLAUDE.md project file', handler: 'init' },
+  '/doctor': { description: 'Check installation health', handler: 'doctor' },
+  '/stats': { description: 'Detailed session statistics', handler: 'stats' },
+  '/skills': { description: 'Browse installed skills', handler: 'skills' },
+  '/hooks': { description: 'Browse configured hooks', handler: 'hooks' },
+  '/agents': { description: 'Browse configured subagents', handler: 'agents' },
+  '/memory': { description: 'Show loaded CLAUDE.md files', handler: 'memory' },
+  '/mcp': { description: 'Manage MCP servers', handler: 'mcp' },
+  '/plugin': { description: 'Manage plugins (install/remove/list)', handler: 'plugin' },
+  '/tools': { description: 'Search available tools', handler: 'tools' },
+  '/version': { description: 'Show version', handler: 'version' },
+  '/exit': { description: 'Exit Eames', handler: 'exit' },
 };
 
 // ============================================================================
@@ -127,12 +150,13 @@ const SLASH_COMMANDS: Record<string, { description: string; handler: string }> =
 export function CLI({ initialQuery }: CLIProps) {
   const { exit } = useApp();
 
-  const [state, setState] = useState<AppState>('idle');
-  // Agent mode: SDK (Claude Agent SDK) or LangChain (5-phase orchestrator)
+  // Start in 'setup' if no Anthropic key is configured
+  const [state, setState] = useState<AppState>(() => hasAnthropicKey() ? 'idle' : 'setup');
+  // Agent mode: SDK is default (Claude Code parity), LangChain is secondary
   const [agentMode, setAgentMode] = useState<'sdk' | 'langchain'>(() => {
     const envLc = process.env.EAMES_USE_LANGCHAIN === '1' || process.env.EAMES_USE_LANGCHAIN === 'true';
     const saved = getSetting('useSdkMode', true) as boolean;
-    return envLc || !saved ? 'langchain' : 'sdk';
+    return envLc ? 'langchain' : saved ? 'sdk' : 'langchain';
   });
   const [provider, setProvider] = useState(() => getSetting('provider', DEFAULT_PROVIDER));
   const [model, setModel] = useState(() => {
@@ -142,7 +166,7 @@ export function CLI({ initialQuery }: CLIProps) {
       return savedModel;
     }
     // Default to first model for the provider
-    return getDefaultModelForProvider(savedProvider) || 'gpt-5.2';
+    return getDefaultModelForProvider(savedProvider) || 'claude-sonnet-4-5-20250929';
   });
   const [pendingProvider, setPendingProvider] = useState<string | null>(null);
   const [pendingModels, setPendingModels] = useState<string[]>([]);
@@ -204,21 +228,18 @@ export function CLI({ initialQuery }: CLIProps) {
     messageHistory: messageHistoryRef.current,
   });
 
-  const handleAnswerCompleteRef = useRef<(answer: string) => void>(() => {});
-
-  // SDK: Anthropic direct, or OpenAI/Google via OpenRouter (claude-code compatible)
-  const SDK_MODEL_MAP: Record<string, string> = {
-    'claude-sonnet-4-5': 'claude-sonnet-4-5-20250929',
-    'claude-opus-4-5': 'claude-opus-4-20250514',
-    'gpt-5.2': 'openai/gpt-5.2',
-    'gpt-4.1': 'openai/gpt-4.1',
+  // SDK model mapping for OpenRouter (openai/gpt-4o exists; gpt-5.2 does not)
+  const openRouterModelMap: Record<string, string> = {
+    'gpt-5.2': 'openai/gpt-4o',
+    'gpt-4.1': 'openai/gpt-4o-mini',
+    'gpt-4o': 'openai/gpt-4o',
+    'gpt-4o-mini': 'openai/gpt-4o-mini',
+    'gpt-4-turbo': 'openai/gpt-4-turbo',
   };
-  const sdkModelRaw = model.startsWith('claude-') ? model : model;
-  const sdkModel = SDK_MODEL_MAP[sdkModelRaw] ?? (model.startsWith('claude-') && model.includes('-202') ? model : model.startsWith('gpt-') ? `openai/${model}` : model.startsWith('gemini-') ? `google/${model}` : 'claude-sonnet-4-5-20250929');
-  const sdkResult = useSdkAgentExecution({
-    model: sdkModel,
-    onAnswerComplete: (answer) => handleAnswerCompleteRef.current?.(answer),
-  });
+  const sdkModel =
+    model.startsWith('claude-') ? model
+    : openRouterModelMap[model] ?? (model.startsWith('gpt-') ? `openai/${model}` : model.startsWith('gemini-') ? `google/${model}` : model);
+  const sdkResult = useSdkAgentExecution({ model: sdkModel });
 
   // Use active mode's result
   const activeResult = agentMode === 'sdk' ? sdkResult : langChainResult;
@@ -240,16 +261,19 @@ export function CLI({ initialQuery }: CLIProps) {
     submitToolPermissionAnswer,
   } = activeResult;
 
-  // Capture tasks when answer stream starts (LangChain only)
+  // Capture tasks when answer stream starts
   useEffect(() => {
-    if (answerStream && currentTurn && 'state' in currentTurn) {
-      currentTasksRef.current = [...(currentTurn.state.tasks ?? [])];
+    if (answerStream && currentTurn) {
+      currentTasksRef.current = [...currentTurn.state.tasks];
     }
   }, [answerStream, currentTurn]);
 
   // Track if initial query was processed
   const initialQueryProcessed = useRef(false);
 
+  /**
+   * Handles the completed answer and moves current turn to history
+   */
   const handleAnswerComplete = useCallback((answer: string) => {
     if (currentTurn) {
       setHistory(h => [...h, {
@@ -262,8 +286,6 @@ export function CLI({ initialQuery }: CLIProps) {
     baseHandleAnswerComplete(answer);
     currentTasksRef.current = [];
   }, [currentTurn, baseHandleAnswerComplete]);
-
-  handleAnswerCompleteRef.current = handleAnswerComplete;
 
   /**
    * Wraps processQuery to handle state transitions and errors
@@ -294,12 +316,15 @@ export function CLI({ initialQuery }: CLIProps) {
     switch (command) {
       case '/help':
       case '/h':
-      case '/?':
+      case '/?': {
         const helpText = Object.entries(SLASH_COMMANDS)
-          .map(([cmd, { description }]) => `  ${cmd.padEnd(12)} ${description}`)
+          .map(([cmd, { description }]) => `  ${cmd.padEnd(14)} ${description}`)
           .join('\n');
-        setStatusMessage(`Available commands:\n${helpText}`);
+        const userCmds = getUserCommandsSummary();
+        const userSection = userCmds ? `\n\nCustom commands:\n${userCmds}` : '';
+        setStatusMessage(`Available commands:\n${helpText}${userSection}\n\nPrefixes: ! bash  # memory`);
         return true;
+      }
 
       case '/clear':
         setHistory([]);
@@ -310,18 +335,7 @@ export function CLI({ initialQuery }: CLIProps) {
         setState('provider_select');
         return true;
 
-      case '/sdk':
-        setAgentMode('sdk');
-        setSetting('useSdkMode', true);
-        setStatusMessage('Mode: SDK (Claude Agent)');
-        return true;
-
-      case '/langchain':
-      case '/lc':
-        setAgentMode('langchain');
-        setSetting('useSdkMode', false);
-        setStatusMessage('Mode: LangChain (5-phase)');
-        return true;
+      // /sdk command removed - this is the LangChain version
 
       case '/exit':
       case '/quit':
@@ -435,26 +449,73 @@ Est. Cost: ${formatCost(sessionUsage.estimatedCost)}`;
       }
 
       case '/memory':
-        setStatusMessage('Memory: (not yet implemented - opens CLAUDE.md editor)');
+        setStatusMessage(getMemorySummary());
         return true;
 
       case '/mcp':
-        // Open interactive MCP manager
         setState('mcp_manager');
         return true;
 
-      case '/plugin':
-        // Open interactive plugin manager
-        setState('plugin_manager');
+      case '/plugin': {
+        const subCmd = args.trim().split(/\s+/);
+        if (subCmd[0] === 'install' && subCmd[1]) {
+          const result = installPlugin(subCmd[1]);
+          setStatusMessage(result.message);
+          return true;
+        }
+        if ((subCmd[0] === 'remove' || subCmd[0] === 'uninstall') && subCmd[1]) {
+          const result = uninstallPlugin(subCmd[1]);
+          setStatusMessage(result.message);
+          return true;
+        }
+        if (subCmd[0] === 'list' || !subCmd[0]) {
+          setState('plugin_manager');
+          return true;
+        }
+        setStatusMessage('Usage: /plugin install <npm-package> | /plugin remove <name> | /plugin list');
+        return true;
+      }
+
+      case '/tools': {
+        registerBuiltinTools();
+        if (args.trim()) {
+          const result = searchTools(args.trim());
+          const lines = result.tools.map(t => `  ${t.name.padEnd(18)} ${t.description.slice(0, 50)} (${t.server})`);
+          setStatusMessage(`Tool search: "${args.trim()}" — ${result.tools.length}/${result.totalCount} matches\n\n${lines.join('\n')}`);
+        } else {
+          setStatusMessage(getToolRegistrySummary());
+        }
+        return true;
+      }
+
+      case '/skills':
+        setState('skills_manager');
+        return true;
+
+      case '/hooks':
+        setStatusMessage(getHooksSummary());
         return true;
 
       case '/agents':
-        setStatusMessage('Agents: (not yet implemented - manages subagents)');
+        setState('agents_manager');
         return true;
 
-      case '/permissions':
-        setStatusMessage('Permissions: (not yet implemented - manages tool permissions)');
+      case '/permissions': {
+        const permMode = getSetting('sdkPermissionMode', 'default');
+        const permModes: Record<string, string> = {
+          default: 'Ask before dangerous tools (Bash, Edit, Write)',
+          acceptEdits: 'Auto-approve file edits, ask for Bash',
+          bypassPermissions: 'Skip all permission checks',
+          plan: 'Read-only mode — no tool execution',
+          dontAsk: 'Deny tools that need permission silently',
+        };
+        const lines = Object.entries(permModes).map(([mode, desc]) => {
+          const marker = mode === permMode ? ' *' : '  ';
+          return `${marker} ${mode.padEnd(22)} ${desc}`;
+        });
+        setStatusMessage(`Permission Mode: ${permMode}\n\n${lines.join('\n')}\n\nChange with: /permission <mode>`);
         return true;
+      }
 
       case '/init': {
         // Create CLAUDE.md project file
@@ -488,13 +549,52 @@ Est. Cost: ${formatCost(sessionUsage.estimatedCost)}`;
         return true;
       }
 
-      case '/review':
-        setStatusMessage('Review: (not yet implemented - code review mode)');
-        return true;
+      case '/review': {
+        // Send a code review request to the agent
+        const reviewTarget = args.trim() || 'the current git diff';
+        const reviewPrompt = `Please do a thorough code review of ${reviewTarget}. Check for:
+1. Bugs and logic errors
+2. Security vulnerabilities
+3. Performance issues
+4. Code style and readability
+5. Missing error handling
+6. Type safety issues
 
-      case '/todos':
-        setStatusMessage('Todos: (not yet implemented - shows TODO items)');
+Provide specific line-by-line feedback with severity (critical/warning/info).`;
+        if (state === 'running') {
+          enqueue(reviewPrompt);
+        } else {
+          executeQuery(reviewPrompt);
+        }
         return true;
+      }
+
+      case '/todos': {
+        // Scan for TODOs in the current project
+        try {
+          const todoOutput = execSync(
+            'rg --no-heading --line-number "TODO|FIXME|HACK|XXX|WARN" --type ts --type tsx --type js --type jsx -g "!node_modules" -g "!dist" 2>/dev/null | head -30',
+            { cwd: process.cwd(), timeout: 5000, encoding: 'utf-8' }
+          ).trim();
+          if (todoOutput) {
+            setStatusMessage(`TODOs in project:\n\n${todoOutput}`);
+          } else {
+            setStatusMessage('No TODO/FIXME comments found in project.');
+          }
+        } catch {
+          // Fallback if rg not available
+          try {
+            const grepOutput = execSync(
+              'grep -rn "TODO\\|FIXME\\|HACK" --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" --exclude-dir=node_modules --exclude-dir=dist . 2>/dev/null | head -30',
+              { cwd: process.cwd(), timeout: 5000, encoding: 'utf-8' }
+            ).trim();
+            setStatusMessage(grepOutput ? `TODOs in project:\n\n${grepOutput}` : 'No TODO/FIXME comments found.');
+          } catch {
+            setStatusMessage('No TODO/FIXME comments found in project.');
+          }
+        }
+        return true;
+      }
 
       case '/resume':
         setState('session_picker');
@@ -502,21 +602,24 @@ Est. Cost: ${formatCost(sessionUsage.estimatedCost)}`;
 
       case '/stats': {
         const usage = getSessionUsage();
-        const uptime = Math.round((Date.now() - (process as any).__startTime || Date.now()) / 1000);
+        const uptime = Math.round((Date.now() - usage.startTime) / 1000);
         const uptimeStr = uptime > 3600 
           ? `${Math.floor(uptime / 3600)}h ${Math.floor((uptime % 3600) / 60)}m`
           : `${Math.floor(uptime / 60)}m ${uptime % 60}s`;
+        const modeStr = agentMode === 'sdk' ? 'SDK (Claude Agent)' : 'LangChain (5-phase)';
+        const sessionStr = agentMode === 'sdk' && sdkResult.lastSessionId 
+          ? `\nSession: ${sdkResult.lastSessionId.slice(0, 12)}...` : '';
         
         const stats = `Session Statistics:
 
-📊 Messages: ${history.length}
-🔢 API Calls: ${usage.apiCalls}
-📥 Input Tokens: ${formatTokens(usage.totalInputTokens)}
-📤 Output Tokens: ${formatTokens(usage.totalOutputTokens)}
-💰 Est. Cost: ${formatCost(usage.estimatedCost)}
-⏱️ Session: ${uptimeStr}
-🤖 Model: ${model}
-📦 Mode: LangChain (5-phase)`;
+Messages: ${history.length}
+API Calls: ${usage.apiCalls}
+Input: ${formatTokens(usage.totalInputTokens)} tokens
+Output: ${formatTokens(usage.totalOutputTokens)} tokens
+Cost: ${formatCost(usage.estimatedCost)}
+Uptime: ${uptimeStr}
+Model: ${model}
+Mode: ${modeStr}${sessionStr}`;
         
         setStatusMessage(stats);
         return true;
@@ -538,7 +641,8 @@ Est. Cost: ${formatCost(sessionUsage.estimatedCost)}`;
         checks.push(`✅ Model: ${model}`);
         
         // Check mode
-        checks.push('✅ Mode: LangChain (5-phase orchestrator)');
+        const modeLabel = agentMode === 'sdk' ? 'SDK (Claude Agent)' : 'LangChain (5-phase)';
+        checks.push(`✅ Mode: ${modeLabel}`);
         
         // Check working directory
         checks.push(`✅ Working Directory: ${process.cwd()}`);
@@ -546,6 +650,21 @@ Est. Cost: ${formatCost(sessionUsage.estimatedCost)}`;
         // Check for CLAUDE.md
         const claudeMdExists = fs.existsSync('CLAUDE.md');
         checks.push(claudeMdExists ? '✅ CLAUDE.md: Found' : 'ℹ️ CLAUDE.md: Not found (optional)');
+
+        // Check skills, hooks, agents, memory
+        const skillsSummary = getSkillsSummary();
+        const hooksSummary = getHooksSummary();
+        const agentsSummary = getAgentsSummary();
+        const memorySummary = getMemorySummary();
+        const skillLine = skillsSummary.startsWith('No') ? 'ℹ️ Skills: none' : `ℹ️ Skills: ${skillsSummary.split('\n')[0]}`;
+        const hookLine = hooksSummary.startsWith('No') ? 'ℹ️ Hooks: none' : `ℹ️ Hooks: ${hooksSummary.split('\n')[0]}`;
+        const agentLine = agentsSummary.startsWith('No') ? 'ℹ️ Agents: none' : `ℹ️ Agents: ${agentsSummary.split('\n')[0]}`;
+        const memoryLine = memorySummary.startsWith('No') ? 'ℹ️ Memory: none' : `ℹ️ Memory: ${memorySummary.split('\n')[0]}`;
+        
+        checks.push(skillLine);
+        checks.push(hookLine);
+        checks.push(agentLine);
+        checks.push(memoryLine);
         
         const doctorOutput = `Installation Health Check:
 
@@ -557,27 +676,78 @@ All systems operational!`;
         return true;
       }
 
-      case '/theme':
-        setStatusMessage('Theme: (not yet implemented - changes color theme)');
+      case '/theme': {
+        const currentTheme = getSetting('theme', 'blue');
+        const themes: Record<string, string> = {
+          blue: 'Eames Blue (default)',
+          dark: 'Dark Minimal',
+          light: 'Light Mode',
+          green: 'Matrix Green',
+        };
+        if (args.trim() && themes[args.trim()]) {
+          setSetting('theme', args.trim());
+          setStatusMessage(`Theme set to: ${themes[args.trim()]}. Restart Eames to apply.`);
+        } else if (args.trim()) {
+          setStatusMessage(`Unknown theme. Available: ${Object.keys(themes).join(', ')}`);
+        } else {
+          const lines = Object.entries(themes).map(([key, name]) => {
+            const marker = key === currentTheme ? ' *' : '  ';
+            return `${marker} ${key.padEnd(10)} ${name}`;
+          });
+          setStatusMessage(`Current theme: ${currentTheme}\n\n${lines.join('\n')}\n\nUsage: /theme <name>`);
+        }
         return true;
+      }
 
-      case '/vim':
-        setStatusMessage('Vim: (not yet implemented - enables vim mode)');
+      case '/vim': {
+        const vimEnabled = getSetting('vimMode', false);
+        const newState = !vimEnabled;
+        setSetting('vimMode', newState);
+        setStatusMessage(`Vim mode: ${newState ? 'enabled' : 'disabled'}. Restart Eames to apply.`);
         return true;
+      }
 
-      case '/rename':
-        setStatusMessage('Rename: (not yet implemented - renames session)');
+      case '/rename': {
+        const newName = args.trim();
+        if (!newName) {
+          setStatusMessage('Usage: /rename <session-name>');
+          return true;
+        }
+        const sessionId = sdkResult.lastSessionId;
+        if (!sessionId) {
+          setStatusMessage('No active SDK session to rename.');
+          return true;
+        }
+        setSetting(`session_name_${sessionId}`, newName);
+        setStatusMessage(`Session renamed to: ${newName}`);
         return true;
+      }
 
-      default:
-        // In LangChain mode, show unknown command
+      default: {
+        // Check user-created commands (.claude/commands/*.md)
         if (command.startsWith('/')) {
+          const cmdName = command.slice(1); // strip /
+          const userCommands = discoverAllUserCommands();
+          const userCmd = userCommands.find(c => c.name === cmdName);
+          if (userCmd) {
+            const prompt = loadCommandPrompt(userCmd.path, args);
+            if (prompt) {
+              // Execute the user command as an agent query
+              if (state === 'running') {
+                enqueue(prompt);
+              } else {
+                executeQuery(prompt);
+              }
+              return true;
+            }
+          }
           setStatusMessage(`Unknown command: ${command}. Type /help for available commands.`);
           return true;
         }
         return false;
+      }
     }
-  }, [model, provider, exit, setStatusMessage, setSetting, setHistory, setState]);
+  }, [model, provider, exit, setStatusMessage, setSetting, setHistory, setState, state, enqueue, executeQuery]);
 
   /**
    * Process next queued query when state becomes idle
@@ -891,7 +1061,7 @@ All systems operational!`;
         setPendingModels([]);
         setState('idle');
         setStatusMessage('Cancelled.');
-      } else if (state === 'plugin_manager' || state === 'mcp_manager') {
+      } else if (state === 'plugin_manager' || state === 'mcp_manager' || state === 'skills_manager' || state === 'hooks_manager' || state === 'agents_manager') {
         setState('idle');
       }
       return;
@@ -911,7 +1081,7 @@ All systems operational!`;
         setPendingModels([]);
         setState('idle');
         setStatusMessage('Cancelled.');
-      } else if (state === 'plugin_manager' || state === 'mcp_manager') {
+      } else if (state === 'plugin_manager' || state === 'mcp_manager' || state === 'skills_manager' || state === 'hooks_manager' || state === 'agents_manager') {
         setState('idle');
       } else {
         console.log('\nGoodbye!');
@@ -919,6 +1089,15 @@ All systems operational!`;
       }
     }
   });
+
+  // Setup wizard - first-run API key configuration
+  if (state === 'setup') {
+    return (
+      <Box flexDirection="column">
+        <SetupWizard onComplete={() => setState('idle')} />
+      </Box>
+    );
+  }
 
   if (state === 'provider_select') {
     return (
@@ -989,6 +1168,42 @@ All systems operational!`;
     );
   }
 
+  // Skills Manager
+  if (state === 'skills_manager') {
+    return (
+      <Box flexDirection="column">
+        <SkillsManager
+          onClose={() => setState('idle')}
+          onStatusMessage={setStatusMessage}
+        />
+      </Box>
+    );
+  }
+
+  // Hooks Manager
+  if (state === 'hooks_manager') {
+    return (
+      <Box flexDirection="column">
+        <HooksManager
+          onClose={() => setState('idle')}
+          onStatusMessage={setStatusMessage}
+        />
+      </Box>
+    );
+  }
+
+  // Agents Manager
+  if (state === 'agents_manager') {
+    return (
+      <Box flexDirection="column">
+        <AgentsManager
+          onClose={() => setState('idle')}
+          onStatusMessage={setStatusMessage}
+        />
+      </Box>
+    );
+  }
+
   // Session Picker
   if (state === 'session_picker') {
     return (
@@ -1021,15 +1236,11 @@ All systems operational!`;
     <Box flexDirection="column">
       {/* LangChain version - no status bar */}
 
-      {/* Intro: SDK = minimal SdkIntro, LangChain = full Intro with logo */}
+      {/* Intro + completed history - COLLAPSED (last 3 only) */}
       <Static items={staticItems}>
         {(item) =>
           item.type === 'intro' ? (
-            agentMode === 'sdk' ? (
-              <SdkIntro key={item.key} model={sdkModel} />
-            ) : (
-              <Intro key={item.key} provider={provider} model={model} useSdkMode={false} />
-            )
+            <Intro key={item.key} provider={provider} model={model} useSdkMode={agentMode === 'sdk'} />
           ) : (
             <CompletedTurnView key={item.key} turn={item.turn} />
           )
@@ -1051,33 +1262,64 @@ All systems operational!`;
         </Box>
       )}
 
-      {/* Current turn - SDK uses SdkTUI, LangChain uses AgentProgressView + AnswerBox */}
+      {/* Current turn - Claude Code style */}
       {currentTurn && (
         <Box flexDirection="column">
-          {agentMode === 'sdk' && 'sdkTuiState' in currentTurn ? (
-            <SdkTUI query={currentTurn.query} state={currentTurn.sdkTuiState} />
-          ) : (
-            <>
-              <Box marginTop={1}>
-                <Text color={colors.primary} bold>❯ </Text>
-                <Text color={colors.white}>{currentTurn.query}</Text>
-              </Box>
-              {'state' in currentTurn && (
-                <Box marginLeft={2} marginTop={1}>
-                  <AgentProgressView state={currentTurn.state} showWithoutMessage />
-                </Box>
-              )}
-              {'state' in currentTurn && currentTurn.state.tasks.length > 0 && (
-                <Box marginLeft={2} marginTop={1}>
-                  <TaskListView tasks={currentTurn.state.tasks} />
-                </Box>
-              )}
-              {answerStream && (
-                <Box marginLeft={2} marginTop={1}>
-                  <AnswerBox stream={answerStream} onComplete={handleAnswerComplete} />
-                </Box>
-              )}
-            </>
+          {/* User query */}
+          <Box marginTop={1}>
+            <Text color={colors.primary} bold>❯ </Text>
+            <Text color={colors.white}>{currentTurn.query}</Text>
+          </Box>
+          
+          {/* SDK mode: Thinking indicator */}
+          {agentMode === 'sdk' && (currentTurn as SdkCurrentTurn).isThinking && (
+            <Box marginLeft={2} marginTop={1}>
+              <ThinkingView 
+                isThinking={(currentTurn as SdkCurrentTurn).isThinking}
+                thinkingText={(currentTurn as SdkCurrentTurn).thinkingText}
+              />
+            </Box>
+          )}
+
+          {/* SDK mode: Inline tool calls (Claude Code style) */}
+          {agentMode === 'sdk' && (currentTurn as SdkCurrentTurn).toolCalls?.length > 0 && (
+            <Box marginLeft={2} marginTop={1}>
+              <ToolCallsView toolCalls={(currentTurn as SdkCurrentTurn).toolCalls} />
+            </Box>
+          )}
+
+          {/* LangChain mode: Phase progress */}
+          {agentMode === 'langchain' && currentTurn.state.progressMessage && (
+            <Box marginLeft={2} marginTop={1}>
+              <AgentProgressView state={currentTurn.state} />
+            </Box>
+          )}
+          
+          {/* LangChain mode: Task list */}
+          {agentMode === 'langchain' && currentTurn.state.tasks.length > 0 && (
+            <Box marginLeft={2} marginTop={1}>
+              <TaskListView tasks={currentTurn.state.tasks} />
+            </Box>
+          )}
+
+          {/* Streaming answer */}
+          {answerStream && (
+            <Box marginLeft={2} marginTop={1}>
+              <AnswerBox
+                stream={answerStream}
+                onComplete={handleAnswerComplete}
+              />
+            </Box>
+          )}
+
+          {/* SDK mode: Cost/token counter after turn */}
+          {agentMode === 'sdk' && (currentTurn as SdkCurrentTurn).cost?.totalTokens > 0 && (
+            <Box marginLeft={2} marginTop={0}>
+              <CostView 
+                cost={(currentTurn as SdkCurrentTurn).cost}
+                sessionId={(currentTurn as SdkCurrentTurn).sessionId}
+              />
+            </Box>
           )}
         </Box>
       )}

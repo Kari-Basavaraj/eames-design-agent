@@ -115,10 +115,12 @@ export const SLASH_COMMANDS: SlashCommand[] = [
   
   // Tools & Integrations
   { command: '/mcp', description: 'Manage MCP server connections', category: 'tools', immediate: true },
-  { command: '/memory', description: 'Edit CLAUDE.md memory files', category: 'tools', immediate: true },
-  { command: '/plugin', description: 'Manage Claude Code plugins', category: 'tools', immediate: true },
-  { command: '/agents', description: 'Manage custom AI subagents', category: 'tools', immediate: true },
-  { command: '/hooks', description: 'Manage hook configurations', category: 'tools', immediate: true },
+  { command: '/memory', description: 'Show loaded CLAUDE.md files', category: 'tools', immediate: true },
+  { command: '/plugin', description: 'Manage plugins', category: 'tools', immediate: true },
+  { command: '/skills', description: 'Browse installed skills', category: 'tools', immediate: true },
+  { command: '/agents', description: 'Browse subagents', category: 'tools', immediate: true },
+  { command: '/hooks', description: 'Browse configured hooks', category: 'tools', immediate: true },
+  { command: '/tools', description: 'Search available tools', category: 'tools' },
   { command: '/ide', description: 'Manage IDE integrations', category: 'tools', immediate: true },
   
   // Information & Stats

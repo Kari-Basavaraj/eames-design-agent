@@ -8,10 +8,10 @@ import { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { StructuredToolInterface } from '@langchain/core/tools';
 import { Runnable } from '@langchain/core/runnables';
 import { z } from 'zod';
-import { DEFAULT_SYSTEM_PROMPT } from '../agent/prompts.js';
+import { DEFAULT_SYSTEM_PROMPT } from '../shared/prompts.js';
 
-export const DEFAULT_PROVIDER = 'openai';
-export const DEFAULT_MODEL = 'gpt-5.2';
+export const DEFAULT_PROVIDER = 'anthropic';
+export const DEFAULT_MODEL = 'claude-sonnet-4-5-20250929';
 
 /** Fallback model when Anthropic fails (billing, 403) */
 export const FALLBACK_OPENAI_MODEL = 'gpt-4o';

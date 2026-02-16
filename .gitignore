@@ -1,60 +1,38 @@
-# Environment variables
+# Environment variables (API keys)
 .env
 .env.local
 .env.*
+!env.example
 
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# Virtual environments
-venv/
-env/
-ENV/
-.venv
-
-# Node.js
+# Dependencies
 node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 
-# IDEs
+# Build output
+dist/
+*.tsbuildinfo
+
+# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
+
+# OS
 .DS_Store
+Thumbs.db
 
-# UV
-.uv/
+# Cursor
+.cursor/
 
-# Cursor files (rules committed)
-.cursor/*
-!.cursor/rules/
-
-# Dexter context files (offloaded tool outputs)
-.dexter/context/
-.dexter/settings.json
-
-# Local Eames config
+# Local Eames settings (per-project)
 .eames/
+
+# Firebase / debug
+firebase-debug.log
+
+# Direnv
+.envrc
+
+# Test artifacts
+scripts/test-functionality-report.txt
