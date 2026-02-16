@@ -1,0 +1,36 @@
+---
+description: SDK is default mode; OpenAI models via OpenRouter. Test before changing.
+alwaysApply: true
+---
+
+# Eames: SDK Default + OpenAI
+
+## Mode Defaults
+- **SDK mode** is the default (`useSdkMode: true`).
+- Use `EAMES_USE_LANGCHAIN=1` to switch to LangChain.
+
+## Model Defaults
+- **Provider**: `openai`
+- **Model**: `gpt-5.2` (mapped to `openai/gpt-5.2` via OpenRouter)
+
+## OpenAI via OpenRouter
+The Claude Agent SDK expects Anthropic-style APIs. To use OpenAI models:
+1. **OpenRouter** (https://openrouter.ai) proxies requests.
+2. Set `OPENROUTER_API_KEY` or `OPENAI_API_KEY`.
+3. Add your OpenAI key at openrouter.ai/settings.
+
+## Key Files
+- `src/utils/sdk-env.ts` – OpenRouter env builder
+- `src/hooks/useSdkAgentExecution.ts` – uses `buildSdkEnvForModel`, `isOpenRouterKeyMissing`
+- `src/cli.tsx` – model mapping, mode defaults
+
+## Testing
+```bash
+bun test tests/unit/utils/sdk-env.test.ts
+bun test tests/unit/utils/sdk-tui-state.test.ts
+```
+
+## Do Not
+- Change default to LangChain without explicit request.
+- Remove OpenRouter support for OpenAI models.
+- Bypass `buildSdkEnvForModel` when adding new model providers.

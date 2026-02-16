@@ -13,6 +13,8 @@ const CONTEXT_LIMITS: Record<string, number> = {
   'claude-sonnet-4-20250514': 200000,
   'claude-sonnet-4-5-20250929': 200000,
   'claude-3-5-haiku-20241022': 200000,
+  'gpt-5.2': 128000,
+  'gpt-4.1': 128000,
   'default': 200000,
 };
 

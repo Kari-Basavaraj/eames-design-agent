@@ -11,18 +11,23 @@ import { Box, Text, Static, useApp, useInput } from 'ink';
 import { config } from 'dotenv';
 
 import { Intro } from './components/Intro.js';
+import { SdkIntro } from './components/SdkIntro.js';
 import { Input } from './components/Input.js';
 import { AnswerBox } from './components/AnswerBox.js';
 import { ProviderSelector, ModelSelector, getModelsForProvider, getDefaultModelForProvider } from './components/ModelSelector.js';
 import { ApiKeyConfirm, ApiKeyInput } from './components/ApiKeyPrompt.js';
 import { QueueDisplay } from './components/QueueDisplay.js';
 import { AgentProgressView } from './components/AgentProgressView.js';
+import { SdkTUI } from './components/SdkTUI.js';
 import { TaskListView } from './components/TaskListView.js';
-import { LiveProgress } from './components/LiveProgress.js';
 import { PluginManager } from './components/PluginManager.js';
 import { MCPManager } from './components/MCPManager.js';
 import { SessionPicker } from './components/SessionPicker.js';
 import { StatusBar } from './components/StatusBar.js';
+import { ClarificationPrompt } from './components/ClarificationPrompt.js';
+import { ProceedPrompt } from './components/ProceedPrompt.js';
+import { AskUserQuestionPrompt } from './components/AskUserQuestionPrompt.js';
+import { SdkToolPermissionPrompt } from './components/SdkToolPermissionPrompt.js';
 import type { Task } from './agent/state.js';
 import type { AgentProgressState } from './components/AgentProgressView.js';
 
@@ -36,7 +41,7 @@ import * as path from 'path';
 
 import { useQueryQueue } from './hooks/useQueryQueue.js';
 import { useAgentExecution } from './hooks/useAgentExecution.js';
-// NOTE: This is the LangChain version - no SDK
+import { useSdkAgentExecution } from './hooks/useSdkAgentExecution.js';
 
 import { getSetting, setSetting } from './utils/config.js';
 import { 
@@ -108,7 +113,11 @@ const SLASH_COMMANDS: Record<string, { description: string; handler: string }> =
   '/cost': { description: 'Show token usage', handler: 'cost' },
   '/status': { description: 'Show status info', handler: 'status' },
   '/version': { description: 'Show version', handler: 'version' },
-  // Note: This is the LangChain version (no /sdk command)
+  '/mode': { description: 'Switch agent mode (sdk | langchain)', handler: 'mode' },
+  '/sdk': { description: 'Switch to SDK mode (Claude Agent)', handler: 'sdk' },
+  '/langchain': { description: 'Switch to LangChain mode (5-phase)', handler: 'langchain' },
+  '/lc': { description: 'Switch to LangChain mode (5-phase)', handler: 'langchain' },
+  '/permission': { description: 'SDK: Set permission mode (default|acceptEdits|plan|bypass)', handler: 'permission' },
 };
 
 // ============================================================================
@@ -119,7 +128,12 @@ export function CLI({ initialQuery }: CLIProps) {
   const { exit } = useApp();
 
   const [state, setState] = useState<AppState>('idle');
-  // LangChain version - no SDK mode toggle
+  // Agent mode: SDK (Claude Agent SDK) or LangChain (5-phase orchestrator)
+  const [agentMode, setAgentMode] = useState<'sdk' | 'langchain'>(() => {
+    const envLc = process.env.EAMES_USE_LANGCHAIN === '1' || process.env.EAMES_USE_LANGCHAIN === 'true';
+    const saved = getSetting('useSdkMode', true) as boolean;
+    return envLc || !saved ? 'langchain' : 'sdk';
+  });
   const [provider, setProvider] = useState(() => getSetting('provider', DEFAULT_PROVIDER));
   const [model, setModel] = useState(() => {
     const savedModel = getSetting('modelId', null) as string | null;
@@ -128,7 +142,7 @@ export function CLI({ initialQuery }: CLIProps) {
       return savedModel;
     }
     // Default to first model for the provider
-    return getDefaultModelForProvider(savedProvider) || 'claude-sonnet-4-5-20250929';
+    return getDefaultModelForProvider(savedProvider) || 'gpt-5.2';
   });
   const [pendingProvider, setPendingProvider] = useState<string | null>(null);
   const [pendingModels, setPendingModels] = useState<string[]>([]);
@@ -136,6 +150,7 @@ export function CLI({ initialQuery }: CLIProps) {
   const [commandHistory, setCommandHistory] = useState<string[]>([]);  // User input history for Up/Down
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [interruptedQuery, setInterruptedQuery] = useState<string | null>(null);
+  const [pendingResumeSessionId, setPendingResumeSessionId] = useState<string | null>(null);
 
   // Permission and thinking modes
   const [permissionMode, setPermissionMode] = useState<PermissionMode>('default');
@@ -183,7 +198,31 @@ export function CLI({ initialQuery }: CLIProps) {
     });
   }, []);
 
-  // LangChain agent execution (5-phase orchestrator)
+  // LangChain agent (5-phase orchestrator)
+  const langChainResult = useAgentExecution({
+    model,
+    messageHistory: messageHistoryRef.current,
+  });
+
+  const handleAnswerCompleteRef = useRef<(answer: string) => void>(() => {});
+
+  // SDK: Anthropic direct, or OpenAI/Google via OpenRouter (claude-code compatible)
+  const SDK_MODEL_MAP: Record<string, string> = {
+    'claude-sonnet-4-5': 'claude-sonnet-4-5-20250929',
+    'claude-opus-4-5': 'claude-opus-4-20250514',
+    'gpt-5.2': 'openai/gpt-5.2',
+    'gpt-4.1': 'openai/gpt-4.1',
+  };
+  const sdkModelRaw = model.startsWith('claude-') ? model : model;
+  const sdkModel = SDK_MODEL_MAP[sdkModelRaw] ?? (model.startsWith('claude-') && model.includes('-202') ? model : model.startsWith('gpt-') ? `openai/${model}` : model.startsWith('gemini-') ? `google/${model}` : 'claude-sonnet-4-5-20250929');
+  const sdkResult = useSdkAgentExecution({
+    model: sdkModel,
+    onAnswerComplete: (answer) => handleAnswerCompleteRef.current?.(answer),
+  });
+
+  // Use active mode's result
+  const activeResult = agentMode === 'sdk' ? sdkResult : langChainResult;
+  const setSessionId = 'setSessionId' in activeResult ? activeResult.setSessionId : undefined;
   const {
     currentTurn,
     answerStream,
@@ -191,25 +230,26 @@ export function CLI({ initialQuery }: CLIProps) {
     processQuery,
     handleAnswerComplete: baseHandleAnswerComplete,
     cancelExecution,
-    setSessionId,
-  } = useAgentExecution({
-    model,
-    messageHistory: messageHistoryRef.current,
-  });
+    clarificationRequest,
+    submitClarificationAnswer,
+    proceedCheckpoint,
+    submitProceedAnswer,
+    askUserQuestionRequest,
+    submitAskUserAnswer,
+    toolPermissionRequest,
+    submitToolPermissionAnswer,
+  } = activeResult;
 
-  // Capture tasks when answer stream starts
+  // Capture tasks when answer stream starts (LangChain only)
   useEffect(() => {
-    if (answerStream && currentTurn) {
-      currentTasksRef.current = [...currentTurn.state.tasks];
+    if (answerStream && currentTurn && 'state' in currentTurn) {
+      currentTasksRef.current = [...(currentTurn.state.tasks ?? [])];
     }
   }, [answerStream, currentTurn]);
 
   // Track if initial query was processed
   const initialQueryProcessed = useRef(false);
 
-  /**
-   * Handles the completed answer and moves current turn to history
-   */
   const handleAnswerComplete = useCallback((answer: string) => {
     if (currentTurn) {
       setHistory(h => [...h, {
@@ -223,14 +263,16 @@ export function CLI({ initialQuery }: CLIProps) {
     currentTasksRef.current = [];
   }, [currentTurn, baseHandleAnswerComplete]);
 
+  handleAnswerCompleteRef.current = handleAnswerComplete;
+
   /**
    * Wraps processQuery to handle state transitions and errors
    */
   const executeQuery = useCallback(
-    async (query: string) => {
+    async (query: string, options?: { resume?: string; continue?: boolean }) => {
       setState('running');
       try {
-        await processQuery(query);
+        await processQuery(query, options);
       } catch (e) {
         setStatusMessage(`Error: ${e}`);
       } finally {
@@ -268,7 +310,18 @@ export function CLI({ initialQuery }: CLIProps) {
         setState('provider_select');
         return true;
 
-      // /sdk command removed - this is the LangChain version
+      case '/sdk':
+        setAgentMode('sdk');
+        setSetting('useSdkMode', true);
+        setStatusMessage('Mode: SDK (Claude Agent)');
+        return true;
+
+      case '/langchain':
+      case '/lc':
+        setAgentMode('langchain');
+        setSetting('useSdkMode', false);
+        setStatusMessage('Mode: LangChain (5-phase)');
+        return true;
 
       case '/exit':
       case '/quit':
@@ -277,13 +330,59 @@ export function CLI({ initialQuery }: CLIProps) {
         exit();
         return true;
 
-      case '/status':
-        setStatusMessage(`Model: ${model}\nProvider: ${provider}\nMode: LangChain (5-phase)`);
+      case '/status': {
+        const modeLabel = agentMode === 'sdk' ? 'SDK (Claude Agent)' : 'LangChain (5-phase)';
+        setStatusMessage(`Model: ${model}\nProvider: ${provider}\nAgent: ${modeLabel}`);
         return true;
+      }
 
-      case '/version':
-        setStatusMessage('Eames LangChain v1.0.0 (5-phase orchestrator)');
+      case '/version': {
+        const modeSuffix = agentMode === 'sdk' ? ' + SDK' : ' (5-phase)';
+        setStatusMessage(`Eames v1.0.0${modeSuffix}`);
         return true;
+      }
+
+      case '/mode': {
+        const next = args.toLowerCase().trim();
+        if (next === 'sdk') {
+          setAgentMode('sdk');
+          setSetting('useSdkMode', true);
+          setStatusMessage('Mode: SDK (Claude Agent)');
+          return true;
+        }
+        if (next === 'langchain' || next === 'lc') {
+          setAgentMode('langchain');
+          setSetting('useSdkMode', false);
+          setStatusMessage('Mode: LangChain (5-phase)');
+          return true;
+        }
+        setStatusMessage('Usage: /mode sdk | /mode langchain');
+        return true;
+      }
+
+      case '/permission': {
+        if (agentMode !== 'sdk') {
+          setStatusMessage('/permission is only available in SDK mode. Use /mode sdk first.');
+          return true;
+        }
+        const raw = args.toLowerCase().trim();
+        const map: Record<string, string> = {
+          default: 'default',
+          acceptedits: 'acceptEdits',
+          plan: 'plan',
+          bypass: 'bypassPermissions',
+          bypasspermissions: 'bypassPermissions',
+          dontask: 'dontAsk',
+        };
+        const normalized = map[raw];
+        if (normalized) {
+          setSetting('sdkPermissionMode', normalized);
+          setStatusMessage(`Permission mode: ${normalized}`);
+          return true;
+        }
+        setStatusMessage('Usage: /permission default | acceptEdits | plan | bypass');
+        return true;
+      }
 
       // Cost tracking - shows token usage and costs
       case '/cost': {
@@ -501,6 +600,36 @@ All systems operational!`;
 
   const handleSubmit = useCallback(
     (query: string) => {
+      // Route to clarification flow when agent is gathering details (vague prompts)
+      if (clarificationRequest && submitClarificationAnswer) {
+        submitClarificationAnswer(query);
+        return;
+      }
+
+      // Route to SDK AskUserQuestion when Claude Agent asks multiple-choice questions
+      if (askUserQuestionRequest && submitAskUserAnswer) {
+        submitAskUserAnswer(query);
+        return;
+      }
+
+      // Route to SDK tool permission (Bash, Edit, Write) when permissionMode is default
+      if (toolPermissionRequest && submitToolPermissionAnswer) {
+        const lower = query.trim().toLowerCase();
+        submitToolPermissionAnswer(lower === 'y' || lower === 'yes');
+        return;
+      }
+
+      // Route to proceed checkpoint when agent asks "Should I proceed?"
+      if (proceedCheckpoint && submitProceedAnswer) {
+        const lower = query.trim().toLowerCase();
+        if (lower === 'n' || lower === 'no' || lower === 'stop') {
+          submitProceedAnswer('stop');
+        } else {
+          submitProceedAnswer('proceed');
+        }
+        return;
+      }
+
       // Clear interrupted state when user submits a new query
       setInterruptedQuery(null);
 
@@ -515,6 +644,13 @@ All systems operational!`;
         if (handled) return;
       }
 
+      // SDK: Resume session - pass when user selected session from /resume picker
+      const resumeOpts =
+        agentMode === 'sdk' && pendingResumeSessionId
+          ? { resume: pendingResumeSessionId }
+          : undefined;
+      if (resumeOpts) setPendingResumeSessionId(null);
+
       // Handle bash mode (!) - Claude Code style
       // Run command directly and add output to context
       if (query.startsWith('!')) {
@@ -525,7 +661,7 @@ All systems operational!`;
           if (state === 'running') {
             enqueue(agentQuery);
           } else {
-            executeQuery(agentQuery);
+            executeQuery(agentQuery, resumeOpts);
           }
         }
         return;
@@ -541,7 +677,7 @@ All systems operational!`;
           if (state === 'running') {
             enqueue(agentQuery);
           } else {
-            executeQuery(agentQuery);
+            executeQuery(agentQuery, resumeOpts);
           }
         }
         return;
@@ -562,9 +698,9 @@ All systems operational!`;
       }
 
       // Process immediately if idle
-      executeQuery(query);
+      executeQuery(query, resumeOpts);
     },
-    [state, exit, enqueue, executeQuery, handleSlashCommand]
+    [state, exit, enqueue, executeQuery, handleSlashCommand, clarificationRequest, submitClarificationAnswer, askUserQuestionRequest, submitAskUserAnswer, toolPermissionRequest, submitToolPermissionAnswer, proceedCheckpoint, submitProceedAnswer, agentMode, pendingResumeSessionId]
   );
 
   /**
@@ -708,6 +844,19 @@ All systems operational!`;
       return; // Block other input while permission prompt is showing
     }
 
+    // Handle proceed checkpoint - Y/n for continue or stop
+    if (proceedCheckpoint && submitProceedAnswer) {
+      if (input === 'y' || input === 'Y') {
+        submitProceedAnswer('proceed');
+        return;
+      }
+      if (input === 'n' || input === 'N') {
+        submitProceedAnswer('stop');
+        return;
+      }
+      return; // Block other input while proceed prompt is showing
+    }
+
     // Shift+Tab - cycle permission modes
     if (input === '\x1b[Z') {
       cyclePermissionMode();
@@ -846,8 +995,12 @@ All systems operational!`;
       <Box flexDirection="column">
         <SessionPicker
           onSelect={(sessionId) => {
-            // LangChain version - session resume not implemented yet
-            setStatusMessage(`Session resume not yet implemented in LangChain mode`);
+            if (agentMode === 'sdk') {
+              setPendingResumeSessionId(sessionId);
+              setStatusMessage('Session loaded. Type your message to continue.');
+            } else {
+              setStatusMessage('Session resume: use /mode sdk first for SDK sessions.');
+            }
             setState('idle');
           }}
           onCancel={() => {
@@ -868,11 +1021,15 @@ All systems operational!`;
     <Box flexDirection="column">
       {/* LangChain version - no status bar */}
 
-      {/* Intro + completed history - COLLAPSED (last 3 only) */}
+      {/* Intro: SDK = minimal SdkIntro, LangChain = full Intro with logo */}
       <Static items={staticItems}>
         {(item) =>
           item.type === 'intro' ? (
-            <Intro key={item.key} provider={provider} model={model} useSdkMode={false} />
+            agentMode === 'sdk' ? (
+              <SdkIntro key={item.key} model={sdkModel} />
+            ) : (
+              <Intro key={item.key} provider={provider} model={model} useSdkMode={false} />
+            )
           ) : (
             <CompletedTurnView key={item.key} turn={item.turn} />
           )
@@ -894,49 +1051,65 @@ All systems operational!`;
         </Box>
       )}
 
-      {/* Current turn - clean and minimal */}
+      {/* Current turn - SDK uses SdkTUI, LangChain uses AgentProgressView + AnswerBox */}
       {currentTurn && (
         <Box flexDirection="column">
-          {/* User query - simple and clean */}
-          <Box marginTop={1}>
-            <Text color={colors.primary} bold>❯ </Text>
-            <Text color={colors.white}>{currentTurn.query}</Text>
-          </Box>
-          
-          {/* Real-time tool calls and progress */}
-          {currentTurn.state.progressMessage && (
-            // LangChain mode: show phase progress
-            <Box marginLeft={2} marginTop={1}>
-              <AgentProgressView state={currentTurn.state} />
-            </Box>
-          )}
-          
-          {/* Task list - Dexter-style beautiful tree view */}
-          {currentTurn.state.tasks.length > 0 && (
-            <Box marginLeft={2} marginTop={1}>
-              <TaskListView tasks={currentTurn.state.tasks} />
-            </Box>
-          )}
-
-          {/* Streaming answer - indented */}
-          {answerStream && (
-            <Box marginLeft={2} marginTop={1}>
-              <AnswerBox
-                stream={answerStream}
-                onComplete={handleAnswerComplete}
-              />
-            </Box>
+          {agentMode === 'sdk' && 'sdkTuiState' in currentTurn ? (
+            <SdkTUI query={currentTurn.query} state={currentTurn.sdkTuiState} />
+          ) : (
+            <>
+              <Box marginTop={1}>
+                <Text color={colors.primary} bold>❯ </Text>
+                <Text color={colors.white}>{currentTurn.query}</Text>
+              </Box>
+              {'state' in currentTurn && (
+                <Box marginLeft={2} marginTop={1}>
+                  <AgentProgressView state={currentTurn.state} showWithoutMessage />
+                </Box>
+              )}
+              {'state' in currentTurn && currentTurn.state.tasks.length > 0 && (
+                <Box marginLeft={2} marginTop={1}>
+                  <TaskListView tasks={currentTurn.state.tasks} />
+                </Box>
+              )}
+              {answerStream && (
+                <Box marginLeft={2} marginTop={1}>
+                  <AnswerBox stream={answerStream} onComplete={handleAnswerComplete} />
+                </Box>
+              )}
+            </>
           )}
         </Box>
+      )}
+
+      {/* Clarification prompt - when agent needs more details (vague prompts) */}
+      {clarificationRequest && (
+        <ClarificationPrompt request={clarificationRequest} />
+      )}
+
+      {/* Proceed checkpoint - when agent asks to continue (e.g. after PRD) */}
+      {proceedCheckpoint && (
+        <ProceedPrompt request={proceedCheckpoint} />
+      )}
+
+      {/* SDK AskUserQuestion - when Claude Agent asks multiple-choice questions */}
+      {askUserQuestionRequest && (
+        <AskUserQuestionPrompt request={askUserQuestionRequest} />
+      )}
+
+      {/* SDK tool permission - Bash, Edit, Write (permissionMode: default) */}
+      {toolPermissionRequest && (
+        <SdkToolPermissionPrompt request={toolPermissionRequest} />
       )}
 
       {/* Queued queries */}
       <QueueDisplay queries={queryQueue} />
 
-      {/* Status message - temporary, minimal */}
+      {/* Status message - icon separate so wrapped text aligns with message, not under icon */}
       {statusMessage && (
-        <Box marginTop={1}>
-          <Text color="gray">ℹ️  {statusMessage}</Text>
+        <Box marginTop={1} flexDirection="row">
+          <Text color="gray">ℹ️  </Text>
+          <Text color="gray">{statusMessage}</Text>
         </Box>
       )}
 

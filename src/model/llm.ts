@@ -1,3 +1,4 @@
+// Updated: 2026-02-16
 import { ChatOpenAI } from '@langchain/openai';
 import { ChatAnthropic } from '@langchain/anthropic';
 import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
@@ -9,8 +10,40 @@ import { Runnable } from '@langchain/core/runnables';
 import { z } from 'zod';
 import { DEFAULT_SYSTEM_PROMPT } from '../agent/prompts.js';
 
-export const DEFAULT_PROVIDER = 'anthropic';
-export const DEFAULT_MODEL = 'claude-sonnet-4-5-20250929';
+export const DEFAULT_PROVIDER = 'openai';
+export const DEFAULT_MODEL = 'gpt-5.2';
+
+/** Fallback model when Anthropic fails (billing, 403) */
+export const FALLBACK_OPENAI_MODEL = 'gpt-4o';
+
+/** Small/fast model for tool selection - matches user's provider to avoid cross-provider 401s */
+export function getToolSelectionModel(userModel: string): string {
+  if (userModel.startsWith('claude-')) return 'claude-3-5-haiku-20241022';
+  if (userModel.startsWith('gpt-')) return 'gpt-4o-mini';
+  if (userModel.startsWith('gemini-')) return 'gemini-1.5-flash';
+  if (userModel.startsWith('ollama:')) return userModel;
+  return canFallbackToOpenAI() ? 'gpt-4o-mini' : 'claude-3-5-haiku-20241022';
+}
+
+/** Check if error warrants fallback to OpenAI */
+function isAnthropicUnavailableError(error: unknown): boolean {
+  const msg = String((error as { message?: string })?.message ?? error ?? '');
+  const status = (error as { status?: number })?.status;
+  return (
+    status === 400 ||
+    status === 401 ||
+    status === 403 ||
+    /credit balance is too low/i.test(msg) ||
+    /invalid x-api-key/i.test(msg) ||
+    /authentication_error|Forbidden|403|401/i.test(msg)
+  );
+}
+
+/** True if OpenAI can be used as fallback */
+export function canFallbackToOpenAI(): boolean {
+  const key = process.env.OPENAI_API_KEY;
+  return Boolean(key && key.trim() && !key.trim().startsWith('your-'));
+}
 
 // Generic retry helper with exponential backoff
 async function withRetry<T>(fn: () => Promise<T>, maxAttempts = 3): Promise<T> {
@@ -46,6 +79,12 @@ const MODEL_PROVIDERS: Record<string, ModelFactory> = {
       model: name,
       ...opts,
       apiKey: getApiKey('ANTHROPIC_API_KEY', 'Anthropic'),
+    }),
+  'gpt-': (name, opts) =>
+    new ChatOpenAI({
+      model: name,
+      ...opts,
+      apiKey: getApiKey('OPENAI_API_KEY', 'OpenAI'),
     }),
   'gemini-': (name, opts) =>
     new ChatGoogleGenerativeAI({
@@ -94,27 +133,38 @@ export async function callLlm(prompt: string, options: CallLlmOptions = {}): Pro
     ['user', '{prompt}'],
   ]);
 
-  const llm = getChatModel(model, false);
+  const runWithModel = async (m: string) => {
+    const llm = getChatModel(m, false);
+    let runnable: Runnable<any, any> = llm;
+    if (outputSchema) {
+      runnable = llm.withStructuredOutput(outputSchema);
+    } else if (tools && tools.length > 0 && llm.bindTools) {
+      runnable = llm.bindTools(tools);
+    }
+    const chain = promptTemplate.pipe(runnable);
+    return withRetry(() => chain.invoke({ prompt }));
+  };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let runnable: Runnable<any, any> = llm;
-
-  if (outputSchema) {
-    runnable = llm.withStructuredOutput(outputSchema);
-  } else if (tools && tools.length > 0 && llm.bindTools) {
-    runnable = llm.bindTools(tools);
+  try {
+    const result = await runWithModel(model);
+    if (!outputSchema && !tools && result && typeof result === 'object' && 'content' in result) {
+      return (result as { content: string }).content;
+    }
+    return result;
+  } catch (err) {
+    if (
+      isAnthropicUnavailableError(err) &&
+      canFallbackToOpenAI() &&
+      model.startsWith('claude-')
+    ) {
+      const result = await runWithModel(FALLBACK_OPENAI_MODEL);
+      if (!outputSchema && !tools && result && typeof result === 'object' && 'content' in result) {
+        return (result as { content: string }).content;
+      }
+      return result;
+    }
+    throw err;
   }
-
-  const chain = promptTemplate.pipe(runnable);
-
-  const result = await withRetry(() => chain.invoke({ prompt }));
-
-  // If no outputSchema and no tools, extract content from AIMessage
-  // When tools are provided, return the full AIMessage to preserve tool_calls
-  if (!outputSchema && !tools && result && typeof result === 'object' && 'content' in result) {
-    return (result as { content: string }).content;
-  }
-  return result;
 }
 
 export async function* callLlmStream(
@@ -129,26 +179,35 @@ export async function* callLlmStream(
     ['user', '{prompt}'],
   ]);
 
-  const llm = getChatModel(model, true);
-  const chain = promptTemplate.pipe(llm);
-
-  // For streaming, we handle retry at the connection level
-  for (let attempt = 0; attempt < 3; attempt++) {
-    try {
-      const stream = await chain.stream({ prompt });
-
-      for await (const chunk of stream) {
-        if (chunk && typeof chunk === 'object' && 'content' in chunk) {
-          const content = chunk.content;
-          if (content && typeof content === 'string') {
-            yield content;
-          }
+  const streamWithModel = async function* (m: string) {
+    const llm = getChatModel(m, true);
+    const chain = promptTemplate.pipe(llm);
+    const stream = await chain.stream({ prompt });
+    for await (const chunk of stream) {
+      if (chunk && typeof chunk === 'object' && 'content' in chunk) {
+        const content = chunk.content;
+        if (content && typeof content === 'string') {
+          yield content;
         }
       }
-      return;
-    } catch (e) {
-      if (attempt === 2) throw e;
-      await new Promise((r) => setTimeout(r, 500 * 2 ** attempt));
+    }
+  };
+
+  try {
+    for await (const chunk of streamWithModel(model)) {
+      yield chunk;
+    }
+  } catch (e) {
+    if (
+      isAnthropicUnavailableError(e) &&
+      canFallbackToOpenAI() &&
+      model.startsWith('claude-')
+    ) {
+      for await (const chunk of streamWithModel(FALLBACK_OPENAI_MODEL)) {
+        yield chunk;
+      }
+    } else {
+      throw e;
     }
   }
 }

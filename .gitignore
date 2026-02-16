@@ -48,8 +48,9 @@ yarn-error.log*
 # UV
 .uv/
 
-# Cursor files
-.cursor/
+# Cursor files (rules committed)
+.cursor/*
+!.cursor/rules/
 
 # Dexter context files (offloaded tool outputs)
 .dexter/context/
